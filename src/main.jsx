@@ -30,6 +30,11 @@ import "@fontsource/gowun-batang/700.css";
 import "./styles.css";
 import RoomPreview from "./components/RoomPreview";
 import { roomPreviews } from "./roomPreviews";
+import RoomList from "./study/RoomList";
+import CompanyRoom from "./study/CompanyRoom";
+import { useRooms } from "./study/useRooms";
+import { DEMO_INVITATION } from "./study/rooms";
+import "./study/study.css";
 
 const menus = [
   ["스터디룸", House],
@@ -76,7 +81,9 @@ function Panel({ title, children, className = "", action }) {
   );
 }
 function App() {
-  const [page, setPage] = useState("스터디룸");
+  const { rooms, createRoom, storageWarning } = useRooms();
+  const [activeCompanyRoom, setActiveCompanyRoom] = useState(null);
+  const [page, setPage] = useState("로비");
   const [room, setRoom] = useState(null);
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState("");
@@ -129,10 +136,22 @@ function App() {
     window.moyeogongbuToast = window.setTimeout(() => setToast(""), 3500);
   };
   const navigate = (label) => {
+    setActiveCompanyRoom(null);
     setPage(label);
     setRoom(null);
   };
+  const openCompanyRoom = (studyRoom) => {
+    setRoom(null);
+    setActiveCompanyRoom(studyRoom);
+    setPage("회사 스터디룸");
+  };
   const enterRoom = (theme) => {
+    if (theme === "회사") {
+      openCompanyRoom(
+        rooms.find((r) => r.kind === "owned") || rooms[0] || DEMO_INVITATION,
+      );
+      return;
+    }
     setRoom(theme);
     setPage("스터디룸");
   };
@@ -184,7 +203,7 @@ function App() {
       <header className="topbar">
         <button
           className="brand"
-          onClick={() => navigate("스터디룸")}
+          onClick={() => navigate("로비")}
           aria-label="모여공부 로비"
         >
           <Cat weight="duotone" />
@@ -217,7 +236,7 @@ function App() {
             {menus.map(([label, Icon]) => (
               <button
                 key={label}
-                className={`nav-item ${page === label ? "active" : ""}`}
+                className={`nav-item ${page === label || (["로비", "회사 스터디룸"].includes(page) && label === "스터디룸") ? "active" : ""}`}
                 aria-current={page === label ? "page" : undefined}
                 onClick={() => navigate(label)}
               >
@@ -232,7 +251,14 @@ function App() {
         </aside>
         <main className="scene">
           <div className="scene-shade" />
-          {page === "스터디룸" && !room ? (
+          {page === "회사 스터디룸" && activeCompanyRoom ? (
+            <CompanyRoom
+              key={activeCompanyRoom.id}
+              room={activeCompanyRoom}
+              nickname={nickname}
+              onExit={() => navigate("로비")}
+            />
+          ) : page === "로비" && !room ? (
             <div className="lobby">
               <div className="left-column">
                 <Panel title="내 프로필" className="profile-panel">
@@ -403,17 +429,21 @@ function App() {
             </div>
           ) : (
             <div className="page-area">
-              <button
-                className="back-button"
-                onClick={() => navigate("스터디룸")}
-              >
+              <button className="back-button" onClick={() => navigate("로비")}>
                 <ArrowLeft /> 로비로 돌아가기
               </button>
               <Panel
                 title={room ? `${room} 테마 스터디룸` : page}
                 className="content-panel"
               >
-                {room ? (
+                {page === "스터디룸" && !room ? (
+                  <RoomList
+                    rooms={rooms}
+                    createRoom={createRoom}
+                    storageWarning={storageWarning}
+                    onEnter={openCompanyRoom}
+                  />
+                ) : room ? (
                   <div className="room-content">
                     <span className="eyebrow">MY STUDY SPACE</span>
                     <h1>
@@ -594,7 +624,7 @@ function App() {
                       </p>
                       <button
                         className="primary"
-                        onClick={() => navigate("스터디룸")}
+                        onClick={() => navigate("로비")}
                       >
                         오늘의 할 일 보러 가기
                       </button>
@@ -646,7 +676,7 @@ function App() {
               </Panel>
             </div>
           )}
-          {tip && page === "스터디룸" && !room && (
+          {tip && page === "로비" && !room && (
             <div className="encouragement">
               <button
                 aria-label="응원 메시지 닫기"

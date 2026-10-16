@@ -89,12 +89,12 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
       .getByRole("button", { name: "회사 테마로 가기", exact: true })
       .click();
     await page.getByText("회사 테마 스터디룸", { exact: true }).waitFor();
-    await page.getByRole("button", { name: "로비로 돌아가기" }).click();
+    await page.getByRole("button", { name: "모여공부 로비" }).click();
     await page
       .getByRole("button", { name: "학교 테마로 가기", exact: true })
       .click();
     await page.getByText("학교 테마 스터디룸", { exact: true }).waitFor();
-    await page.getByRole("button", { name: "로비로 돌아가기" }).click();
+    await page.getByRole("button", { name: "모여공부 로비" }).click();
     for (const label of [
       "공용 스터디카페",
       "캐릭터 꾸미기",
@@ -132,8 +132,7 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
       true,
     );
     await page
-      .getByRole("navigation")
-      .getByRole("button", { name: "스터디룸", exact: true })
+      .getByRole("button", { name: "모여공부 로비", exact: true })
       .click();
     assert.match(
       await page.locator(".profile-avatar").getAttribute("class"),
@@ -222,7 +221,7 @@ test("원본 경로 등록과 이미지 실패 시에도 카드 크기와 입장
         .getByRole("button", { name: `${theme} 테마로 가기`, exact: true })
         .click();
       await page.getByText(`${theme} 테마 스터디룸`, { exact: true }).waitFor();
-      await page.getByRole("button", { name: "로비로 돌아가기" }).click();
+      await page.getByRole("button", { name: "모여공부 로비" }).click();
     }
   } finally {
     await browser.close();

@@ -1,0 +1,295 @@
+.room-forms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-bottom: 24px;
+}
+.room-forms form {
+  background: #ecddc5;
+  border: 2px solid #baa083;
+  border-radius: 6px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.room-forms h2 {
+  font-size: 19px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.room-forms label {
+  font-size: 14px;
+}
+.room-forms input {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #b6a084;
+  border-radius: 4px;
+  background: #fff8e8;
+  color: #34312c;
+}
+.room-forms .primary,
+.local-room-list .primary,
+.room-created .primary {
+  margin: 0;
+  white-space: nowrap;
+}
+.room-list-section {
+  margin-top: 25px;
+}
+.room-list-section > h2 {
+  font-size: 21px;
+  margin-bottom: 13px;
+}
+.local-room-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.local-room-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px;
+  background: #eee0c9;
+  border: 1px solid #baa083;
+  border-radius: 6px;
+  gap: 20px;
+}
+.local-room-list h3 {
+  font-size: 19px;
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+.local-room-list p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #806d57;
+  margin: 6px 0;
+}
+.local-room-list code {
+  font-size: 15px;
+  letter-spacing: 2px;
+  color: #514737;
+}
+.room-error {
+  background: #f1d7c8;
+  border: 1px solid #b57764;
+  border-radius: 4px;
+  padding: 12px;
+  color: #7e4031;
+}
+.room-created {
+  padding: 15px;
+  background: #dae1ca;
+  border: 1px solid #8b9b72;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  border-radius: 5px;
+}
+/* 회사 원본은 자르거나 늘리지 않고 3:2 비율 그대로 표시합니다. */
+.company-room {
+  padding: 18px 12px 25px;
+  background: #f0e4d1;
+  min-height: 100%;
+}
+.company-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 12px;
+}
+.company-toolbar h1 {
+  font-size: 22px;
+  margin: 0 0 5px;
+}
+.company-toolbar p {
+  font-size: 13px;
+  color: #78654e;
+  overflow-wrap: anywhere;
+}
+.company-controls {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.company-controls button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #e3d2b8;
+  border: 2px solid #968066;
+  border-radius: 5px;
+  padding: 9px;
+  font-size: 14px;
+}
+.company-controls button:last-child {
+  background: #dba291;
+}
+.company-controls button:disabled {
+  opacity: 0.45;
+}
+.movement-status {
+  padding: 8px 12px;
+  background: #dce2ce;
+  border: 1px solid #9da98a;
+  border-radius: 5px;
+  font-size: 14px;
+  margin-bottom: 12px;
+  min-height: 37px;
+}
+.company-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/2;
+  background: #46454b;
+  isolation: isolate;
+  overflow: hidden;
+}
+.company-original {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  user-select: none;
+  pointer-events: none;
+}
+.seat-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+.seat-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #fff3dcdf;
+  border: 2px solid #725a3f;
+  color: #483b30;
+  font-size: 13px;
+  box-shadow: 0 1px 3px #29242c99;
+  pointer-events: auto;
+  padding: 0;
+}
+.seat-marker:active {
+  transform: translate(-50%, -50%);
+}
+.seat-marker.is-selected {
+  background: #dab5f2;
+  border-color: #78578c;
+  outline: 2px solid #fff0db;
+}
+.seat-marker.is-seated {
+  background: #c9dfa8;
+  border-color: #647c45;
+}
+.seat-marker span {
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  white-space: nowrap;
+  background: #f7efd9;
+  border: 1px solid #879270;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.study-character {
+  position: absolute;
+  width: 6%;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  z-index: 2;
+}
+.study-character img {
+  width: 100%;
+  display: block;
+  image-rendering: pixelated;
+  filter: drop-shadow(1px 2px 1px #332c3a88);
+  transform-origin: center bottom;
+}
+.character-name {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff2dbe8;
+  border: 1px solid #8c745a;
+  border-radius: 3px;
+  padding: 1px 5px;
+  white-space: nowrap;
+  font-size: 10px;
+}
+.activity-walking img {
+  animation: temporary-walk 0.28s steps(2, end) infinite;
+}
+.activity-resting img {
+  transform: scaleY(0.78) rotate(-7deg);
+}
+.facing-left img {
+  scale: -1 1;
+}
+.sprite-fallback {
+  display: block;
+  background: #eee0cf;
+  border: 2px solid #866799;
+  padding: 3px;
+  font-size: 9px;
+}
+.company-help {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #796750;
+  padding: 13px 5px 0;
+}
+.company-help p {
+  margin: 5px 0;
+}
+.company-help summary {
+  cursor: pointer;
+  text-decoration: underline;
+}
+@keyframes temporary-walk {
+  0% {
+    transform: translateY(0) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(5deg);
+  }
+  100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+}
+@media (max-width: 1180px) {
+  .company-toolbar {
+    flex-wrap: wrap;
+  }
+  .company-toolbar h1 {
+    font-size: 20px;
+  }
+  .company-controls button {
+    font-size: 13px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .activity-walking img {
+    animation: none;
+  }
+}
