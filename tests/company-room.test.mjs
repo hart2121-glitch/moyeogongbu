@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
 import { companyLayout } from "../src/study/companyLayout.js";
 import { findPath } from "../src/study/pathfinding.js";
+import { characterBounds, overlaps } from "../src/study/characterVisibility.js";
 
 const launch = () =>
   chromium.launch({
@@ -116,6 +117,10 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
     });
     await page.getByRole("button", { name: "휴식하기", exact: true }).click();
     await waitStatus(page, "소파에서 휴식 중");
+    assert.match(
+      await page.locator(".study-character img").getAttribute("src"),
+      /temporary-sitting/,
+    );
     const resting = await page
       .getByTestId("study-character")
       .evaluate((el) => ({
@@ -131,6 +136,36 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
       await page.locator('.seat-marker[data-occupied="true"]').count(),
       0,
     );
+    await page
+      .getByRole("button", { name: "화장실 가기", exact: true })
+      .click();
+    await waitStatus(page, "화장실 내부");
+    assert.equal(
+      await page.getByTestId("study-character").getAttribute("data-activity"),
+      "restroom",
+    );
+    const toiletPosition = await page
+      .getByTestId("study-character")
+      .evaluate((el) => ({ x: Number(el.dataset.x), y: Number(el.dataset.y) }));
+    assert.deepEqual(toiletPosition, companyLayout.nodes.restroom);
+    await page.screenshot({
+      path: "/tmp/moyeogongbu-v2-restroom.png",
+      fullPage: true,
+    });
+    await page
+      .getByRole("button", { name: "화장실 나가기", exact: true })
+      .click();
+    await waitStatus(page, "업무 공간에 도착");
+    await page
+      .getByRole("button", { name: "휴게실로 이동", exact: true })
+      .click();
+    await waitStatus(page, "휴게실에 도착");
+    const loungePosition = await page
+      .getByTestId("study-character")
+      .evaluate((el) => ({ x: Number(el.dataset.x), y: Number(el.dataset.y) }));
+    assert.deepEqual(loungePosition, companyLayout.nodes.loungeFloor);
+    await page.getByRole("button", { name: "휴식하기", exact: true }).click();
+    await waitStatus(page, "소파에서 휴식 중");
     // 확대/축소 후에도 원본 비율과 좌석 상대 좌표 유지.
     for (const width of [1280, 1536]) {
       await page.setViewportSize({ width, height: 1024 });
@@ -164,6 +199,13 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
     });
     assert.ok(trace.length > 50);
     for (const point of trace) {
+      const bounds = characterBounds({ position: point }, companyLayout);
+      assert.ok(
+        !companyLayout.backgroundPeople.some((person) =>
+          overlaps(bounds, person),
+        ),
+        "표시 중인 캐릭터와 배경 인물의 겹침",
+      );
       const onEdge = companyLayout.edges.some(([a, b]) => {
         const start = companyLayout.nodes[a],
           end = companyLayout.nodes[b];
@@ -187,17 +229,16 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
   }
 });
 
-test("좌석·소파·출입구 모든 경로 연결 및 책상 몸체 직선 통과 방지", () => {
+test("좌석·휴게실·소파·화장실·출입구 경로 연결 및 주요 가구 통과 방지", () => {
   const destinations = [
     "entrance",
     "sofa",
+    "restroom",
+    "loungeFloor",
     ...companyLayout.seats.map((s) => s.node),
   ];
-  // 책상 몸체의 보수적인 영역. 가려진 의자/배경 인물까지 판별하는 픽셀 충돌 마스크는 아님.
-  const desks = [
-    { left: 0.285, right: 0.74, top: 0.47, bottom: 0.59 },
-    { left: 0.285, right: 0.74, top: 0.66, bottom: 0.785 },
-  ];
+  // 새 원본의 주요 가구 영역. 장식 화분까지 포함한 픽셀 충돌 마스크는 아닙니다.
+  const desks = companyLayout.obstacles;
   for (const from of destinations)
     for (const to of destinations) {
       const route = findPath(companyLayout, from, to);

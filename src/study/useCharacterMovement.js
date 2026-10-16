@@ -7,6 +7,7 @@ export function useCharacterMovement(graph, initialNode, onExit) {
     activity: "idle",
     direction: "down",
     seatId: null,
+    edge: null,
   });
   const frame = useRef(null);
   const busy = useRef(false);
@@ -30,6 +31,7 @@ export function useCharacterMovement(graph, initialNode, onExit) {
       ...c,
       activity: activity === "exit" ? "exiting" : "walking",
       seatId,
+      edge: route.length > 1 ? [route[0], route[1]] : null,
     }));
     const complete = () => {
       if (!mounted.current) return;
@@ -41,6 +43,7 @@ export function useCharacterMovement(graph, initialNode, onExit) {
         position: graph.nodes[destination],
         activity: activity === "exit" ? "idle" : activity,
         seatId,
+        edge: null,
       }));
       if (activity === "exit") onExit();
     };
@@ -90,6 +93,7 @@ export function useCharacterMovement(graph, initialNode, onExit) {
           y: a.y + (b.y - a.y) * ratio,
         },
         direction,
+        edge: [route[segment], route[segment + 1]],
       }));
       frame.current = requestAnimationFrame(tick);
     };

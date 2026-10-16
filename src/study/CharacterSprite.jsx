@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { resolveSprite } from "./characterSprites";
+import { companyLayout } from "./companyLayout";
+import { getCharacterOcclusion } from "./characterVisibility";
 
 export default function CharacterSprite({ character, nickname }) {
   const [frame, setFrame] = useState(0);
@@ -17,14 +19,15 @@ export default function CharacterSprite({ character, nickname }) {
     );
     return () => clearInterval(timer);
   }, [frames]);
-  // 원본 배경 캐릭터는 착석 시에만 임시 착석 표현으로 사용합니다.
-  if (character.activity === "seated") return null;
+  // 착석은 배경 인물을 임시로 사용하며, 출입·인물·가구 가림 구간은 중복 렌더링하지 않습니다.
+  if (getCharacterOcclusion(character, companyLayout)) return null;
   return (
     <div
       className={`study-character activity-${activity} facing-${character.direction} ${mirror ? "mirror-fallback" : ""}`}
       style={{
         left: `${character.position.x * 100}%`,
         top: `${character.position.y * 100}%`,
+        width: `${companyLayout.character.width * 100}%`,
       }}
       data-testid="study-character"
       data-activity={character.activity}

@@ -2,10 +2,16 @@
 // 예: walking.down: ['/assets/characters/walk-down-1.png', '/assets/characters/walk-down-2.png']
 // 아직 걷기 원본이 없으므로 빈 배열을 유지하고 정면 임시 이미지로 대체합니다.
 const temporary = "/assets/characters/temporary-standing.png";
+const sitting = "/assets/characters/temporary-sitting.png";
 export const characterSprites = {
   idle: { down: [temporary], up: [], left: [], right: [] },
   walking: { down: [], up: [], left: [], right: [] },
-  resting: { down: [], up: [], left: [], right: [] },
+  resting: {
+    down: [sitting],
+    up: [sitting],
+    left: [sitting],
+    right: [sitting],
+  },
   seated: { down: [], up: [], left: [], right: [] },
 };
 export function resolveSprite(activity, direction, sprites = characterSprites) {

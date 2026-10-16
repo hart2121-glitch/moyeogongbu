@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Coffee, Armchair, SignOut } from "@phosphor-icons/react";
+import {
+  Coffee,
+  Armchair,
+  SignOut,
+  DoorOpen,
+  Toilet,
+  ArrowLeft,
+} from "@phosphor-icons/react";
 import { COMPANY_BACKGROUND, companyLayout } from "./companyLayout";
 import { useCharacterMovement } from "./useCharacterMovement";
 import CharacterSprite from "./CharacterSprite";
@@ -36,7 +43,10 @@ export default function CompanyRoom({ room, nickname, onExit }) {
     if (go(seat.node, { activity: "seated", seatId: seat.id }))
       setSelectedSeat(seat.id);
   };
-  const rest = () => go("sofa", { activity: "resting" });
+  const visit = (area) => go(area.node, { activity: area.activity });
+  const rest = () =>
+    visit(companyLayout.areas.find((area) => area.id === "sofa"));
+  const leaveRestroom = () => go("toiletOuter", { activity: "idle" });
   const resume = () => {
     const seat = companyLayout.seats.find((s) => s.id === selectedSeat);
     if (seat) go(seat.node, { activity: "seated", seatId: seat.id });
@@ -51,7 +61,13 @@ export default function CompanyRoom({ room, nickname, onExit }) {
           ? `${character.seatId}번 좌석 착석 · 공부 중`
           : character.activity === "resting"
             ? "소파에서 휴식 중"
-            : "출입구에 도착했어요. 원하는 좌석을 클릭해 주세요.";
+            : character.activity === "restroom"
+              ? "화장실 내부 · 나가기 또는 공부 재개하기를 선택해 주세요."
+              : character.activity === "lounge"
+                ? "휴게실에 도착했어요. 소파에서 쉬거나 좌석으로 돌아갈 수 있어요."
+                : character.node === "entrance"
+                  ? "출입구에 도착했어요. 원하는 좌석을 클릭해 주세요."
+                  : "업무 공간에 도착했어요. 원하는 좌석을 클릭해 주세요.";
   return (
     <div className="company-room">
       <div className="company-toolbar">
@@ -63,6 +79,34 @@ export default function CompanyRoom({ room, nickname, onExit }) {
           </p>
         </div>
         <div className="company-controls">
+          <button
+            onClick={() =>
+              visit(companyLayout.areas.find((area) => area.id === "lounge"))
+            }
+            disabled={
+              moving || backgroundFailed || character.activity === "lounge"
+            }
+          >
+            <DoorOpen /> 휴게실로 이동
+          </button>
+          <button
+            onClick={() =>
+              visit(companyLayout.areas.find((area) => area.id === "restroom"))
+            }
+            disabled={
+              moving || backgroundFailed || character.activity === "restroom"
+            }
+          >
+            <Toilet /> 화장실 가기
+          </button>
+          {character.activity === "restroom" && (
+            <button
+              onClick={leaveRestroom}
+              disabled={moving || backgroundFailed}
+            >
+              <ArrowLeft /> 화장실 나가기
+            </button>
+          )}
           <button
             onClick={rest}
             disabled={
@@ -123,6 +167,23 @@ export default function CompanyRoom({ room, nickname, onExit }) {
                 </button>
               ))}
             </div>
+            <div className="area-overlay" role="group" aria-label="공간 이동">
+              {companyLayout.areas.map((area) => (
+                <button
+                  key={area.id}
+                  className="area-marker"
+                  style={{
+                    left: `${area.position.x * 100}%`,
+                    top: `${area.position.y * 100}%`,
+                  }}
+                  onClick={() => visit(area)}
+                  disabled={moving || character.activity === area.activity}
+                  aria-label={`${area.label} · 지도`}
+                >
+                  {area.marker}
+                </button>
+              ))}
+            </div>
             <CharacterSprite character={character} nickname={nickname} />
           </>
         )}
@@ -150,11 +211,14 @@ export default function CompanyRoom({ room, nickname, onExit }) {
         <details>
           <summary>임시 좌표·캐릭터 안내</summary>
           <p>
-            통로와 의자 좌표는 가려진 원본을 기준으로 한 임시값입니다. 바닥 충돌
-            판정 대신 책상 뒤·중앙 경계·왼쪽 통로를 잇는 고정 경로를 사용합니다.
-            이동 중 흔들기 없이 임시 정면 이미지를 표시하며, 방향별 걷기·착석
-            스프라이트는 아직 없습니다. 배경에 그려진 타이머·음악 등의 버튼은
-            이번 단계의 실제 기능이 아닙니다.
+            새 원본 기준의 상대 좌표와 고정 경로를 사용합니다. 휴게실 출입
+            경계는 유리벽·화분에 가려져 문 통과 전환으로 연결하며, 해당 구간과
+            배경 인물에 겹치는 구간에서는 이동 캐릭터를 잠시 숨깁니다. 화장실은
+            열린 문 아래쪽을 통해 내부 바닥까지 이동합니다. 픽셀 단위 가구
+            충돌·가림 처리는 아직 임시입니다. 이동 중 흔들기 없이 임시 정면
+            이미지를 표시하며, 실제 방향별 걷기 프레임은 아직 없어 등록 구조만
+            준비되어 있습니다. 소파는 별도 임시 착석 이미지를 사용합니다. 배경에
+            그려진 타이머·음악 등의 버튼은 이번 단계의 실제 기능이 아닙니다.
           </p>
         </details>
       </div>
