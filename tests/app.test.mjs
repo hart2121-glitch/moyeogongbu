@@ -29,6 +29,53 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
         .evaluate((img) => img.complete && img.naturalWidth > 0),
       true,
     );
+    const officePreview = page.getByRole("img", {
+      name: "회사 스터디룸 미리보기",
+      exact: true,
+    });
+    await officePreview.waitFor();
+    await page.waitForFunction(
+      () => document.querySelector(".theme-image img")?.naturalWidth > 0,
+    );
+    assert.deepEqual(
+      await officePreview.evaluate((img) => ({
+        src: img.getAttribute("src"),
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+        fit: getComputedStyle(img).objectFit,
+      })),
+      {
+        src: "/assets/company-study-room.png.png",
+        width: 1536,
+        height: 1024,
+        fit: "contain",
+      },
+    );
+    assert.equal(
+      await page
+        .getByRole("img", {
+          name: "학교 스터디룸 미리보기: 미리보기 준비 중",
+          exact: true,
+        })
+        .count(),
+      1,
+    );
+    const previewBoxes = await page
+      .locator(".theme-image")
+      .evaluateAll((nodes) =>
+        nodes.map((node) => ({
+          background: getComputedStyle(node).backgroundImage,
+          height: node.getBoundingClientRect().height,
+        })),
+      );
+    assert.deepEqual(
+      previewBoxes.map((box) => box.background),
+      ["none", "none"],
+    );
+    assert.deepEqual(
+      previewBoxes.map((box) => box.height),
+      [125, 125],
+    );
     await page.screenshot({
       path: "/tmp/moyeogongbu-lobby.png",
       fullPage: true,
@@ -42,6 +89,11 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
       .getByRole("button", { name: "회사 테마로 가기", exact: true })
       .click();
     await page.getByText("회사 테마 스터디룸", { exact: true }).waitFor();
+    await page.getByRole("button", { name: "로비로 돌아가기" }).click();
+    await page
+      .getByRole("button", { name: "학교 테마로 가기", exact: true })
+      .click();
+    await page.getByText("학교 테마 스터디룸", { exact: true }).waitFor();
     await page.getByRole("button", { name: "로비로 돌아가기" }).click();
     for (const label of [
       "공용 스터디카페",
@@ -106,6 +158,72 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
       fullPage: true,
     });
     assert.deepEqual(errors, []);
+  } finally {
+    await browser.close();
+  }
+});
+
+test("원본 경로 등록과 이미지 실패 시에도 카드 크기와 입장 기능 유지", async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_PATH || "/usr/bin/chromium",
+    headless: true,
+    args: ["--no-sandbox"],
+  });
+  try {
+    const page = await browser.newPage({
+      viewport: { width: 1536, height: 1024 },
+    });
+    // 실제 원본 대신 브라우저 테스트에서만 이미지 응답과 설정을 주입합니다.
+    await page.route("**/src/roomPreviews.js*", async (route) => {
+      await route.fulfill({
+        contentType: "application/javascript",
+        body: `export const roomPreviews = {
+        office: {src: '/test-office.png', alt: '회사 스터디룸 미리보기', placeholder: '원본 이미지 필요'},
+        school: {src: '/test-school.png', alt: '학교 스터디룸 미리보기', placeholder: '미리보기 준비 중'}
+      };`,
+      });
+    });
+    await page.route("**/test-office.png", (route) =>
+      route.fulfill({
+        contentType: "image/png",
+        body: Buffer.from(
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=",
+          "base64",
+        ),
+      }),
+    );
+    await page.route("**/test-school.png", (route) =>
+      route.fulfill({ status: 404, body: "" }),
+    );
+    await page.goto("http://127.0.0.1:4173/");
+    await page.getByRole("heading", { name: "밍구", exact: true }).waitFor();
+    const image = page.getByRole("img", {
+      name: "회사 스터디룸 미리보기",
+      exact: true,
+    });
+    await image.waitFor();
+    await page.waitForFunction(
+      () => document.querySelector(".theme-image img")?.naturalWidth > 0,
+    );
+    await page
+      .getByRole("img", {
+        name: "학교 스터디룸 미리보기: 미리보기 준비 중",
+        exact: true,
+      })
+      .waitFor();
+    const heights = await page
+      .locator(".theme-image")
+      .evaluateAll((nodes) =>
+        nodes.map((n) => n.getBoundingClientRect().height),
+      );
+    assert.deepEqual(heights, [125, 125]);
+    for (const theme of ["회사", "학교"]) {
+      await page
+        .getByRole("button", { name: `${theme} 테마로 가기`, exact: true })
+        .click();
+      await page.getByText(`${theme} 테마 스터디룸`, { exact: true }).waitFor();
+      await page.getByRole("button", { name: "로비로 돌아가기" }).click();
+    }
   } finally {
     await browser.close();
   }

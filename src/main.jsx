@@ -28,6 +28,8 @@ import "@fontsource/gowun-dodum/400.css";
 import "@fontsource/gowun-batang/400.css";
 import "@fontsource/gowun-batang/700.css";
 import "./styles.css";
+import RoomPreview from "./components/RoomPreview";
+import { roomPreviews } from "./roomPreviews";
 
 const menus = [
   ["스터디룸", House],
@@ -273,18 +275,20 @@ function App() {
                   <div className="theme-grid">
                     <button
                       className="theme-card"
+                      aria-label="회사 테마로 가기"
                       onClick={() => enterRoom("회사")}
                     >
-                      <div className="theme-image office" />
+                      <RoomPreview preview={roomPreviews.office} />
                       <span>
                         <Tote weight="duotone" /> 회사 테마로 가기
                       </span>
                     </button>
                     <button
                       className="theme-card"
+                      aria-label="학교 테마로 가기"
                       onClick={() => enterRoom("학교")}
                     >
-                      <div className="theme-image school" />
+                      <RoomPreview preview={roomPreviews.school} />
                       <span>
                         <BookOpen weight="duotone" /> 학교 테마로 가기
                       </span>

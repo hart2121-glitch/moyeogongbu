@@ -384,15 +384,35 @@ button:active {
 }
 .theme-image {
   height: 114px;
-  background: url("/assets/study-room.png") 32% 58%/230%;
+  background: #e4d5bf;
   border-bottom: 2px solid #786a57;
   image-rendering: pixelated;
 }
 .school {
   filter: sepia(0.28) hue-rotate(325deg);
 }
-.theme-image.school {
-  background-position: 75% 40%;
+.theme-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.theme-placeholder {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  color: #76634f;
+  padding: 8px;
+}
+.theme-placeholder span {
+  font-size: 14px;
+}
+.theme-placeholder small {
+  font-size: 10px;
+  font-weight: 400;
 }
 .theme-card > span {
   display: flex;

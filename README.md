@@ -43,7 +43,18 @@ npm test         # 실행 중인 앱의 브라우저 기능 검사
 
 - `src/main.jsx`: 화면과 기본 상호작용
 - `src/styles.css`: PC 레이아웃, 종이 질감 패널, 색상
-- `public/assets/`: 첨부 이미지를 참고해 생성한 배경과 캐릭터 이미지
+- `public/assets/`: 생성한 로비 배경·캐릭터 및 업로드된 회사 스터디룸 공식 원본
 - `tests/app.test.mjs`: Chromium으로 메뉴와 주요 기능을 확인하는 테스트
 
-폰트는 Gowun Dodum / Gowun Batang(패키지 포함, OFL), 아이콘은 Phosphor Icons(MIT)를 사용합니다. 이미지 원본을 그대로 분리한 것이 아니라 참고해 생성한 에셋이므로 원본과 세부 모양은 다릅니다. 회사와 학교 입장 카드는 같은 배경의 다른 영역과 색감으로 표현한 1차 시안입니다.
+폰트는 Gowun Dodum / Gowun Batang(패키지 포함, OFL), 아이콘은 Phosphor Icons(MIT)를 사용합니다. 로비 배경과 캐릭터는 참고해 생성한 에셋이므로 원본과 세부 모양은 다릅니다. 회사 스터디룸 이미지는 사용자가 업로드한 원본입니다. 회사 빠른 입장 카드는 업로드된 공식 원본을 그대로 표시하고, 학교는 원본이 없어 임시 문구를 표시합니다. 로비 배경은 재사용하지 않습니다.
+
+
+## 빠른 입장 미리보기 교체
+
+회사 공식 원본은 `public/assets/company-study-room.png.png`에 보관되어 있고, 회사 카드에 연결되어 있습니다. 원본 파일은 수정하지 않습니다. 학교 원본은 아직 없으며 임의로 이미지를 생성하지 않았습니다.
+
+1. 확정한 파일을 `public/assets/rooms/office.png`, `public/assets/rooms/school.png`에 넣습니다(폴더가 없으면 생성).
+2. `src/roomPreviews.js`에서 각 `src: null`을 각각 `src: "/assets/rooms/office.png"`, `src: "/assets/rooms/school.png"`로 바꿉니다. 다른 파일명도 사용 가능합니다.
+3. 카드 크기와 입장 동작은 그대로 유지됩니다. 미등록 또는 로딩 실패 시 임시 문구를 표시합니다.
+
+이 설정은 로비의 빠른 입장 카드만 제어합니다. 스터디룸 내부 화면은 이번 변경 범위에 포함되지 않습니다.
