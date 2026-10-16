@@ -237,13 +237,10 @@
   white-space: nowrap;
   font-size: 10px;
 }
-.activity-walking img {
-  animation: temporary-walk 0.28s steps(2, end) infinite;
-}
 .activity-resting img {
   transform: scaleY(0.78) rotate(-7deg);
 }
-.facing-left img {
+.mirror-fallback img {
   scale: -1 1;
 }
 .sprite-fallback {
@@ -266,17 +263,6 @@
   cursor: pointer;
   text-decoration: underline;
 }
-@keyframes temporary-walk {
-  0% {
-    transform: translateY(0) rotate(-5deg);
-  }
-  50% {
-    transform: translateY(-4px) rotate(5deg);
-  }
-  100% {
-    transform: translateY(0) rotate(-5deg);
-  }
-}
 @media (max-width: 1180px) {
   .company-toolbar {
     flex-wrap: wrap;
@@ -286,10 +272,5 @@
   }
   .company-controls button {
     font-size: 13px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .activity-walking img {
-    animation: none;
   }
 }

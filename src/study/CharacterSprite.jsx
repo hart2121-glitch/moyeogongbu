@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
-import { characterSprites } from "./characterSprites";
+import { resolveSprite } from "./characterSprites";
 
 export default function CharacterSprite({ character, nickname }) {
   const [frame, setFrame] = useState(0);
   const [failed, setFailed] = useState(false);
   const activity =
     character.activity === "exiting" ? "walking" : character.activity;
-  const frames =
-    characterSprites[activity]?.[character.direction] ||
-    characterSprites.idle.down;
+  const { frames, mirror } = resolveSprite(activity, character.direction);
   useEffect(() => {
     setFrame(0);
+    setFailed(false);
     if (frames.length < 2) return;
     const timer = setInterval(
       () => setFrame((f) => (f + 1) % frames.length),
@@ -22,7 +21,7 @@ export default function CharacterSprite({ character, nickname }) {
   if (character.activity === "seated") return null;
   return (
     <div
-      className={`study-character activity-${activity} facing-${character.direction}`}
+      className={`study-character activity-${activity} facing-${character.direction} ${mirror ? "mirror-fallback" : ""}`}
       style={{
         left: `${character.position.x * 100}%`,
         top: `${character.position.y * 100}%`,
