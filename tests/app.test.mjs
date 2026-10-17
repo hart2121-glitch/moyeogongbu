@@ -45,9 +45,9 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
         fit: getComputedStyle(img).objectFit,
       })),
       {
-        src: "/assets/company-study-room-v2.png",
-        width: 1536,
-        height: 1024,
+        src: "/assets/company-study-room-final-display.png",
+        width: 1705,
+        height: 922,
         fit: "contain",
       },
     );

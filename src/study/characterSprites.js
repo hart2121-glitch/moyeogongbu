@@ -12,7 +12,7 @@ export const characterSprites = {
     left: [sitting],
     right: [sitting],
   },
-  seated: { down: [], up: [], left: [], right: [] },
+  seated: { down: [sitting], up: [sitting], left: [sitting], right: [sitting] },
 };
 export function resolveSprite(activity, direction, sprites = characterSprites) {
   const directional = sprites[activity]?.[direction];

@@ -300,3 +300,19 @@
 .area-marker:active {
   transform: translate(-50%, -50%);
 }
+
+/* 최종 원본의 1~6 숫자 위에는 투명 클릭 영역만 겹칩니다. */
+.seat-marker.baked {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+.seat-marker.baked.is-selected {
+  background: #dab5f233;
+  border-color: #78578c;
+  outline: 2px solid #fff0db;
+}
+.seat-marker.baked.is-seated {
+  background: #c9dfa833;
+  border-color: #647c45;
+}

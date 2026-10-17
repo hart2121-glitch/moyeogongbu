@@ -138,7 +138,13 @@ export default function CompanyRoom({ room, nickname, onExit }) {
       >
         {status}
       </p>
-      <div className="company-stage" data-testid="company-stage">
+      <div
+        className="company-stage"
+        data-testid="company-stage"
+        style={{
+          aspectRatio: `${companyLayout.image?.width || 1536} / ${companyLayout.image?.height || 1024}`,
+        }}
+      >
         <img
           className="company-original"
           src={COMPANY_BACKGROUND}
@@ -151,7 +157,7 @@ export default function CompanyRoom({ room, nickname, onExit }) {
               {seats.map((seat) => (
                 <button
                   key={seat.id}
-                  className={`seat-marker ${selectedSeat === seat.id ? "is-selected" : ""} ${seat.occupantId ? "is-seated" : ""}`}
+                  className={`seat-marker ${companyLayout.seatMarkersBaked ? "baked" : ""} ${selectedSeat === seat.id ? "is-selected" : ""} ${seat.occupantId ? "is-seated" : ""}`}
                   style={{
                     left: `${seat.label.x * 100}%`,
                     top: `${seat.label.y * 100}%`,
@@ -162,7 +168,7 @@ export default function CompanyRoom({ room, nickname, onExit }) {
                   aria-pressed={selectedSeat === seat.id}
                   data-occupied={Boolean(seat.occupantId)}
                 >
-                  {seat.id}
+                  {!companyLayout.seatMarkersBaked && seat.id}
                   {seat.occupantId && <span>내 자리</span>}
                 </button>
               ))}
@@ -204,21 +210,22 @@ export default function CompanyRoom({ room, nickname, onExit }) {
           1~3번은 위쪽, 4~6번은 아래쪽 좌석입니다. 번호를 클릭하면 이동합니다.
         </p>
         <p>
-          한 명 로컬 데모 · 원본에 그려진 여섯 인물은 배경이며 실제 참여자가
-          아닙니다. 착석하면 내 이동 캐릭터를 숨기고 원본 인물과 ‘내 자리’
-          표시를 임시 착석 표현으로 사용합니다.
+          한 명 로컬 데모 · 인물이 없는 6개 의자에 독립 캐릭터가 착석합니다.
+          원본의 출입구 인물·이름표만 제거한 화면용 사본을 사용하고 원본 파일은
+          그대로 보관합니다.
         </p>
         <details>
           <summary>임시 좌표·캐릭터 안내</summary>
           <p>
             새 원본 기준의 상대 좌표와 고정 경로를 사용합니다. 휴게실 출입
             경계는 유리벽·화분에 가려져 문 통과 전환으로 연결하며, 해당 구간과
-            배경 인물에 겹치는 구간에서는 이동 캐릭터를 잠시 숨깁니다. 화장실은
+            주요 가구에 겹치는 구간에서는 이동 캐릭터를 잠시 숨깁니다. 화장실은
             열린 문 아래쪽을 통해 내부 바닥까지 이동합니다. 픽셀 단위 가구
             충돌·가림 처리는 아직 임시입니다. 이동 중 흔들기 없이 임시 정면
             이미지를 표시하며, 실제 방향별 걷기 프레임은 아직 없어 등록 구조만
-            준비되어 있습니다. 소파는 별도 임시 착석 이미지를 사용합니다. 배경에
-            그려진 타이머·음악 등의 버튼은 이번 단계의 실제 기능이 아닙니다.
+            준비되어 있습니다. 의자·소파는 별도 임시 착석 이미지를 사용합니다.
+            배경에 그려진 타이머·음악 등의 버튼은 이번 단계의 실제 기능이
+            아닙니다.
           </p>
         </details>
       </div>

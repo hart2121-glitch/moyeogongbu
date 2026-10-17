@@ -3,22 +3,19 @@ import assert from "node:assert/strict";
 import { companyLayout } from "../src/study/companyLayout.js";
 import { getCharacterOcclusion } from "../src/study/characterVisibility.js";
 
-test("배경 인물과 겹치는 접근 구간과 착석에서는 독립 캐릭터 중복 표시 방지", () => {
+test("인물 없는 최종 의자에는 독립 캐릭터를 표시하고 고정 인물을 추가하지 않음", () => {
+  assert.equal(companyLayout.backgroundPeople.length, 0);
   for (const seat of companyLayout.seats) {
-    const position = companyLayout.nodes[seat.node];
     assert.equal(
       getCharacterOcclusion(
-        { position, activity: "walking", edge: null },
+        {
+          position: companyLayout.nodes[seat.node],
+          activity: "seated",
+          edge: null,
+        },
         companyLayout,
       ),
-      "background-person",
-    );
-    assert.equal(
-      getCharacterOcclusion(
-        { position, activity: "seated", edge: null },
-        companyLayout,
-      ),
-      "seated",
+      null,
     );
   }
   for (const node of ["entrance", "sofa", "restroom", "loungeFloor"]) {

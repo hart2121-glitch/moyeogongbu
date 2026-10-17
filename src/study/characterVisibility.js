@@ -13,7 +13,8 @@ export function characterBounds(character, layout) {
   };
 }
 export function getCharacterOcclusion(character, layout) {
-  if (character.activity === "seated") return "seated";
+  if (character.activity === "seated")
+    return layout.seatedMode === "sprite" ? null : "seated";
   if (
     character.edge &&
     layout.portalEdges.some(

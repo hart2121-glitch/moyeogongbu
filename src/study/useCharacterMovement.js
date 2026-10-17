@@ -59,7 +59,7 @@ export function useCharacterMovement(graph, initialNode, onExit) {
       while (segment < route.length - 1) {
         const a = graph.nodes[route[segment]],
           b = graph.nodes[route[segment + 1]];
-        const length = distance(a, b);
+        const length = distance(a, b, graph.image);
         if (remaining >= length - progress) {
           remaining -= length - progress;
           segment++;
@@ -75,9 +75,9 @@ export function useCharacterMovement(graph, initialNode, onExit) {
       }
       const a = graph.nodes[route[segment]],
         b = graph.nodes[route[segment + 1]],
-        ratio = progress / distance(a, b);
-      const dx = (b.x - a.x) * 1536,
-        dy = (b.y - a.y) * 1024;
+        ratio = progress / distance(a, b, graph.image);
+      const dx = (b.x - a.x) * (graph.image?.width || 1536),
+        dy = (b.y - a.y) * (graph.image?.height || 1024);
       const direction =
         Math.abs(dx) > Math.abs(dy)
           ? dx < 0

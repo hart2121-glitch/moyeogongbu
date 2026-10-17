@@ -99,7 +99,21 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
           fullPage: true,
         });
       await waitStatus(page, `${id}번 좌석 착석`);
-      assert.equal(await page.getByTestId("study-character").count(), 0);
+      assert.equal(await page.getByTestId("study-character").count(), 1);
+      assert.equal(
+        await page.getByTestId("study-character").getAttribute("data-activity"),
+        "seated",
+      );
+      const seatedPosition = await page
+        .getByTestId("study-character")
+        .evaluate((el) => ({
+          x: Number(el.dataset.x),
+          y: Number(el.dataset.y),
+        }));
+      assert.deepEqual(
+        seatedPosition,
+        companyLayout.nodes[companyLayout.seats[id - 1].node],
+      );
       assert.equal(
         await page
           .getByRole("button", { name: `${id}번 좌석`, exact: true })
@@ -180,7 +194,12 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
             y: (s.y + s.height / 2 - r.y) / r.height,
           };
         });
-      assert.ok(Math.abs(geometry.ratio - 1.5) < 0.001);
+      assert.ok(
+        Math.abs(
+          geometry.ratio -
+            companyLayout.image.width / companyLayout.image.height,
+        ) < 0.001,
+      );
       assert.ok(Math.abs(geometry.x - companyLayout.seats[0].label.x) < 0.001);
       assert.ok(Math.abs(geometry.y - companyLayout.seats[0].label.y) < 0.001);
     }

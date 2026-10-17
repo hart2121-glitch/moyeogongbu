@@ -1,6 +1,6 @@
-// Graph nodes are normalized to the immutable 1536×1024 reference image.
-export const distance = (a, b) =>
-  Math.hypot((b.x - a.x) * 1536, (b.y - a.y) * 1024);
+// 정규화 좌표의 거리를 실제 원본 크기로 계산합니다. 기존 그래프는 v2 크기를 기본값으로 사용합니다.
+export const distance = (a, b, image = { width: 1536, height: 1024 }) =>
+  Math.hypot((b.x - a.x) * image.width, (b.y - a.y) * image.height);
 export function findPath(graph, from, to) {
   if (!graph.nodes[from] || !graph.nodes[to])
     throw new Error("이동 지점을 찾을 수 없어요.");
@@ -18,7 +18,8 @@ export function findPath(graph, from, to) {
       const next = a === current ? b : b === current ? a : null;
       if (!next || visited.has(next)) continue;
       const candidate =
-        cost[current] + distance(graph.nodes[current], graph.nodes[next]);
+        cost[current] +
+        distance(graph.nodes[current], graph.nodes[next], graph.image);
       if (candidate < (cost[next] ?? Infinity)) {
         cost[next] = candidate;
         previous[next] = current;
