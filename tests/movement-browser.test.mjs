@@ -107,7 +107,7 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
       assert.ok(Math.abs(geometry.ratio - 87 / 110) < 0.001);
       assert.ok(Math.abs(geometry.width - geometry.wrapper) < 0.1);
       assert.ok(
-        Math.abs(geometry.width / geometry.stage - 0.042 * 1.2 * 1.1) < 0.0001,
+        Math.abs(geometry.width / geometry.stage - 0.042 * 1.2 * 1.1 * 1.1) < 0.0001,
       );
       const center = { up: 44, down: 43, left: 37.5, right: 49 }[direction];
       assert.ok(
@@ -149,11 +149,15 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
     });
     assert.equal(trace.missing, 0);
     assert.ok(trace.points.length > 30);
+    // 지연된 타이머가 같은 DOM 좌표를 읽어도 마지막 실제 위치 변경 시각을 덮어쓰지 않습니다.
+    // 그렇지 않으면 긴 프레임 뒤 5ms 간격으로 실행된 관측값이 정상 이동을 점프로 오판합니다.
+    let lastPositionChange = trace.points[0];
     for (let i = 1; i < trace.points.length; i++) {
-      const a = trace.points[i - 1],
-        b = trace.points[i];
-      const d = Math.hypot((b.x - a.x) * 1705, (b.y - a.y) * 922);
-      assert.ok(d <= (270 * (b.time - a.time)) / 1000 + 10, `위치 점프 ${d}`);
+      const b = trace.points[i], a = lastPositionChange;
+      const d = Math.hypot((b.x-a.x)*1705,(b.y-a.y)*922);
+      if (d < 0.001) continue;
+      assert.ok(d <= 270*(b.time-a.time)/1000+10, `위치 점프 ${d}: ${JSON.stringify({a,b})}`);
+      lastPositionChange=b;
     }
     assert.deepEqual(errors, []);
   } finally {

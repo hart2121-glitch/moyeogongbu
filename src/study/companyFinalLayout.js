@@ -2,8 +2,8 @@
 export const companyFinalLayout = {
   image: { width: 1705, height: 922 },
   character: {
-    width: 0.042 * 1.2 * 1.1,
-    height: (0.042 * 1.2 * 1.1 * 1705 * 110) / (922 * 87),
+    width: 0.042 * 1.2 * 1.1 * 1.1,
+    height: (0.042 * 1.2 * 1.1 * 1.1 * 1705 * 110) / (922 * 87),
   },
   seatedMode: "sprite",
   seatMarkersBaked: true,
