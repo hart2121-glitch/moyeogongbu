@@ -10,9 +10,22 @@ const idle = Object.fromEntries(
 // 발끝 4개 행(알파 50% 이상)의 양발 중심 x. 캔버스 중앙과 다른 측면도 같은 발 좌표에 정렬합니다.
 export const spriteFootCenterX = { down: 43, up: 44, left: 37.5, right: 49 };
 export const spriteFootPadding = { down: 10, up: 6, left: 5, right: 6 };
+const walkDown = ["01", "02", "03", "04"].map(
+  (n) => `/assets/characters/walk-down-${n}.png.png`,
+);
+// 원본 PNG의 발끝 4행(알파 50% 이상)을 측정한 프레임별 기준점입니다.
+export const walkingFootAnchors = Object.fromEntries(
+  walkDown.map((path, index) => [
+    path,
+    {
+      centerX: [43.5, 48.5, 40.5, 40][index],
+      padding: [8, 6, 3, 6][index],
+    },
+  ]),
+);
 export const characterSprites = {
   idle,
-  walking: { down: [], up: [], left: [], right: [] },
+  walking: { down: walkDown, up: [], left: [], right: [] },
   seated: { down: idle.down },
   resting: { down: idle.down },
 };

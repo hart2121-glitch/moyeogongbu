@@ -33,13 +33,27 @@ test("4방향 idle 경로와 정면 착석 유지", () => {
       resolveSprite("idle", direction).frames[0],
       new RegExp(`idle-${direction}\\.png\\.png$`),
     );
-    assert.deepEqual(
-      resolveSprite("walking", direction).frames,
-      characterSprites.idle[direction],
-    );
+    if (direction !== "down")
+      assert.deepEqual(
+        resolveSprite("walking", direction).frames,
+        characterSprites.idle[direction],
+      );
     assert.deepEqual(
       resolveSprite("seated", direction).frames,
       characterSprites.idle.down,
     );
   }
+});
+
+test("정면 걷기는 업로드한 01~04 프레임을 순서대로 사용하고 대기는 기존 정면", () => {
+  assert.deepEqual(
+    resolveSprite("walking", "down").frames,
+    ["01", "02", "03", "04"].map(
+      (n) => `/assets/characters/walk-down-${n}.png.png`,
+    ),
+  );
+  assert.deepEqual(
+    resolveSprite("idle", "down").frames,
+    characterSprites.idle.down,
+  );
 });

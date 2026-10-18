@@ -1,0 +1,122 @@
+{
+  "anchors": {
+    "/assets/characters/walk-down-01.png.png": {
+      "x": 43.5,
+      "y": 102,
+      "width": 87,
+      "height": 110,
+      "transparent": 4118
+    },
+    "/assets/characters/walk-down-02.png.png": {
+      "x": 48.5,
+      "y": 104,
+      "width": 87,
+      "height": 110,
+      "transparent": 4202
+    },
+    "/assets/characters/walk-down-03.png.png": {
+      "x": 40.5,
+      "y": 107,
+      "width": 87,
+      "height": 110,
+      "transparent": 3977
+    },
+    "/assets/characters/walk-down-04.png.png": {
+      "x": 40,
+      "y": 104,
+      "width": 87,
+      "height": 110,
+      "transparent": 4172
+    }
+  },
+  "sequence": [
+    "/assets/characters/walk-down-01.png.png",
+    "/assets/characters/walk-down-02.png.png",
+    "/assets/characters/walk-down-03.png.png",
+    "/assets/characters/walk-down-04.png.png",
+    "/assets/characters/walk-down-01.png.png",
+    "/assets/characters/walk-down-02.png.png",
+    "/assets/characters/walk-down-03.png.png",
+    "/assets/characters/walk-down-04.png.png",
+    "/assets/characters/walk-down-01.png.png"
+  ],
+  "changes": [
+    {
+      "signature": "idle|up|/assets/characters/idle-up.png.png",
+      "time": 5781.89999999851,
+      "x": "0.3145817912657291",
+      "y": "0.4544443493883138"
+    },
+    {
+      "signature": "walking|up|/assets/characters/idle-up.png.png",
+      "time": 5815.599999997765,
+      "x": "0.3145817912657291",
+      "y": "0.4544443493883138"
+    },
+    {
+      "signature": "walking|down|/assets/characters/walk-down-01.png.png",
+      "time": 5831.199999999255,
+      "x": "0.3145817912657291",
+      "y": "0.4544443493883138"
+    },
+    {
+      "signature": "walking|down|/assets/characters/walk-down-02.png.png",
+      "time": 5964.699999999255,
+      "x": "0.3145817912657291",
+      "y": "0.4934801411453635"
+    },
+    {
+      "signature": "walking|down|/assets/characters/walk-down-03.png.png",
+      "time": 6114.39999999851,
+      "x": "0.3145817912657291",
+      "y": "0.5374063884338667"
+    },
+    {
+      "signature": "walking|down|/assets/characters/walk-down-04.png.png",
+      "time": 6248,
+      "x": "0.3145817912657291",
+      "y": "0.5764421801909168"
+    },
+    {
+      "signature": "walking|down|/assets/characters/walk-down-01.png.png",
+      "time": 6398.39999999851,
+      "x": "0.3145817912657291",
+      "y": "0.62036842747942"
+    },
+    {
+      "signature": "walking|down|/assets/characters/walk-down-02.png.png",
+      "time": 6531.199999999255,
+      "x": "0.3145817912657291",
+      "y": "0.65940421923647"
+    },
+    {
+      "signature": "walking|down|/assets/characters/walk-down-03.png.png",
+      "time": 6681.199999999255,
+      "x": "0.3145817912657291",
+      "y": "0.7033304665249732"
+    },
+    {
+      "signature": "walking|down|/assets/characters/walk-down-04.png.png",
+      "time": 6815.099999997765,
+      "x": "0.3145817912657291",
+      "y": "0.742395542446882"
+    },
+    {
+      "signature": "walking|down|/assets/characters/walk-down-01.png.png",
+      "time": 6964.699999999255,
+      "x": "0.3145817912657291",
+      "y": "0.7862925055705264"
+    },
+    {
+      "signature": "idle|down|/assets/characters/idle-down.png.png",
+      "time": 6982.599999997765,
+      "x": "0.3145817912657291",
+      "y": "0.7898023783043887"
+    }
+  ],
+  "samples": 69,
+  "maxFootDelta": 0.000028062140813744918,
+  "missing": 0,
+  "pixelated": true,
+  "result": "passed"
+}

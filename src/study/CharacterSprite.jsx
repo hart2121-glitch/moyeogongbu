@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   resolveSprite,
   spriteFootPadding,
+  walkingFootAnchors,
   spriteFootCenterX,
   approvedBackup,
   characterSprites,
@@ -23,16 +24,24 @@ export default function CharacterSprite({ character, nickname }) {
   const activity =
     character.activity === "exiting" ? "walking" : character.activity;
   const { frames, mirror } = resolveSprite(activity, character.direction);
+  const framesReady = frames.every((path) => status[path] === "ready");
   useEffect(() => {
     setFrame(0);
-    if (frames.length < 2) return;
-    const timer = setInterval(
+  }, [frames, framesReady]);
+  useEffect(() => {
+    if (frames.length < 2 || !framesReady) return;
+    // 다음 프레임은 현재 프레임이 커밋된 뒤 예약하여 지연 시 갱신이 뭉치지 않게 합니다.
+    const timer = setTimeout(
       () => setFrame((f) => (f + 1) % frames.length),
       140,
     );
-    return () => clearInterval(timer);
-  }, [frames]);
-  const desired = frames[frame % frames.length];
+    return () => clearTimeout(timer);
+  }, [frames, framesReady, frame]);
+  const desired =
+    frames.length > 1 && !framesReady
+      ? characterSprites.idle[character.direction]?.[0] ||
+        characterSprites.idle.down[0]
+      : frames[frame % frames.length];
   const requested = status[desired] === "error" ? approvedBackup : desired;
   // 새 방향을 읽는 동안 로드된 정면을 유지하여 빈 프레임을 만들지 않습니다.
   const source =
@@ -48,11 +57,16 @@ export default function CharacterSprite({ character, nickname }) {
     (["seated", "sitting", "resting"].includes(activity)
       ? "down"
       : character.direction);
-  const usesIdle = source.includes("/idle-");
-  const footPadding = usesIdle ? spriteFootPadding[facing] || 0 : 0;
-  const footOffsetX = usesIdle
-    ? ((43.5 - spriteFootCenterX[facing]) / 87) * 100
-    : 0;
+  const anchor =
+    walkingFootAnchors[source] ||
+    (source.includes("/idle-")
+      ? {
+          centerX: spriteFootCenterX[facing],
+          padding: spriteFootPadding[facing],
+        }
+      : null);
+  const footPadding = anchor?.padding || 0;
+  const footOffsetX = anchor ? ((43.5 - anchor.centerX) / 87) * 100 : 0;
   const failed =
     status[desired] === "error" && status[approvedBackup] === "error";
   return (
