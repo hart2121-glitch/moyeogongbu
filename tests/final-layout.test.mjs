@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { companyFinalLayout as layout } from "../src/study/companyFinalLayout.js";
-import { findPath, distance } from "../src/study/pathfinding.js";
-import { getCharacterOcclusion } from "../src/study/characterVisibility.js";
+import { distance } from "../src/study/pathfinding.js";
+import { navigateFloor, segmentWalkable } from "../src/study/navigation.js";
 
 test("최종 원본 비율·6석 방향별 배열·공간 경로와 주요 가구 회피", () => {
   assert.deepEqual(layout.image, { width: 1705, height: 922 });
@@ -20,34 +20,23 @@ test("최종 원본 비율·6석 방향별 배열·공간 경로와 주요 가�
     "sofa",
     "loungeFloor",
     "restroom",
-    ...layout.seats.map((s) => s.node),
+    ...layout.seats.map((s) => s.approach),
   ];
   for (const from of destinations)
     for (const to of destinations) {
-      const route = findPath(layout, from, to);
-      for (let i = 1; i < route.length; i++) {
-        const a = layout.nodes[route[i - 1]],
-          b = layout.nodes[route[i]];
-        for (let step = 0; step <= 100; step++) {
-          const x = a.x + ((b.x - a.x) * step) / 100,
-            y = a.y + ((b.y - a.y) * step) / 100;
-          assert.ok(
-            !layout.obstacles.some(
-              (r) => x > r.left && x < r.right && y > r.top && y < r.bottom,
-            ),
-            `${from} → ${to}: ${x},${y}`,
-          );
-        }
-      }
+      const route = navigateFloor(layout, layout.nodes[from], layout.nodes[to]);
+      for (let i = 1; i < route.length; i++)
+        assert.ok(segmentWalkable(layout, route[i - 1], route[i]));
     }
-  for (const seat of layout.seats)
-    assert.equal(
-      getCharacterOcclusion(
-        { activity: "seated", position: layout.nodes[seat.node], edge: null },
-        layout,
-      ),
-      null,
+  for (const seat of layout.seats) {
+    const anchor = layout.nodes[seat.node],
+      r = seat.foreground;
+    assert.ok(anchor.x > r.left && anchor.x < r.right);
+    assert.ok(
+      anchor.y > r.top && anchor.y < r.bottom,
+      "다리 가림 영역 안의 착석 앵커",
     );
+  }
   assert.equal(distance({ x: 0, y: 0 }, { x: 1, y: 0 }, layout.image), 1705);
   assert.equal(distance({ x: 0, y: 0 }, { x: 0, y: 1 }, layout.image), 922);
 });

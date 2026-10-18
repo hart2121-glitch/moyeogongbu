@@ -5,12 +5,12 @@ import {
   resolveSprite,
 } from "../src/study/characterSprites.js";
 
-test("걷기 이미지 미등록 상태는 정면 임시 이미지로 대체", () => {
+test("걷기 이미지 미등록 상태는 확정 정면 이미지로 유지", () => {
   assert.deepEqual(
     resolveSprite("walking", "up").frames,
     characterSprites.idle.down,
   );
-  assert.equal(resolveSprite("walking", "left").mirror, true);
+  assert.equal(resolveSprite("walking", "left").mirror, false);
 });
 test("방향별 걷기 프레임 등록 시 순서를 유지하고 왼쪽 프레임을 재반전하지 않음", () => {
   const sprites = {

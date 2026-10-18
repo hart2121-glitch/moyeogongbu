@@ -2,8 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
 import { companyLayout } from "../src/study/companyLayout.js";
-import { findPath } from "../src/study/pathfinding.js";
-import { characterBounds, overlaps } from "../src/study/characterVisibility.js";
+import {
+  navigateFloor,
+  isWalkable,
+  segmentWalkable,
+} from "../src/study/navigation.js";
 
 const launch = () =>
   chromium.launch({
@@ -67,6 +70,7 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
           window.movementTrace.push({
             x: Number(sprite.dataset.x),
             y: Number(sprite.dataset.y),
+            activity: sprite.dataset.activity,
           });
       }, 32);
     });
@@ -114,11 +118,11 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
         seatedPosition,
         companyLayout.nodes[companyLayout.seats[id - 1].node],
       );
-      assert.equal(
-        await page
-          .getByRole("button", { name: `${id}번 좌석`, exact: true })
-          .getAttribute("data-occupied"),
-        "true",
+      await page.waitForFunction(
+        (id) =>
+          document.querySelector(`.seat-marker[aria-label="${id}번 좌석"]`)
+            ?.dataset.occupied === "true",
+        id,
       );
       assert.equal(
         await page.locator('.seat-marker[data-occupied="true"]').count(),
@@ -133,7 +137,7 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
     await waitStatus(page, "소파에서 휴식 중");
     assert.match(
       await page.locator(".study-character img").getAttribute("src"),
-      /temporary-sitting/,
+      /approved-front/,
     );
     const resting = await page
       .getByTestId("study-character")
@@ -218,29 +222,20 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
     });
     assert.ok(trace.length > 50);
     for (const point of trace) {
-      const bounds = characterBounds({ position: point }, companyLayout);
-      assert.ok(
-        !companyLayout.backgroundPeople.some((person) =>
-          overlaps(bounds, person),
-        ),
-        "표시 중인 캐릭터와 배경 인물의 겹침",
-      );
-      const onEdge = companyLayout.edges.some(([a, b]) => {
-        const start = companyLayout.nodes[a],
-          end = companyLayout.nodes[b];
-        const cross = Math.abs(
-          (point.x - start.x) * (end.y - start.y) -
-            (point.y - start.y) * (end.x - start.x),
+      if (
+        [
+          "walking",
+          "exiting",
+          "idle",
+          "resting",
+          "lounge",
+          "restroom",
+        ].includes(point.activity)
+      )
+        assert.ok(
+          isWalkable(companyLayout, point),
+          `가구 위 이동 ${JSON.stringify(point)}`,
         );
-        return (
-          cross < 0.000001 &&
-          point.x >= Math.min(start.x, end.x) - 0.000001 &&
-          point.x <= Math.max(start.x, end.x) + 0.000001 &&
-          point.y >= Math.min(start.y, end.y) - 0.000001 &&
-          point.y <= Math.max(start.y, end.y) + 0.000001
-        );
-      });
-      assert.ok(onEdge, `통로 밖 위치 ${JSON.stringify(point)}`);
     }
     assert.deepEqual(errors, []);
   } finally {
@@ -248,31 +243,25 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
   }
 });
 
-test("좌석·휴게실·소파·화장실·출입구 경로 연결 및 주요 가구 통과 방지", () => {
-  const destinations = [
+test("6개 좌석 접근점과 휴게실·화장실·출입구 바닥 경로의 충돌 검사", () => {
+  const names = [
     "entrance",
     "sofa",
     "restroom",
     "loungeFloor",
-    ...companyLayout.seats.map((s) => s.node),
+    ...companyLayout.seats.map((s) => s.approach),
   ];
-  // 새 원본의 주요 가구 영역. 장식 화분까지 포함한 픽셀 충돌 마스크는 아닙니다.
-  const desks = companyLayout.obstacles;
-  for (const from of destinations)
-    for (const to of destinations) {
-      const route = findPath(companyLayout, from, to);
-      for (let i = 1; i < route.length; i++) {
-        const a = companyLayout.nodes[route[i - 1]],
-          b = companyLayout.nodes[route[i]];
-        for (let step = 0; step <= 100; step++) {
-          const x = a.x + ((b.x - a.x) * step) / 100,
-            y = a.y + ((b.y - a.y) * step) / 100;
-          assert.ok(
-            !desks.some(
-              (r) => x > r.left && x < r.right && y > r.top && y < r.bottom,
-            ),
-          );
-        }
-      }
+  for (const from of names)
+    for (const to of names) {
+      const path = navigateFloor(
+        companyLayout,
+        companyLayout.nodes[from],
+        companyLayout.nodes[to],
+      );
+      for (let i = 1; i < path.length; i++)
+        assert.ok(
+          segmentWalkable(companyLayout, path[i - 1], path[i]),
+          `${from} → ${to}`,
+        );
     }
 });

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { resolveSprite } from "./characterSprites";
 import { companyLayout } from "./companyLayout";
-import { getCharacterOcclusion } from "./characterVisibility";
 
 export default function CharacterSprite({ character, nickname }) {
   const [frame, setFrame] = useState(0);
@@ -19,8 +18,7 @@ export default function CharacterSprite({ character, nickname }) {
     );
     return () => clearInterval(timer);
   }, [frames]);
-  // 착석은 배경 인물을 임시로 사용하며, 출입·인물·가구 가림 구간은 중복 렌더링하지 않습니다.
-  if (getCharacterOcclusion(character, companyLayout)) return null;
+  // DOM/이미지를 제거하지 않습니다. 실제 가림은 원본 전경 레이어로 처리합니다.
   return (
     <div
       className={`study-character activity-${activity} facing-${character.direction} ${mirror ? "mirror-fallback" : ""}`}
@@ -33,14 +31,19 @@ export default function CharacterSprite({ character, nickname }) {
       data-activity={character.activity}
       data-x={character.position.x}
       data-y={character.position.y}
+      data-direction={character.direction}
     >
-      <span className="character-name">{nickname} · 임시</span>
+      <span className="character-name">
+        {nickname} ·{" "}
+        {{ up: "↑", down: "↓", left: "←", right: "→" }[character.direction]}
+      </span>
       {failed ? (
         <span className="sprite-fallback">내 캐릭터</span>
       ) : (
         <img
           src={frames[frame % frames.length]}
-          alt={`${nickname} 임시 캐릭터`}
+          style={{ aspectRatio: "87 / 110" }}
+          alt={`${nickname} 확정 정면 캐릭터`}
           onError={() => setFailed(true)}
         />
       )}

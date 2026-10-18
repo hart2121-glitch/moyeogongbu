@@ -316,3 +316,33 @@
   background: #c9dfa833;
   border-color: #647c45;
 }
+.company-stage {
+  cursor: crosshair;
+}
+.seat-foreground {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+  image-rendering: pixelated;
+}
+.seat-overlay,
+.area-overlay {
+  z-index: 4;
+}
+.floor-target {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #e7cda4;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1;
+}
+.study-character.activity-seated .character-name,
+.study-character.activity-sitting .character-name {
+  font-size: 9px;
+}
