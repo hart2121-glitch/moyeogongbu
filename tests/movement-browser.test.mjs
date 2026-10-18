@@ -97,10 +97,19 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
           ratio: r.width / r.height,
           width: r.width,
           wrapper: wrapper.width,
+          stage: img.closest(".company-stage").getBoundingClientRect().width,
+          footBottom: r.bottom - wrapper.bottom,
         };
       });
       assert.ok(Math.abs(geometry.ratio - 87 / 110) < 0.001);
       assert.ok(Math.abs(geometry.width - geometry.wrapper) < 0.1);
+      assert.ok(
+        Math.abs(geometry.width / geometry.stage - 0.042 * 1.2) < 0.0001,
+      );
+      const padding = { up: 6, down: 10, left: 5, right: 6 }[direction];
+      assert.ok(
+        Math.abs(geometry.footBottom - (padding / 87) * geometry.width) < 0.1,
+      );
     }
     await floor(p, { x: 0.74, y: 0.8 });
     await p.waitForFunction(

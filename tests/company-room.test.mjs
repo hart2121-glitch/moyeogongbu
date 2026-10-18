@@ -237,6 +237,18 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
           `가구 위 이동 ${JSON.stringify(point)}`,
         );
     }
+    for (const point of trace) {
+      for (const r of companyLayout.partitions)
+        assert.ok(
+          !(
+            point.x >= r.left &&
+            point.x <= r.right &&
+            point.y >= r.top &&
+            point.y <= r.bottom
+          ),
+          `파티션 발 충돌: ${JSON.stringify(point)}`,
+        );
+    }
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();

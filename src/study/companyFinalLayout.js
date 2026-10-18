@@ -1,7 +1,10 @@
 // 최종 1705×922 원본용 상대 좌표(발 기준). 고정 인물을 제거한 화면용 사본과 함께 사용합니다.
 export const companyFinalLayout = {
   image: { width: 1705, height: 922 },
-  character: { width: 0.042, height: (0.042 * 1705 * 110) / (922 * 87) },
+  character: {
+    width: 0.042 * 1.2,
+    height: (0.042 * 1.2 * 1705 * 110) / (922 * 87),
+  },
   seatedMode: "sprite",
   seatMarkersBaked: true,
   nodes: {
@@ -133,10 +136,32 @@ export const companyFinalLayout = {
   ],
 };
 
+// 원본 픽셀 좌표를 상대 좌표로 변환한 파티션 발 충돌 영역입니다.
+// 책상 표면뿐 아니라 위로 돌출된 파티션도 차단하여 위를 밟는 경로를 방지합니다.
+const partitionColumns = [
+  [575, 599],
+  [785, 809],
+  [1009, 1033],
+  [1231, 1251],
+];
+companyFinalLayout.partitions = [
+  [405, 558],
+  [563, 724],
+].flatMap(([top, bottom], row) =>
+  partitionColumns.map(([left, right], column) => ({
+    name: `${row + 1}행 ${column + 1}번 파티션`,
+    left: left / 1705,
+    right: right / 1705,
+    top: top / 922,
+    bottom: bottom / 922,
+  })),
+);
 // 실제 바닥 범위와 벽·가구의 발 충돌 영역. 배경을 수정하지 않습니다.
 companyFinalLayout.navigation = {
-  step: 4,
-  radius: 2,
+  step: 2,
+  // 중앙 통로는 원본상 y=558~563px의 좁은 틈입니다.
+  // 발 중심 주위 1.5px를 검사하고 2px 격자로 그 사이 바닥을 탐색합니다.
+  radius: 1.5,
   areas: [
     { left: 0.293, right: 0.783, top: 0.423, bottom: 0.978 }, // 업무실
     { left: 0.015, right: 0.26, top: 0.38, bottom: 0.518 }, // 휴게실 바닥
@@ -146,6 +171,7 @@ companyFinalLayout.navigation = {
   ],
   blockers: [
     ...companyFinalLayout.obstacles,
+    ...companyFinalLayout.partitions,
     {
       name: "왼쪽 하단 수납장",
       left: 0.307,
@@ -169,6 +195,12 @@ companyFinalLayout.navigation = {
     },
   ],
 };
+// 위쪽 책상 앞과 아래쪽 파티션 뒤의 실제 바닥 틈으로 접근합니다.
+for (const key of ["middleLeft", "middle1", "middle2", "middle3"])
+  companyFinalLayout.nodes[key] = {
+    ...companyFinalLayout.nodes[key],
+    y: 560 / 922,
+  };
 companyFinalLayout.nodes.toiletOuter = { x: 0.297, y: 0.824 };
 // 걷기는 의자 뒤 접근점까지, 착석은 전용 앵커로 전환합니다.
 for (const seat of companyFinalLayout.seats) {

@@ -16,26 +16,65 @@ export function isWalkable(layout, p) {
       p.y < r.bottom + ry,
   );
 }
-export function segmentWalkable(layout, a, b) {
-  const steps = Math.max(
-    1,
-    Math.ceil(
-      Math.hypot(
-        (b.x - a.x) * layout.image.width,
-        (b.y - a.y) * layout.image.height,
-      ) / 2,
-    ),
-  );
-  for (let i = 0; i <= steps; i++)
-    if (
-      !isWalkable(layout, {
-        x: a.x + ((b.x - a.x) * i) / steps,
-        y: a.y + ((b.y - a.y) * i) / steps,
-      })
-    )
-      return false;
-  return true;
+// 선분과 사각형의 교차 구간. 얇은 장애물도 표본 간격에 의존하지 않고 검사합니다.
+function rectInterval(a, b, r) {
+  let enter = 0,
+    exit = 1;
+  for (const [axis, low, high] of [
+    ["x", r.left, r.right],
+    ["y", r.top, r.bottom],
+  ]) {
+    const delta = b[axis] - a[axis];
+    if (Math.abs(delta) < 1e-12) {
+      if (a[axis] < low || a[axis] > high) return null;
+    } else {
+      const t1 = (low - a[axis]) / delta,
+        t2 = (high - a[axis]) / delta;
+      enter = Math.max(enter, Math.min(t1, t2));
+      exit = Math.min(exit, Math.max(t1, t2));
+      if (enter > exit) return null;
+    }
+  }
+  return [enter, exit];
 }
+export function segmentWalkable(layout, a, b) {
+  if (!isWalkable(layout, a) || !isWalkable(layout, b)) return false;
+  const nav = layout.navigation,
+    rx = nav.radius / layout.image.width,
+    ry = nav.radius / layout.image.height;
+  for (const r of nav.blockers) {
+    const expanded = {
+      left: r.left - rx,
+      right: r.right + rx,
+      top: r.top - ry,
+      bottom: r.bottom + ry,
+    };
+    const interval = rectInterval(a, b, expanded);
+    if (interval) {
+      const t = (interval[0] + interval[1]) / 2;
+      const p = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+      if (
+        p.x > expanded.left &&
+        p.x < expanded.right &&
+        p.y > expanded.top &&
+        p.y < expanded.bottom
+      )
+        return false;
+    }
+  }
+  // 시작점과 끝점이 바닥이어도 중간에 벽/허용 영역 밖을 가로지르면 차단합니다.
+  const intervals = nav.areas
+    .map((r) => rectInterval(a, b, r))
+    .filter(Boolean)
+    .sort((x, y) => x[0] - y[0]);
+  let covered = 0;
+  for (const [start, end] of intervals) {
+    if (start > covered + 1e-10) return false;
+    covered = Math.max(covered, end);
+  }
+  return covered >= 1 - 1e-10;
+}
+
 class Heap {
   items = [];
   push(v) {
