@@ -1,15 +1,25 @@
 // 로컬 데모의 동일 출처 탭 간 좌석 저장소. 서버 도입 시 이 인터페이스를 교체합니다.
 export const LEASE_MS = 45000;
+let database;
+const openDatabase = () =>
+  (database ||= new Promise((resolve, reject) => {
+    const request = indexedDB.open("moyeogongbu-seat-locks", 1);
+    request.onupgradeneeded = () => request.result.createObjectStore("rooms");
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => {
+      database = null;
+      reject(new Error("좌석 저장소를 열 수 없어요."));
+    };
+  }));
 export function createSeatService(roomId, ownerId, nickname) {
-  const key = `moyeogongbu.seats.v1.${roomId}`,
-    lock = `${key}.lock`;
+  const key = `moyeogongbu.seats.v1.${roomId}`;
   const channel =
     typeof BroadcastChannel === "function" ? new BroadcastChannel(key) : null;
   const listeners = new Set();
   let closed = false;
-  const read = () => {
+  const read = (stored) => {
     try {
-      const data = JSON.parse(localStorage.getItem(key) || "{}");
+      const data = stored ?? JSON.parse(localStorage.getItem(key) || "{}");
       const now = Date.now();
       return Object.fromEntries(
         Object.entries(data).filter(
@@ -29,28 +39,54 @@ export function createSeatService(roomId, ownerId, nickname) {
       );
     }
   };
-  const notify = () => {
-    if (closed) return;
+  // IndexedDB readwrite 트랜잭션은 탭 사이에서도 읽기→검사→쓰기를 원자적으로 처리합니다.
+  // localStorage는 기존 데이터 이관과 알림용 사본일 뿐 예약의 승인 근거로 쓰지 않습니다.
+  const record = async (mode, update) => {
+    const db = await openDatabase();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction("rooms", mode),
+        store = tx.objectStore("rooms"),
+        request = store.get(key);
+      let data, result, problem;
+      request.onsuccess = () => {
+        try {
+          data = read(request.result);
+          if (update) {
+            result = update(data);
+            store.put(data, key);
+          }
+        } catch (e) {
+          problem = e;
+          tx.abort();
+        }
+      };
+      tx.oncomplete = () => resolve({ data, result });
+      tx.onabort = tx.onerror = () =>
+        reject(problem || new Error("좌석 저장소 처리에 실패했어요."));
+    });
+  };
+  let notification = 0;
+  const notify = async () => {
+    const id = ++notification;
     try {
-      const value = read();
-      listeners.forEach((fn) => fn(value));
+      const { data } = await record("readonly");
+      if (!closed && id === notification) listeners.forEach((fn) => fn(data));
     } catch {
-      listeners.forEach((fn) => fn(null));
+      if (!closed && id === notification) listeners.forEach((fn) => fn(null));
     }
   };
   const transaction = async (update) => {
-    if (!navigator.locks?.request)
-      throw new Error(
-        "이 브라우저는 탭 간 좌석 잠금을 지원하지 않아요. 최신 Chrome 또는 Edge로 열어 주세요.",
-      );
-    return navigator.locks.request(lock, () => {
-      const data = read(),
-        result = update(data);
+    const { data, result } = await record("readwrite", update);
+    try {
       localStorage.setItem(key, JSON.stringify(data));
+    } catch {
+      /* 승인된 원자적 저장은 유지합니다. */
+    }
+    if (!closed) {
       channel?.postMessage("changed");
       notify();
-      return result;
-    });
+    }
+    return result;
   };
   const storage = (e) => {
     if (e.key === key) notify();

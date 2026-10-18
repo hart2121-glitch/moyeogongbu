@@ -67,9 +67,13 @@ try {
   results.checks.push("업무 공간에서 휴게실 경계 통과·내부 도착");
   await page.getByRole("button", { name: "휴식하기", exact: true }).click();
   await status("소파에서 휴식 중");
-  await page.locator(".study-character img").evaluate((img) => img.decode());
+  await page
+    .locator(".study-character img[data-active=true]")
+    .evaluate((img) => img.decode());
   assert.match(
-    await page.locator(".study-character img").getAttribute("src"),
+    await page
+      .locator(".study-character img[data-active=true]")
+      .getAttribute("src"),
     /idle-down/,
   );
   await capture("04-sofa-rest");

@@ -2,8 +2,8 @@
 export const companyFinalLayout = {
   image: { width: 1705, height: 922 },
   character: {
-    width: 0.042 * 1.2,
-    height: (0.042 * 1.2 * 1705 * 110) / (922 * 87),
+    width: 0.042 * 1.2 * 1.1,
+    height: (0.042 * 1.2 * 1.1 * 1705 * 110) / (922 * 87),
   },
   seatedMode: "sprite",
   seatMarkersBaked: true,
@@ -139,10 +139,10 @@ export const companyFinalLayout = {
 // 원본 픽셀 좌표를 상대 좌표로 변환한 파티션 발 충돌 영역입니다.
 // 책상 표면뿐 아니라 위로 돌출된 파티션도 차단하여 위를 밟는 경로를 방지합니다.
 const partitionColumns = [
-  [575, 599],
-  [785, 809],
-  [1009, 1033],
-  [1231, 1251],
+  [571, 603],
+  [781, 813],
+  [1005, 1037],
+  [1227, 1255],
 ];
 companyFinalLayout.partitions = [
   [405, 558],
@@ -160,14 +160,16 @@ companyFinalLayout.partitions = [
 companyFinalLayout.navigation = {
   step: 2,
   // 중앙 통로는 원본상 y=558~563px의 좁은 틈입니다.
-  // 발 중심 주위 1.5px를 검사하고 2px 격자로 그 사이 바닥을 탐색합니다.
+  // 좁은 중앙 틈의 세로 여유는 유지하고, 확대된 양발 폭은 가로 14px로 검사합니다.
   radius: 1.5,
+  footHalfWidth: 14,
   areas: [
     { left: 0.293, right: 0.783, top: 0.423, bottom: 0.978 }, // 업무실
     { left: 0.015, right: 0.26, top: 0.38, bottom: 0.518 }, // 휴게실 바닥
     { left: 0.225, right: 0.322, top: 0.485, bottom: 0.518 }, // 기존 휴게실 문 경계
     { left: 0.016, right: 0.259, top: 0.818, bottom: 0.928 }, // 화장실 공용 바닥
     { left: 0.24, right: 0.321, top: 0.817, bottom: 0.852 }, // 열린 화장실 문
+    { left: 0.285, right: 0.322, top: 0.79, bottom: 0.948 }, // 문 밖 벽과 하단 수납장 사이 바닥
   ],
   blockers: [
     ...companyFinalLayout.obstacles,
@@ -195,6 +197,12 @@ companyFinalLayout.navigation = {
     },
   ],
 };
+// 위쪽 바닥 경계에서도 발 여유가 확보되도록 의자 뒤 진입선을 맞춥니다.
+for (const key of ["upper1", "upper2", "upper3"])
+  companyFinalLayout.nodes[key] = {
+    ...companyFinalLayout.nodes[key],
+    y: 394 / 922,
+  };
 // 위쪽 책상 앞과 아래쪽 파티션 뒤의 실제 바닥 틈으로 접근합니다.
 for (const key of ["middleLeft", "middle1", "middle2", "middle3"])
   companyFinalLayout.nodes[key] = {
@@ -204,6 +212,7 @@ for (const key of ["middleLeft", "middle1", "middle2", "middle3"])
 companyFinalLayout.nodes.toiletOuter = { x: 0.297, y: 0.824 };
 // 걷기는 의자 뒤 접근점까지, 착석은 전용 앵커로 전환합니다.
 for (const seat of companyFinalLayout.seats) {
+  seat.entryBlocker = seat.id <= 3 ? "위쪽 책상" : "아래쪽 책상";
   seat.approach = seat.id <= 3 ? `upper${seat.id}` : `middle${seat.id - 3}`;
   companyFinalLayout.nodes[seat.node] = {
     x: companyFinalLayout.nodes[seat.node].x,

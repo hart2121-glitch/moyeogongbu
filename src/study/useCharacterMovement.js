@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { distance } from "./pathfinding";
-import { navigateFloor } from "./navigation";
+import { planMovement, movementSegmentSafe } from "./movementPlan";
 export function useCharacterMovement(graph, initialNode, onExit) {
   const initial = {
     node: initialNode,
@@ -11,6 +11,7 @@ export function useCharacterMovement(graph, initialNode, onExit) {
     edge: null,
   };
   const [character, setCharacter] = useState(initial);
+  const [movementError, setMovementError] = useState("");
   const current = useRef(initial),
     frame = useRef(null),
     busy = useRef(false),
@@ -26,27 +27,8 @@ export function useCharacterMovement(graph, initialNode, onExit) {
       cancelAnimationFrame(frame.current);
     };
   }, []);
-  const validateMove = (
-    destination,
-    { activity = "seated", seatId = null } = {},
-  ) => {
-    const start = current.current;
-    const oldSeat =
-      start.activity === "seated"
-        ? graph.seats.find((s) => s.id === start.seatId)
-        : null;
-    const newSeat =
-      activity === "seated" ? graph.seats.find((s) => s.id === seatId) : null;
-    const from = oldSeat ? graph.nodes[oldSeat.approach] : start.position;
-    const target =
-      typeof destination === "string" ? graph.nodes[destination] : destination;
-    if (!target) throw new Error("이동 목적지를 찾을 수 없어요.");
-    return navigateFloor(
-      graph,
-      from,
-      newSeat ? graph.nodes[newSeat.approach] : target,
-    );
-  };
+  const validateMove = (destination, options = {}) =>
+    planMovement(graph, current.current, destination, options);
   const moveTo = (
     destination,
     { activity = "seated", seatId = null, allowInterrupt = false } = {},
@@ -58,25 +40,11 @@ export function useCharacterMovement(graph, initialNode, onExit) {
     )
       return false;
     const start = current.current;
-    const oldSeat =
-      start.activity === "seated"
-        ? graph.seats.find((s) => s.id === start.seatId)
-        : null;
-    const newSeat =
-      activity === "seated" ? graph.seats.find((s) => s.id === seatId) : null;
-    const from = oldSeat ? graph.nodes[oldSeat.approach] : start.position;
-    const target =
-      typeof destination === "string" ? graph.nodes[destination] : destination;
-    if (!target) throw new Error("이동 목적지를 찾지 못했어요.");
-    const walkEnd = newSeat ? graph.nodes[newSeat.approach] : target;
-    const path = navigateFloor(graph, from, walkEnd);
-    if (oldSeat) path.unshift(start.position);
-    if (newSeat) path.push(target);
-    const route = path.filter(
-      (p, i) => !i || distance(path[i - 1], p, graph.image) > 0.01,
-    );
-    // 중복 끝점 제거 후 실제 마지막 구간이 착석 전환입니다.
-    const lastSitting = newSeat ? route.length - 2 : -1;
+    const { segments, target } = planMovement(graph, start, destination, {
+      activity,
+      seatId,
+    });
+    setMovementError("");
     cancelAnimationFrame(frame.current);
     busy.current = true;
     let segment = 0,
@@ -98,34 +66,37 @@ export function useCharacterMovement(graph, initialNode, onExit) {
       });
       if (activity === "exit") onExit();
     };
-    if (route.length < 2) {
+    if (!segments.length) {
       finish();
       return true;
     }
-    const phase = () =>
-      oldSeat && segment === 0
-        ? "standing"
-        : segment === lastSitting
-          ? "sitting"
-          : activity === "exit"
-            ? "exiting"
-            : "walking";
+    const phase = () => segments[segment].activity;
+    const stopAtCollision = () => {
+      busy.current = false;
+      setMovementError("이동 구간이 가구와 겹쳐 안전한 위치에서 멈췄어요.");
+      publish({ ...current.current, activity: "idle", seatId: null });
+    };
     publish({
       ...start,
       activity: phase(),
       seatId,
       edge: null,
-      occlusionSeatId: oldSeat?.id || null,
+      occlusionSeatId: segments[0].seatId,
     });
     const tick = (now) => {
       if (!mounted.current) return;
       const delta = last === null ? 0 : Math.max(0, now - last);
       last = now;
       let remaining = (delta / 1000) * 270;
-      while (segment < route.length - 1) {
+      while (segment < segments.length) {
+        // 매 프레임 소비하는 각 구간을 다시 검사합니다. 착석/일어서기도 예외가 아닙니다.
+        if (!movementSegmentSafe(graph, segments[segment])) {
+          stopAtCollision();
+          return;
+        }
         const length = distance(
-          route[segment],
-          route[segment + 1],
+          segments[segment].from,
+          segments[segment].to,
           graph.image,
         );
         if (remaining >= length - progress) {
@@ -137,17 +108,17 @@ export function useCharacterMovement(graph, initialNode, onExit) {
           break;
         }
       }
-      if (segment >= route.length - 1) {
+      if (segment >= segments.length) {
         finish();
         return;
       }
-      const a = route[segment],
-        b = route[segment + 1],
+      const a = segments[segment].from,
+        b = segments[segment].to,
         ratio = progress / distance(a, b, graph.image),
         dx = (b.x - a.x) * graph.image.width,
         dy = (b.y - a.y) * graph.image.height;
       const direction =
-        segment === lastSitting
+        phase() === "sitting"
           ? "down"
           : Math.abs(dx) > Math.abs(dy)
             ? dx < 0
@@ -164,17 +135,12 @@ export function useCharacterMovement(graph, initialNode, onExit) {
         },
         direction,
         activity: phase(),
-        occlusionSeatId:
-          phase() === "standing"
-            ? oldSeat?.id
-            : phase() === "sitting"
-              ? newSeat?.id
-              : null,
+        occlusionSeatId: segments[segment].seatId,
       });
       frame.current = requestAnimationFrame(tick);
     };
     frame.current = requestAnimationFrame(tick);
     return true;
   };
-  return { character, moveTo, validateMove };
+  return { character, moveTo, validateMove, movementError };
 }

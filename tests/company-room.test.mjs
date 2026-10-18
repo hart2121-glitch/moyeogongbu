@@ -136,7 +136,9 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
     await page.getByRole("button", { name: "휴식하기", exact: true }).click();
     await waitStatus(page, "소파에서 휴식 중");
     assert.match(
-      await page.locator(".study-character img").getAttribute("src"),
+      await page
+        .locator(".study-character img[data-active=true]")
+        .getAttribute("src"),
       /idle-down/,
     );
     const resting = await page

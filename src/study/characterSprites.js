@@ -7,6 +7,8 @@ const idle = Object.fromEntries(
   ]),
 );
 // 알파 50% 이상인 그림의 발끝 아래 여백(px). 원본을 편집하지 않고 발 기준점만 맞춥니다.
+// 발끝 4개 행(알파 50% 이상)의 양발 중심 x. 캔버스 중앙과 다른 측면도 같은 발 좌표에 정렬합니다.
+export const spriteFootCenterX = { down: 43, up: 44, left: 37.5, right: 49 };
 export const spriteFootPadding = { down: 10, up: 6, left: 5, right: 6 };
 export const characterSprites = {
   idle,

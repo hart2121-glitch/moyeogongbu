@@ -14,7 +14,9 @@ async function enter(page) {
     .getByRole("button", { name: "회사 테마로 가기", exact: true })
     .click();
   await page.getByTestId("study-character").waitFor();
-  await page.locator(".study-character img").evaluate((img) => img.decode());
+  await page
+    .locator(".study-character img[data-active=true]")
+    .evaluate((img) => img.decode());
 }
 async function floor(page, p) {
   const r = await page.getByTestId("company-stage").boundingBox();
@@ -49,7 +51,7 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
           window.missing++;
           return;
         }
-        const img = s.querySelector("img"),
+        const img = s.querySelector("img[data-active=true]"),
           css = getComputedStyle(s);
         if (
           !img?.complete ||
@@ -84,7 +86,7 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
         await p.getByTestId("study-character").getAttribute("data-direction"),
         direction,
       );
-      const sprite = p.locator(".study-character img");
+      const sprite = p.locator(".study-character img[data-active=true]");
       await sprite.evaluate((img) => img.decode());
       assert.match(
         await sprite.getAttribute("src"),
@@ -99,12 +101,19 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
           wrapper: wrapper.width,
           stage: img.closest(".company-stage").getBoundingClientRect().width,
           footBottom: r.bottom - wrapper.bottom,
+          horizontalOffset: r.left - wrapper.left,
         };
       });
       assert.ok(Math.abs(geometry.ratio - 87 / 110) < 0.001);
       assert.ok(Math.abs(geometry.width - geometry.wrapper) < 0.1);
       assert.ok(
-        Math.abs(geometry.width / geometry.stage - 0.042 * 1.2) < 0.0001,
+        Math.abs(geometry.width / geometry.stage - 0.042 * 1.2 * 1.1) < 0.0001,
+      );
+      const center = { up: 44, down: 43, left: 37.5, right: 49 }[direction];
+      assert.ok(
+        Math.abs(
+          geometry.horizontalOffset - ((43.5 - center) / 87) * geometry.width,
+        ) < 0.1,
       );
       const padding = { up: 6, down: 10, left: 5, right: 6 }[direction];
       assert.ok(
@@ -169,17 +178,24 @@ test("탭 간 원자적 예약·사용중 좌석 차단·퇴장 해제·만료 �
         const { createSeatService } = await import("/src/study/seatService.js");
         window.racer = createSeatService("invited-demo", owner, owner);
       }, owner);
-    const race = await Promise.all([
-      a.evaluate(() => window.racer.reserve(1)),
-      b.evaluate(() => window.racer.reserve(1)),
-    ]);
-    assert.equal(race.filter(Boolean).length, 1);
-    await a.getByRole("button", { name: "1번 좌석", exact: true }).waitFor();
-    assert.equal(
-      await a
-        .getByRole("button", { name: "1번 좌석", exact: true })
-        .isDisabled(),
-      true,
+    for (let round = 0; round < 10; round++) {
+      await Promise.all([
+        a.evaluate(() => window.racer.release()),
+        b.evaluate(() => window.racer.release()),
+      ]);
+      const race = await Promise.all([
+        a.evaluate(() => window.racer.reserve(1)),
+        b.evaluate(() => window.racer.reserve(1)),
+      ]);
+      assert.equal(
+        race.filter(Boolean).length,
+        1,
+        `동시 예약 ${round + 1}회차`,
+      );
+    }
+    await a.waitForFunction(
+      () =>
+        document.querySelector('.seat-marker[aria-label="1번 좌석"]')?.disabled,
     );
     await Promise.all([
       a.evaluate(() => window.racer.release()),

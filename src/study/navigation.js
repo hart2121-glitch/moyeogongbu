@@ -5,9 +5,13 @@ const pointInRect = (p, r) =>
 export function isWalkable(layout, p) {
   if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) return false;
   const nav = layout.navigation;
-  if (!nav.areas.some((r) => pointInRect(p, r))) return false;
-  const rx = nav.radius / layout.image.width,
+  const rx = (nav.footHalfWidth ?? nav.radius) / layout.image.width,
     ry = nav.radius / layout.image.height;
+  // 중심만 안쪽이고 발이 벽 밖으로 걸치는 경우도 막습니다.
+  for (const dx of [-rx, rx])
+    for (const dy of [-ry, ry])
+      if (!nav.areas.some((r) => pointInRect({ x: p.x + dx, y: p.y + dy }, r)))
+        return false;
   return !nav.blockers.some(
     (r) =>
       p.x > r.left - rx &&
@@ -40,7 +44,7 @@ function rectInterval(a, b, r) {
 export function segmentWalkable(layout, a, b) {
   if (!isWalkable(layout, a) || !isWalkable(layout, b)) return false;
   const nav = layout.navigation,
-    rx = nav.radius / layout.image.width,
+    rx = (nav.footHalfWidth ?? nav.radius) / layout.image.width,
     ry = nav.radius / layout.image.height;
   for (const r of nav.blockers) {
     const expanded = {
@@ -63,16 +67,30 @@ export function segmentWalkable(layout, a, b) {
     }
   }
   // 시작점과 끝점이 바닥이어도 중간에 벽/허용 영역 밖을 가로지르면 차단합니다.
-  const intervals = nav.areas
-    .map((r) => rectInterval(a, b, r))
-    .filter(Boolean)
-    .sort((x, y) => x[0] - y[0]);
-  let covered = 0;
-  for (const [start, end] of intervals) {
-    if (start > covered + 1e-10) return false;
-    covered = Math.max(covered, end);
+  for (const [dx, dy] of [
+    [-rx, -ry],
+    [-rx, ry],
+    [rx, -ry],
+    [rx, ry],
+  ]) {
+    const intervals = nav.areas
+      .map((r) =>
+        rectInterval(
+          { x: a.x + dx, y: a.y + dy },
+          { x: b.x + dx, y: b.y + dy },
+          r,
+        ),
+      )
+      .filter(Boolean)
+      .sort((x, y) => x[0] - y[0]);
+    let covered = 0;
+    for (const [start, end] of intervals) {
+      if (start > covered + 1e-10) return false;
+      covered = Math.max(covered, end);
+    }
+    if (covered < 1 - 1e-10) return false;
   }
-  return covered >= 1 - 1e-10;
+  return true;
 }
 
 class Heap {

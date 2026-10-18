@@ -84,3 +84,13 @@ test("표본 간격보다 얇은 벽도 선분 교차로 차단", () => {
     false,
   );
 });
+
+test("발 중심만 바닥 안쪽이고 발 폭이 벽 밖인 위치도 차단", () => {
+  assert.equal(
+    isWalkable(layout, {
+      x: layout.navigation.areas[0].right - 2 / 1705,
+      y: 0.5,
+    }),
+    false,
+  );
+});

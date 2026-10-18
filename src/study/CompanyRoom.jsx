@@ -13,11 +13,8 @@ import CharacterSprite from "./CharacterSprite";
 import { useSeatOccupancy } from "./useSeatOccupancy";
 
 export default function CompanyRoom({ room, nickname, onExit }) {
-  const { character, moveTo, validateMove } = useCharacterMovement(
-    companyLayout,
-    "entrance",
-    onExit,
-  );
+  const { character, moveTo, validateMove, movementError } =
+    useCharacterMovement(companyLayout, "entrance", onExit);
   const occupancy = useSeatOccupancy(room.id, nickname);
   const [pending, setPending] = useState(false);
   const pendingRef = useRef(false);
@@ -352,9 +349,9 @@ export default function CompanyRoom({ room, nickname, onExit }) {
           {occupancy.error}
         </p>
       )}
-      {error && (
+      {(error || movementError) && (
         <p className="room-error" role="alert">
-          {error}
+          {error || movementError}
         </p>
       )}
       <div className="company-help">
