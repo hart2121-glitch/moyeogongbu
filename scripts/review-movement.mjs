@@ -70,7 +70,7 @@ try {
   await page.locator(".study-character img").evaluate((img) => img.decode());
   assert.match(
     await page.locator(".study-character img").getAttribute("src"),
-    /approved-front/,
+    /idle-down/,
   );
   await capture("04-sofa-rest");
   results.checks.push("소파 옆 확정 정면 에셋 표시(휴식 자세 프레임 대기)");

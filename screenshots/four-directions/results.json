@@ -1,0 +1,34 @@
+[
+  {
+    "src": "/assets/characters/idle-up.png.png",
+    "width": 87,
+    "height": 110,
+    "transparent": 4040,
+    "footDelta": -0.000005548650506170816,
+    "direction": "up"
+  },
+  {
+    "src": "/assets/characters/idle-right.png.png",
+    "width": 87,
+    "height": 110,
+    "transparent": 4352,
+    "footDelta": -0.000005548650506170816,
+    "direction": "right"
+  },
+  {
+    "src": "/assets/characters/idle-left.png.png",
+    "width": 87,
+    "height": 110,
+    "transparent": 4222,
+    "footDelta": 0.0000055486506198576535,
+    "direction": "left"
+  },
+  {
+    "src": "/assets/characters/idle-down.png.png",
+    "width": 87,
+    "height": 110,
+    "transparent": 4473,
+    "footDelta": 0.00001109730112602847,
+    "direction": "down"
+  }
+]

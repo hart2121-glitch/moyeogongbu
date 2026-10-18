@@ -5,10 +5,10 @@ import {
   resolveSprite,
 } from "../src/study/characterSprites.js";
 
-test("걷기 이미지 미등록 상태는 확정 정면 이미지로 유지", () => {
+test("걷기 이미지 미등록 상태는 같은 방향의 새 기본 이미지로 유지", () => {
   assert.deepEqual(
     resolveSprite("walking", "up").frames,
-    characterSprites.idle.down,
+    characterSprites.idle.up,
   );
   assert.equal(resolveSprite("walking", "left").mirror, false);
 });
@@ -25,4 +25,21 @@ test("방향별 걷기 프레임 등록 시 순서를 유지하고 왼쪽 프레
     frames: ["idle.png"],
     mirror: false,
   });
+});
+
+test("4방향 idle 경로와 정면 착석 유지", () => {
+  for (const direction of ["down", "up", "left", "right"]) {
+    assert.match(
+      resolveSprite("idle", direction).frames[0],
+      new RegExp(`idle-${direction}\\.png\\.png$`),
+    );
+    assert.deepEqual(
+      resolveSprite("walking", direction).frames,
+      characterSprites.idle[direction],
+    );
+    assert.deepEqual(
+      resolveSprite("seated", direction).frames,
+      characterSprites.idle.down,
+    );
+  }
 });

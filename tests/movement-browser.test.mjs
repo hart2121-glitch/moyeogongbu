@@ -84,6 +84,23 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
         await p.getByTestId("study-character").getAttribute("data-direction"),
         direction,
       );
+      const sprite = p.locator(".study-character img");
+      await sprite.evaluate((img) => img.decode());
+      assert.match(
+        await sprite.getAttribute("src"),
+        new RegExp(`idle-${direction}\\.png\\.png$`),
+      );
+      const geometry = await sprite.evaluate((img) => {
+        const r = img.getBoundingClientRect(),
+          wrapper = img.parentElement.getBoundingClientRect();
+        return {
+          ratio: r.width / r.height,
+          width: r.width,
+          wrapper: wrapper.width,
+        };
+      });
+      assert.ok(Math.abs(geometry.ratio - 87 / 110) < 0.001);
+      assert.ok(Math.abs(geometry.width - geometry.wrapper) < 0.1);
     }
     await floor(p, { x: 0.74, y: 0.8 });
     await p.waitForFunction(

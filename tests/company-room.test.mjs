@@ -137,7 +137,7 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
     await waitStatus(page, "소파에서 휴식 중");
     assert.match(
       await page.locator(".study-character img").getAttribute("src"),
-      /approved-front/,
+      /idle-down/,
     );
     const resting = await page
       .getByTestId("study-character")
