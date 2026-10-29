@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
-import { mockSupabase } from "./supabaseMock.mjs";
+import { createFakeServer, mockSupabase, SECOND_USER_ID, SEED_ROOM, FAKE_USER_ID } from "./supabaseMock.mjs";
 const launch = () =>
   chromium.launch({
     executablePath: process.env.CHROMIUM_PATH || "/usr/bin/chromium",
@@ -16,7 +16,7 @@ async function enter(page) {
     .click();
   await page.getByTestId("study-character").waitFor();
   await page
-    .locator(".study-character img[data-active=true]")
+    .locator('[data-testid="study-character"] img[data-active=true]')
     .evaluate((img) => img.decode());
 }
 async function floor(page, p) {
@@ -167,110 +167,62 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
   }
 });
 
-test("탭 간 원자적 예약·사용중 좌석 차단·퇴장 해제·만료 임대 소유권 보호", async () => {
+test("서버 좌석 판정: 동시 클릭은 한 명만 착석, 사용 중 좌석 차단, 퇴장 해제, 2분 지난 좌석은 빈자리", async () => {
   const browser = await launch();
+  let browserB;
   try {
-    const context = await browser.newContext({
-      viewport: { width: 1536, height: 1024 },
-    });
-    const a = await context.newPage(),
-      b = await context.newPage();
-    await Promise.all([mockSupabase(a), mockSupabase(b)]);
+    const server = createFakeServer();
+    const ctxA = await browser.newContext({ viewport: { width: 1536, height: 1024 } });
+    // 사용자마다 다른 브라우저: 같은 브라우저의 뒤쪽 페이지는 requestAnimationFrame이 멈춰 걷기 재생이 진행되지 않는다.
+    browserB = await launch();
+    const ctxB = await browserB.newContext({ viewport: { width: 1536, height: 1024 } });
+    const a = await ctxA.newPage(),
+      b = await ctxB.newPage();
+    await mockSupabase(a, { server });
+    await mockSupabase(b, { server, userId: SECOND_USER_ID, displayName: "두리" });
+    server.addMember(SEED_ROOM.id, SECOND_USER_ID, "두리");
     await Promise.all([enter(a), enter(b)]);
-    for (const [page, owner] of [
-      [a, "racer-a"],
-      [b, "racer-b"],
-    ])
-      await page.evaluate(async (owner) => {
-        const { createSeatService } = await import("/src/study/seatService.js");
-        window.racer = createSeatService("invited-demo", owner, owner);
-      }, owner);
-    for (let round = 0; round < 10; round++) {
-      await Promise.all([
-        a.evaluate(() => window.racer.release()),
-        b.evaluate(() => window.racer.release()),
-      ]);
-      const race = await Promise.all([
-        a.evaluate(() => window.racer.reserve(1)),
-        b.evaluate(() => window.racer.reserve(1)),
-      ]);
-      assert.equal(
-        race.filter(Boolean).length,
-        1,
-        `동시 예약 ${round + 1}회차`,
-      );
-    }
-    await a.waitForFunction(
-      () =>
-        document.querySelector('.seat-marker[aria-label="1번 좌석"]')?.disabled,
-    );
+    await b.getByTestId("remote-character").waitFor();
+    // 두 사람이 같은 자리를 동시에 누른다.
     await Promise.all([
-      a.evaluate(() => window.racer.release()),
-      b.evaluate(() => window.racer.release()),
+      a.getByRole("button", { name: "1번 좌석", exact: true }).click(),
+      b.getByRole("button", { name: "1번 좌석", exact: true }).click(),
     ]);
-    await a.bringToFront();
-    await a.getByRole("button", { name: "1번 좌석", exact: true }).click();
-    await b.waitForFunction(
-      () =>
-        document.querySelector('.seat-marker[aria-label="1번 좌석"]')?.disabled,
-    );
-    await a
-      .getByTestId("movement-status")
-      .filter({ hasText: "1번 좌석 착석" })
-      .waitFor({ timeout: 20000 });
-    assert.equal(
-      await b
-        .getByRole("button", { name: "1번 좌석", exact: true })
-        .isDisabled(),
-      true,
-    );
-    await a.bringToFront();
-    await floor(a, { x: 0.52, y: 0.9 });
-    await idle(a);
-    await b.bringToFront();
-    await b.getByRole("button", { name: "1번 좌석", exact: true }).click();
-    await b
-      .getByTestId("movement-status")
-      .filter({ hasText: "1번 좌석 착석" })
-      .waitFor({ timeout: 20000 });
-    await a.getByRole("button", { name: "공부 재개하기", exact: true }).click();
-    await a.getByRole("alert").filter({ hasText: "사용하거나 예약" }).waitFor();
-    assert.equal(
-      await a.getByTestId("study-character").getAttribute("data-activity"),
-      "idle",
-    );
-    await b.getByRole("button", { name: "모여공부 로비", exact: true }).click();
-    await a.waitForFunction(
-      () =>
-        !document.querySelector('.seat-marker[aria-label="1번 좌석"]')
-          ?.disabled,
-    );
-    await a.evaluate(async () => {
-      await window.racer.release();
-      window.racer.close();
-      const { createSeatService } = await import("/src/study/seatService.js");
-      window.expireA = createSeatService("expiry-test", "a", "a");
-      await window.expireA.reserve(1);
-    });
-    const result = await a.evaluate(async () => {
-      const original = Date.now;
-      Date.now = () => original() + 46000;
-      try {
-        const { createSeatService } = await import("/src/study/seatService.js");
-        const other = createSeatService("expiry-test", "b", "b");
-        const next = await other.reserve(1),
-          stale = await window.expireA.occupy(1);
-        await other.release();
-        other.close();
-        window.expireA.close();
-        return { next, stale };
-      } finally {
-        Date.now = original;
-      }
-    });
-    assert.deepEqual(result, { next: true, stale: false });
-    await context.close();
+    const deadline = Date.now() + 5000;
+    while (!server.seatHolder(SEED_ROOM.id, 1) && Date.now() < deadline) await a.waitForTimeout(50);
+    const holder = server.seatHolder(SEED_ROOM.id, 1);
+    assert.ok(holder, "한 명은 앉아야 한다");
+    const [winner, loser, loserId] = holder === FAKE_USER_ID ? [a, b, SECOND_USER_ID] : [b, a, FAKE_USER_ID];
+    await winner.getByTestId("movement-status").filter({ hasText: "1번 좌석 착석" }).waitFor({ timeout: 20000 });
+    await loser.getByRole("alert").filter({ hasText: "사용하거나 예약" }).waitFor();
+    assert.equal(server.seatHolder(SEED_ROOM.id, 1), holder);
+    assert.equal(server.seats.get(SEED_ROOM.id).filter((s) => s.userId).length, 1);
+    await loser.waitForFunction(() => document.querySelector('.seat-marker[aria-label="1번 좌석"]')?.disabled);
+    // 앉은 사람이 바닥으로 가면 자리가 풀리고, 다른 사람이 앉는다.
+    await winner.bringToFront();
+    await floor(winner, { x: 0.52, y: 0.9 });
+    await idle(winner);
+    await loser.waitForFunction(() => !document.querySelector('.seat-marker[aria-label="1번 좌석"]')?.disabled, {}, { timeout: 10000 });
+    await loser.bringToFront();
+    await loser.getByRole("button", { name: "1번 좌석", exact: true }).click();
+    await loser.getByTestId("movement-status").filter({ hasText: "1번 좌석 착석" }).waitFor({ timeout: 20000 });
+    await winner.waitForFunction(() => document.querySelector('.seat-marker[aria-label="1번 좌석"]')?.disabled, {}, { timeout: 10000 });
+    await winner.getByRole("button", { name: "공부 재개하기", exact: true }).click();
+    await winner.getByRole("alert").filter({ hasText: "사용하거나 예약" }).waitFor();
+    assert.equal(await winner.getByTestId("study-character").getAttribute("data-activity"), "idle");
+    // 2분 넘게 응답이 없는 사람의 좌석은 빈자리로 본다.
+    server.age(loserId, 121_000);
+    await winner.getByRole("button", { name: "공부 재개하기", exact: true }).click();
+    await winner.getByTestId("movement-status").filter({ hasText: "1번 좌석 착석" }).waitFor({ timeout: 20000 });
+    assert.equal(server.seatHolder(SEED_ROOM.id, 1), holder);
+    // 나간 사람의 좌석은 풀린다.
+    await winner.getByRole("button", { name: "모여공부 로비", exact: true }).click();
+    await loser.waitForFunction(() => !document.querySelector('.seat-marker[aria-label="1번 좌석"]')?.disabled, {}, { timeout: 10000 });
+    assert.equal(server.seatHolder(SEED_ROOM.id, 1), null);
+    await ctxA.close();
+    await ctxB.close();
   } finally {
+    await browserB?.close();
     await browser.close();
   }
 });

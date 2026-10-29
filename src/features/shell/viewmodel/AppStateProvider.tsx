@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { useRooms } from "../../../study/useRooms";
 import { useCharacter } from "../../character/viewmodel/useCharacter";
 import { useTasks } from "../../lobby/viewmodel/useTasks";
 import { useTip } from "../../lobby/viewmodel/useTip";
@@ -17,7 +16,6 @@ export default function AppStateProvider({
 }: {
   children: ReactNode;
 }) {
-  const rooms = useRooms();
   const modal = useModal();
   const toast = useToast();
   const tasks = useTasks();
@@ -26,7 +24,7 @@ export default function AppStateProvider({
   const shop = useShop(toast.notify);
   return (
     <AppStateContext.Provider
-      value={{ rooms, modal, toast, tasks, tip, character, shop }}
+      value={{ modal, toast, tasks, tip, character, shop }}
     >
       {children}
     </AppStateContext.Provider>

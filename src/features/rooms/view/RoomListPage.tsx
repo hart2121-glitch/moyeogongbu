@@ -1,20 +1,13 @@
-import RoomList from "../../../study/RoomList";
+import MyRoomList from "../../room/view/MyRoomList";
 import PageFrame from "../../shell/view/PageFrame";
-import { useAppState } from "../../shell/viewmodel/AppStateContext";
 import { useRoomNavigation } from "../viewmodel/useRoomNavigation";
 
-/** `/rooms`: 만든 방과 초대받은 방 목록. */
+/** `/rooms`: 방 만들기, 코드로 들어가기, 내 방 목록 (Story 004, 서버). */
 export default function RoomListPage() {
-  const { rooms, createRoom, storageWarning } = useAppState().rooms;
   const { enterCompanyRoom } = useRoomNavigation();
   return (
     <PageFrame title="스터디룸">
-      <RoomList
-        rooms={rooms}
-        createRoom={createRoom}
-        storageWarning={storageWarning}
-        onEnter={enterCompanyRoom}
-      />
+      <MyRoomList onEnter={enterCompanyRoom} />
     </PageFrame>
   );
 }

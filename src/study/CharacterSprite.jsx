@@ -18,7 +18,11 @@ const registeredSources = [
     ),
   ]),
 ];
-export default function CharacterSprite({ character, nickname }) {
+/**
+ * testId, className, children: 같은 방 다른 사람 캐릭터의 구분과 반응, 마우스 올림 카드 (Story 004).
+ * @param {{ character: any, nickname: string, testId?: string, className?: string, children?: import("react").ReactNode }} props
+ */
+export default function CharacterSprite({ character, nickname, testId = "study-character", className = "", children = null }) {
   const [frame, setFrame] = useState(0);
   const [status, setStatus] = useState({});
   const activity =
@@ -71,13 +75,13 @@ export default function CharacterSprite({ character, nickname }) {
     status[desired] === "error" && status[approvedBackup] === "error";
   return (
     <div
-      className={`study-character activity-${activity} facing-${character.direction} ${mirror ? "mirror-fallback" : ""}`}
+      className={`study-character activity-${activity} facing-${character.direction} ${mirror ? "mirror-fallback" : ""} ${className}`}
       style={{
         left: `${character.position.x * 100}%`,
         top: `${character.position.y * 100}%`,
         width: `${companyLayout.character.width * 100}%`,
       }}
-      data-testid="study-character"
+      data-testid={testId}
       data-activity={character.activity}
       data-x={character.position.x}
       data-y={character.position.y}
@@ -87,6 +91,7 @@ export default function CharacterSprite({ character, nickname }) {
         {nickname}{" "}
         {{ up: "↑", down: "↓", left: "←", right: "→" }[character.direction]}
       </span>
+      {children}
       {failed ? (
         <span className="sprite-fallback">내 캐릭터</span>
       ) : (
