@@ -107,10 +107,10 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
         .getByRole("navigation")
         .getByRole("button", { name: label, exact: true })
         .click();
-      assert.equal(
-        await page.locator(".content-panel .panel-heading").innerText(),
-        label,
-      );
+      // 주소 라우팅은 전환을 비동기로 그리므로 새 제목이 나타날 때까지 기다린다.
+      const heading = page.locator(".content-panel .panel-heading");
+      await heading.filter({ hasText: label }).waitFor();
+      assert.equal(await heading.innerText(), label);
     }
     await page
       .getByRole("navigation")

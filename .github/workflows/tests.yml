@@ -1,0 +1,42 @@
+name: tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - name: Chromium 설치
+        run: |
+          npx playwright install --with-deps chromium
+          echo "CHROMIUM_PATH=$(node -p "require('@playwright/test').chromium.executablePath()")" >> "$GITHUB_ENV"
+      - name: 개발 서버 실행
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 4173 --strictPort > dev-server.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:4173/ > /dev/null && exit 0; sleep 1; done
+          cat dev-server.log; exit 1
+      - run: npm test
+        env:
+          APP_URL: http://127.0.0.1:4173
+
+  supabase-migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.0
+      - run: supabase start
+      - run: supabase db reset
+      - run: supabase stop
