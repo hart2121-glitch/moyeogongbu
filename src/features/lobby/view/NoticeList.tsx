@@ -1,17 +1,15 @@
-import { NOTICES } from "../model/notices";
+import { useNotices } from "../viewmodel/useNotices";
 
-/** 공지사항 전체 보기 모달 내용. */
+/** 공지사항 전체 보기 모달 내용 (서버 공지). */
 export default function NoticeList() {
+  const notices = useNotices();
   return (
     <div className="notice-details">
-      {NOTICES.map(({ tag, title }) => (
+      {notices.map(({ tag, title, body }) => (
         <article key={title}>
           <span className="tag">{tag}</span>
           <h2>{title}</h2>
-          <p>
-            모여공부의 새로운 소식을 기다려 주세요. 현재는 첫 버전의 예시
-            공지입니다.
-          </p>
+          <p>{body}</p>
         </article>
       ))}
     </div>

@@ -7,6 +7,7 @@ import SettlementCard from "../../coins/view/SettlementCard";
 import { useCoinSummary, useSettleStudy } from "../../coins/viewmodel/useCoins";
 import type { Room } from "../../room/model/room";
 import { reactionLabel } from "../../room/model/roomConfig";
+import RoomInviteButton from "../../mailbox/view/RoomInviteButton";
 import OwnerTools from "../../room/view/OwnerTools";
 import RemoteCharacter from "../../room/view/RemoteCharacter";
 import RoomLiveBar from "../../room/view/RoomLiveBar";
@@ -144,6 +145,7 @@ function LiveCompanyRoom({ room, userId, nickname, exit, toRooms }: LiveProps) {
         ))}
         toolbarExtra={
           <>
+            <RoomInviteButton room={room} />
             <RoomLiveBar connected={live.connected} sendReaction={live.sendReaction} onTaskSaved={live.notifyMembers} />
             {room.isOwner && <OwnerTools room={room} members={live.members} onChanged={live.notifyMembers} />}
           </>

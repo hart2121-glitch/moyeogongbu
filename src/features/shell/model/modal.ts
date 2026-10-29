@@ -13,7 +13,7 @@ export type ModalState =
   /** 어제의 미완료 할 일 가져오기 (Story 005). */
   | "carry"
   | ({ type: "friend" } & Friend)
-  | { type: "notice"; tag: string; title: string }
+  | { type: "notice"; tag: string; title: string; body?: string }
   /** 공부 기록의 날짜 상세 (YYYY-MM-DD). */
   | { type: "day"; day: string };
 

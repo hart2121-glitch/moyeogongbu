@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import BlockList from "../../friends/view/BlockList";
 import { ROUTES } from "../../shell/model/paths";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
 import { useAccountActions } from "../viewmodel/useAccount";
@@ -57,6 +58,7 @@ export default function SettingsPanel() {
           계정 삭제
         </button>
       </div>
+      <BlockList />
       <p className="muted">
         <Link to={ROUTES.privacy}>개인정보 처리방침</Link>
       </p>

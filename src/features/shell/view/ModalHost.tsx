@@ -1,4 +1,6 @@
-import { Cat, Envelope, X } from "@phosphor-icons/react";
+import { Cat, X } from "@phosphor-icons/react";
+import Mailbox from "../../mailbox/view/Mailbox";
+import NotificationList from "../../notifications/view/NotificationList";
 import FriendDetail from "../../friends/view/FriendDetail";
 import NoticeDetail from "../../lobby/view/NoticeDetail";
 import NoticeList from "../../lobby/view/NoticeList";
@@ -22,19 +24,12 @@ function ModalBody() {
     return modal.type === "friend" ? (
       <FriendDetail friend={modal} />
     ) : (
-      <NoticeDetail title={modal.title} />
+      <NoticeDetail title={modal.title} body={modal.body} />
     );
   }
   if (modal === "settings") return <SettingsPanel />;
-  return (
-    <div className="empty-state">
-      <Envelope />
-      <h2>
-        {modal === "mail" ? "도착한 편지가 없어요" : "새로운 알림이 없어요"}
-      </h2>
-      <p>오늘도 나만의 속도로 공부해 보세요.</p>
-    </div>
-  );
+  if (modal === "mail") return <Mailbox />;
+  return <NotificationList />;
 }
 
 export default function ModalHost() {
