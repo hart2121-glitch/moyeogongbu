@@ -21,9 +21,12 @@ import { ROUTES } from "../../shell/model/paths";
 import Panel from "../../shell/view/Panel";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
 import { NOTICES } from "../model/notices";
+import { useCoinSummary } from "../../coins/viewmodel/useCoins";
+import PendingSettlementPopup from "../../coins/view/PendingSettlementPopup";
 
 function ProfilePanel() {
-  const { character, shop, modal } = useAppState();
+  const { character, modal } = useAppState();
+  const balance = useCoinSummary().data?.balance ?? 0;
   const displayName = useProfile().data?.displayName;
   return (
     <Panel title="내 프로필" className="profile-panel">
@@ -45,7 +48,7 @@ function ProfilePanel() {
           </div>
           <div className="profile-coins">
             <Coin weight="duotone" />
-            {shop.coins.toLocaleString()}
+            {balance.toLocaleString()}
           </div>
           <div className="level">
             <span>Lv. 12</span>
@@ -232,6 +235,7 @@ export default function LobbyPage() {
         </div>
       </div>
       {tip && <Encouragement />}
+      <PendingSettlementPopup />
     </>
   );
 }

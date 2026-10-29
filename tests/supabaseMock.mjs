@@ -30,16 +30,74 @@ function fakeSession() {
 /**
  * 페이지에 로그인 상태와 Supabase 가짜 응답을 건다. page.goto 전에 부른다.
  * @param {import("@playwright/test").Page} page
- * @param {{ displayName?: string | null, signedIn?: boolean }} [options]
- * @returns 테스트가 확인할 수 있는 가짜 서버 상태 (profile, study, calls)
+ * @param {{ displayName?: string | null, signedIn?: boolean, balance?: number, pendingSettlement?: object | null }} [options]
+ * @returns 테스트가 확인할 수 있는 가짜 서버 상태 (profile, study, coins, todos, calls)
  */
-export async function mockSupabase(page, { displayName = "밍구", signedIn = true } = {}) {
+export async function mockSupabase(
+  page,
+  { displayName = "밍구", signedIn = true, balance = 340, pendingSettlement = null } = {},
+) {
   const session = fakeSession();
   const state = {
     profile: { id: FAKE_USER_ID, display_name: displayName, friend_code: "ABCD2345" },
     // 공부 세션 RPC의 가짜 서버. 시각은 테스트 프로세스의 실제 시각이다.
     study: { tabId: null, state: null, closedSeconds: 0, openSince: null },
     calls: [],
+    // 코인 RPC의 가짜 서버 (Story 003). 규칙 수치는 서버 coin_rules 기본값과 같다.
+    coins: { balance, todo: 0, pomodoro: 0 },
+    pending: pendingSettlement,
+    todos: [],
+  };
+  const rules = {
+    study_coins_per_minute: 1,
+    study_daily_coin_cap: 600,
+    pomodoro_bonus: 5,
+    pomodoro_min_study_minutes: 20,
+    pomodoro_max_study_minutes: 60,
+    pomodoro_daily_max: 10,
+    todo_coins: 2,
+    todo_daily_max: 10,
+  };
+  const daySummary = () => {
+    const study = Math.min(Math.floor(state.study.closedSeconds / 60), rules.study_daily_coin_cap);
+    const total = study + state.coins.pomodoro + state.coins.todo;
+    return {
+      day: new Date(Date.now() + 4 * 3600_000).toISOString().slice(0, 10),
+      study_seconds: state.study.closedSeconds,
+      coins: { study, pomodoro: state.coins.pomodoro, todo: state.coins.todo },
+      total,
+      balance: state.coins.balance + total,
+    };
+  };
+  const coinRpc = (name, args) => {
+    if (name === "get_coin_summary") return { ...daySummary(), rules };
+    if (name === "settle_study") return daySummary();
+    if (name === "pending_settlement") return state.pending;
+    if (name === "dismiss_settlement") {
+      if (state.pending?.day === args.p_day) state.pending = null;
+      return null;
+    }
+    return { awarded: false, reason: "not_covered" };
+  };
+  let nextTodoId = 1;
+  const todoId = (url) => Number(new URL(url).searchParams.get("id")?.replace("eq.", ""));
+  const todoRoute = (request) => {
+    const method = request.method();
+    if (method === "GET") return state.todos.map(({ id, text, done }) => ({ id, text, done }));
+    if (method === "POST") {
+      const row = { id: nextTodoId++, text: request.postDataJSON().text, done: false };
+      state.todos.push(row);
+      return [row];
+    }
+    const id = todoId(request.url());
+    const todo = state.todos.find((t) => t.id === id);
+    if (method === "PATCH" && todo) {
+      const { done } = request.postDataJSON();
+      if (done !== undefined && done !== todo.done) state.coins.todo += done ? rules.todo_coins : -rules.todo_coins;
+      Object.assign(todo, request.postDataJSON());
+    }
+    if (method === "DELETE") state.todos = state.todos.filter((t) => t.id !== id);
+    return null;
   };
   const studySnapshot = () => ({
     server_now: new Date().toISOString(),
@@ -103,6 +161,12 @@ export async function mockSupabase(page, { displayName = "밍구", signedIn = tr
     if (rpc) {
       const { status, body } = studyRpc(rpc[1], request.postDataJSON() ?? {});
       return json(route, body, status);
+    }
+    const coin = path.match(/\/rpc\/(get_coin_summary|settle_study|pending_settlement|dismiss_settlement|claim_pomodoro_bonus)$/);
+    if (coin) return json(route, coinRpc(coin[1], request.postDataJSON() ?? {}));
+    if (path.endsWith("/todos")) {
+      const body = todoRoute(request);
+      return body === null ? route.fulfill({ status: 204, body: "" }) : json(route, body, request.method() === "POST" ? 201 : 200);
     }
     if (path.endsWith("/profiles")) {
       if (request.method() === "PATCH") Object.assign(state.profile, request.postDataJSON());

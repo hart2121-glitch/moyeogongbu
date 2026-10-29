@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, DoorOpen, Timer } from "@phosphor-icons/react";
+import { Bell, Coin, DoorOpen, Timer } from "@phosphor-icons/react";
 import { SESSION_CONFIG } from "../model/sessionConfig";
 import { validCustomMinutes } from "../model/sessionMachine";
 import type { StudySession } from "../viewmodel/useStudySession";
@@ -28,12 +28,14 @@ interface Props {
   /** 캐릭터를 휴게실로 보낸다. 사용자가 버튼을 눌렀을 때만 부른다. */
   onGoLounge: () => void;
   canGoLounge: boolean;
+  /** 오늘 받은 코인 (서버 값과 지금 공부 시간으로 계산). 아직 모르면 null. */
+  todayCoins: number | null;
 }
 
 /**
  * 회사 방의 공부 세션 툴바 (Story 002). 방 그림 속 타이머와 음악 패널은 정적 그림이고, 실제 시간은 여기에만 표시한다.
  */
-export default function StudySessionBar({ session, onGoLounge, canGoLounge }: Props) {
+export default function StudySessionBar({ session, onGoLounge, canGoLounge, todayCoins }: Props) {
   const [picking, setPicking] = useState(false);
   const [custom, setCustom] = useState(String(SESSION_CONFIG.customStudyMinutes.min));
   const { min, max } = SESSION_CONFIG.customStudyMinutes;
@@ -58,8 +60,11 @@ export default function StudySessionBar({ session, onGoLounge, canGoLounge }: Pr
   return (
     <section className="movement-status" aria-label="공부 세션" data-testid="study-session">
       <div className="company-controls">
-        <p role="timer" aria-label="오늘 공부 시간" data-testid="today-study-time">
-          오늘 공부 <strong>{clockText(session.todaySeconds)}</strong>
+        <p role="timer" aria-label="오늘 근무 시간" data-testid="today-study-time">
+          오늘 근무 <strong>{clockText(session.todaySeconds)}</strong>
+        </p>
+        <p aria-label="오늘 받은 코인" data-testid="today-coins">
+          <Coin weight="duotone" /> <strong>{todayCoins === null ? "-" : todayCoins.toLocaleString()}</strong>
         </p>
         <p data-testid="session-state">
           {session.link === "connecting"

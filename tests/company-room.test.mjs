@@ -217,9 +217,14 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
     await waitStatus(page, "6번 좌석 착석");
     await page.getByRole("button", { name: "퇴근하기", exact: true }).click();
     await waitStatus(page, "출입구로 이동 중");
+    // 출입구에 도착하면 오늘의 정산 카드를 한 번 보여 주고 로비로 간다 (Story 003).
+    const card = page.getByRole("dialog", { name: "오늘의 정산" });
+    await card.waitFor({ timeout: 20000 });
+    await card.getByRole("button", { name: "로비로 가기", exact: true }).click();
     await page
       .getByRole("heading", { name: "밍구", exact: true })
       .waitFor({ timeout: 20000 });
+    assert.equal(await page.getByRole("dialog", { name: "지난 정산" }).count(), 0);
     const trace = await page.evaluate(() => {
       clearInterval(window.traceTimer);
       return window.movementTrace;
