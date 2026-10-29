@@ -10,6 +10,8 @@ import {
   Tote,
   X,
 } from "@phosphor-icons/react";
+import { useEffect } from "react";
+import { useCarryOverPrompt } from "../../todos/viewmodel/useCarryOver";
 import { useNavigate } from "react-router-dom";
 import RoomPreview from "../../../components/RoomPreview";
 import { roomPreviews } from "../../../roomPreviews";
@@ -102,6 +104,14 @@ function QuickEnterPanel() {
 
 function TasksPanel() {
   const { tasks, modal } = useAppState();
+  // 새 날 처음 오늘의 할 일을 볼 때 어제의 미완료 할 일을 한 번 제안한다 (Story 005).
+  const carry = useCarryOverPrompt();
+  const busy = modal.modal !== null;
+  useEffect(() => {
+    if (!carry.shouldAsk || busy) return;
+    carry.markAsked();
+    modal.openModal("carry");
+  }, [carry.shouldAsk, busy]);
   return (
     <Panel
       title="오늘의 할 일"

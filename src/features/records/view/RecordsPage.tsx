@@ -1,44 +1,61 @@
-import { BookOpen, ClipboardText, Flower } from "@phosphor-icons/react";
-import { useNavigate } from "react-router-dom";
-import { countDone } from "../../lobby/model/tasks";
-import { ROUTES } from "../../shell/model/paths";
+import { ClipboardText, Coins, Timer } from "@phosphor-icons/react";
+import { countDone } from "../../todos/model/tasks";
 import PageFrame from "../../shell/view/PageFrame";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
+import { formatDuration } from "../model/records";
+import { useRecords } from "../viewmodel/useRecords";
+import WeekBars from "./WeekBars";
+import YearCalendar from "./YearCalendar";
 
+/** 공부 기록 (`/records`). 본인 기록만 보이고 다른 사람과 비교하지 않는다. */
 export default function RecordsPage() {
-  const navigate = useNavigate();
-  const { tasks } = useAppState().tasks;
+  const { tasks, modal } = useAppState();
+  const records = useRecords();
+  const openDay = (day: string) => modal.openModal({ type: "day", day });
   return (
     <PageFrame title="공부 기록">
       <div className="page-intro">
         <span className="eyebrow">ONE STEP EVERY DAY</span>
         <h1>작은 하루가 모여 큰 걸음으로</h1>
-        <p>오늘의 체크리스트부터 차근차근 시작해요.</p>
+        <p>이 기록은 나만 볼 수 있어요. 하루는 한국 시간 오전 5시에 바뀌어요.</p>
       </div>
-      <div className="record-grid">
+      <div className="record-grid record-today" data-testid="records-today">
+        <div>
+          <Timer />
+          <strong>{records.loading ? "..." : formatDuration(records.today.seconds)}</strong>
+          <span>오늘 공부 시간</span>
+        </div>
+        <div>
+          <Coins />
+          <strong>{records.loading ? "..." : records.today.coins}</strong>
+          <span>오늘 받은 코인</span>
+        </div>
         <div>
           <ClipboardText />
           <strong>
-            {countDone(tasks)} / {tasks.length}
+            {countDone(tasks.tasks)} / {tasks.tasks.length}
           </strong>
           <span>완료한 오늘의 할 일</span>
         </div>
-        <div>
-          <BookOpen />
-          <strong>아직 기록이 없어요</strong>
-          <span>공부 시간 기록은 다음 단계에서 제공해요</span>
-        </div>
       </div>
-      <div className="empty-state">
-        <Flower />
-        <h2>첫 기록을 기다리고 있어요</h2>
-        <p>
-          지금은 할 일을 완료하며 하루의 작은 성취를 확인해 보세요.
+      {records.failed ? (
+        <p className="records-message" role="alert">
+          기록을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.
         </p>
-        <button className="primary" onClick={() => navigate(ROUTES.lobby)}>
-          오늘의 할 일 보러 가기
-        </button>
-      </div>
+      ) : (
+        <>
+          <section className="records-section" aria-labelledby="records-week">
+            <h2 id="records-week">최근 7일</h2>
+            <p className="muted">막대를 누르면 그날 기록을 볼 수 있어요.</p>
+            <WeekBars days={records.week} today={records.todayKey} onPick={openDay} />
+          </section>
+          <section className="records-section" aria-labelledby="records-year">
+            <h2 id="records-year">1년 공부 달력</h2>
+            <p className="muted">칸을 누르면 그날 기록을 볼 수 있어요.</p>
+            <YearCalendar days={records.year} today={records.todayKey} onPick={openDay} />
+          </section>
+        </>
+      )}
     </PageFrame>
   );
 }

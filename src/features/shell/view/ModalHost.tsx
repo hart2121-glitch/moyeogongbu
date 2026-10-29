@@ -3,6 +3,8 @@ import FriendDetail from "../../friends/view/FriendDetail";
 import NoticeDetail from "../../lobby/view/NoticeDetail";
 import NoticeList from "../../lobby/view/NoticeList";
 import TaskForm from "../../lobby/view/TaskForm";
+import DayDetail from "../../records/view/DayDetail";
+import CarryOverForm from "../../todos/view/CarryOverForm";
 import SettingsPanel from "../../account/view/SettingsPanel";
 import ProfileForm from "../../character/view/ProfileForm";
 import { modalTitle } from "../model/modal";
@@ -10,10 +12,12 @@ import { useAppState } from "../viewmodel/AppStateContext";
 
 function ModalBody() {
   const { modal: modalState } = useAppState();
-  const { modal } = modalState;
+  const { modal, closeModal } = modalState;
   if (modal === "task") return <TaskForm />;
   if (modal === "profile") return <ProfileForm />;
   if (modal === "notices") return <NoticeList />;
+  if (modal === "carry") return <CarryOverForm onDone={closeModal} />;
+  if (typeof modal === "object" && modal?.type === "day") return <DayDetail day={modal.day} />;
   if (typeof modal === "object" && modal) {
     return modal.type === "friend" ? (
       <FriendDetail friend={modal} />

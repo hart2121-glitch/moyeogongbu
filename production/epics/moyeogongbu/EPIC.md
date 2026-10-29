@@ -24,6 +24,6 @@
 | 002 | 공부 세션 | Logic | Complete | N/A |
 | 003 | 시급 코인과 퇴근 정산 | Logic | Complete | N/A |
 | 004 | 실시간 6석 회사 방 | Integration | Complete | N/A |
-| 005 | 공부 기록과 날짜별 할 일 | UI | Ready | N/A |
+| 005 | 공부 기록과 날짜별 할 일 | UI | Complete | N/A |
 | 006 | 친구, 우편함, 알림 | Integration | Ready | N/A |
 | 007 | 상점과 캐릭터 꾸미기 | UI | Ready | N/A |

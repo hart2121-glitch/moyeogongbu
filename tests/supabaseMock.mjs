@@ -12,6 +12,8 @@ export const SEED_ROOM = { id: "10000000-0000-4000-8000-000000000001", name: "�
 
 // 서버 room_rules와 같은 값.
 const RULES = { maxOwned: 3, maxMembers: 6, maxConcurrent: 6, seats: 6, graceMs: 120_000 };
+// 서버 todo_rules.daily_max와 같은 값.
+const TODO_DAILY_MAX = 30;
 
 const b64url = (value) => Buffer.from(JSON.stringify(value)).toString("base64url");
 
@@ -357,6 +359,8 @@ export async function mockSupabase(
     server = createFakeServer(),
     userId = FAKE_USER_ID,
     seedRoom = userId === FAKE_USER_ID,
+    todos = [],
+    records = [],
   } = {},
 ) {
   const session = fakeSession(userId);
@@ -405,15 +409,22 @@ export async function mockSupabase(
     }
     return { awarded: false, reason: "not_covered" };
   };
+  // Story 005: 할 일은 날짜(오전 5시 경계)를 가진다. 서버 todo_rules와 같은 하루 30개 제한.
+  const today = () => new Date(Date.now() + 4 * 3600_000).toISOString().slice(0, 10);
   let nextTodoId = 1;
+  for (const t of todos) state.todos.push({ id: nextTodoId++, text: t.text, done: !!t.done, day: t.day ?? today() });
   const todoId = (url) => Number(new URL(url).searchParams.get("id")?.replace("eq.", ""));
   const todoRoute = (request) => {
     const method = request.method();
-    if (method === "GET") return state.todos.map(({ id, text, done }) => ({ id, text, done }));
+    if (method === "GET") {
+      const day = new URL(request.url()).searchParams.get("day")?.replace("eq.", "");
+      return state.todos.filter((t) => !day || t.day === day).map(({ id, text, done }) => ({ id, text, done }));
+    }
     if (method === "POST") {
-      const row = { id: nextTodoId++, text: request.postDataJSON().text, done: false };
+      if (state.todos.filter((t) => t.day === today()).length >= TODO_DAILY_MAX) return { error: "todo_limit" };
+      const row = { id: nextTodoId++, text: request.postDataJSON().text, done: false, day: today() };
       state.todos.push(row);
-      return [row];
+      return [{ id: row.id, text: row.text, done: row.done }];
     }
     const id = todoId(request.url());
     const todo = state.todos.find((t) => t.id === id);
@@ -424,6 +435,43 @@ export async function mockSupabase(
     }
     if (method === "DELETE") state.todos = state.todos.filter((t) => t.id !== id);
     return null;
+  };
+  // Story 005: 기록 RPC. 지난 날은 `records`로 심은 값, 오늘은 공부, 코인, 할 일 가짜 상태에서 계산한다.
+  const doneTexts = (day) => state.todos.filter((t) => t.day === day && t.done).map((t) => t.text);
+  const recordOf = (day) => {
+    if (day === today()) {
+      const s = daySummary();
+      return { day, seconds: s.study_seconds, coins: s.total, todos_done: doneTexts(day).length };
+    }
+    const r = records.find((x) => x.day === day);
+    return r ? { day, seconds: r.seconds ?? 0, coins: r.coins ?? 0, todos_done: doneTexts(day).length } : null;
+  };
+  const recordsRpc = (name, args) => {
+    if (name === "get_study_records") {
+      const days = new Set([...records.map((r) => r.day), today(), ...state.todos.map((t) => t.day)]);
+      return [...days]
+        .filter((d) => d >= args.p_from && d <= args.p_to)
+        .sort()
+        .map((d) => recordOf(d) ?? { day: d, seconds: 0, coins: 0, todos_done: doneTexts(d).length });
+    }
+    if (name === "get_record_day") {
+      if (args.p_day === today()) return { ...daySummary(), todos_done: doneTexts(args.p_day) };
+      const r = records.find((x) => x.day === args.p_day) ?? { seconds: 0, coins: 0 };
+      const coins = r.coins ?? 0;
+      return {
+        day: args.p_day,
+        study_seconds: r.seconds ?? 0,
+        coins: { study: coins, pomodoro: 0, todo: 0 },
+        total: coins,
+        balance: state.coins.balance,
+        todos_done: doneTexts(args.p_day),
+      };
+    }
+    // carry_over_todos: 본인 것, 미완료, 지난 날짜만. 오늘이 30개를 넘으면 하나도 옮기지 않는다.
+    const moving = state.todos.filter((t) => (args.p_ids ?? []).includes(t.id) && !t.done && t.day < today());
+    if (state.todos.filter((t) => t.day === today()).length + moving.length > TODO_DAILY_MAX) return { error: "todo_limit" };
+    for (const t of moving) t.day = today();
+    return moving.length;
   };
   const studySnapshot = () => ({
     server_now: new Date().toISOString(),
@@ -502,8 +550,15 @@ export async function mockSupabase(
         throw e;
       }
     }
+    const rec = path.match(/\/rpc\/(get_study_records|get_record_day|carry_over_todos)$/);
+    if (rec) {
+      const body = recordsRpc(rec[1], request.postDataJSON() ?? {});
+      if (body?.error) return json(route, { code: "P0001", message: body.error }, 400);
+      return json(route, body);
+    }
     if (path.endsWith("/todos")) {
       const body = todoRoute(request);
+      if (body?.error) return json(route, { code: "P0001", message: body.error }, 400);
       return body === null ? route.fulfill({ status: 204, body: "" }) : json(route, body, request.method() === "POST" ? 201 : 200);
     }
     if (path.endsWith("/profiles")) {

@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { REACTIONS, ROOM_CONFIG } from "../model/roomConfig";
 import { useCurrentTask } from "../viewmodel/useCurrentTask";
+import { todayKey } from "../../todos/model/studyDay";
+import { useDayTodos } from "../../todos/viewmodel/useDayTodos";
 
 interface Props {
   connected: boolean;
@@ -12,6 +14,8 @@ interface Props {
 /** 방 툴바 아래 줄: 정해진 반응 버튼과 "지금 하는 일". 자유 채팅은 없다. */
 export default function RoomLiveBar({ connected, sendReaction, onTaskSaved }: Props) {
   const current = useCurrentTask();
+  // 오늘의 미완료 할 일 중 하나를 골라 "지금 하는 일"로 쓸 수 있다 (Story 005). 공개 여부는 그대로 사용자가 정한다.
+  const openTodos = useDayTodos(todayKey()).tasks.filter((t) => !t.done);
   const [task, setTask] = useState("");
   const [shared, setShared] = useState(false);
   const [note, setNote] = useState("");
@@ -46,6 +50,23 @@ export default function RoomLiveBar({ connected, sendReaction, onTaskSaved }: Pr
       </div>
       <form className="room-task" onSubmit={save}>
         <label htmlFor="current-task">지금 하는 일</label>
+        {openTodos.length > 0 && (
+          <select
+            aria-label="오늘의 할 일에서 고르기"
+            value=""
+            onChange={(e) => {
+              const picked = openTodos.find((t) => String(t.id) === e.target.value);
+              if (picked) setTask(picked.text.slice(0, ROOM_CONFIG.taskMaxLength));
+            }}
+          >
+            <option value="">할 일에서 고르기</option>
+            {openTodos.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.text}
+              </option>
+            ))}
+          </select>
+        )}
         <input
           id="current-task"
           maxLength={ROOM_CONFIG.taskMaxLength}
