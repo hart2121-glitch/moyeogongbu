@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
+import { mockSupabase } from "./supabaseMock.mjs";
 const launch = () =>
   chromium.launch({
     executablePath: process.env.CHROMIUM_PATH || "/usr/bin/chromium",
@@ -38,6 +39,7 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
     const p = await browser.newPage({
       viewport: { width: 1536, height: 1024 },
     });
+    await mockSupabase(p);
     const errors = [];
     p.on("pageerror", (e) => errors.push(e.message));
     await enter(p);
@@ -173,6 +175,7 @@ test("탭 간 원자적 예약·사용중 좌석 차단·퇴장 해제·만료 �
     });
     const a = await context.newPage(),
       b = await context.newPage();
+    await Promise.all([mockSupabase(a), mockSupabase(b)]);
     await Promise.all([enter(a), enter(b)]);
     for (const [page, owner] of [
       [a, "racer-a"],
@@ -276,6 +279,7 @@ test("확정 캐릭터의 불투명 픽셀은 원본과 동일하고 투명 배�
   const browser = await launch();
   try {
     const page = await browser.newPage();
+    await mockSupabase(page);
     await page.goto(url);
     const result = await page.evaluate(async () => {
       const decode = async (src) => {

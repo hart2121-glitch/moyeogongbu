@@ -1,4 +1,5 @@
 import { Check } from "@phosphor-icons/react";
+import { useProfile } from "../../account/viewmodel/useAccount";
 import PageFrame from "../../shell/view/PageFrame";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
 import { AVATAR_SRC, OUTFITS } from "../model/character";
@@ -6,6 +7,7 @@ import { AVATAR_SRC, OUTFITS } from "../model/character";
 export default function CharacterPage() {
   const { character } = useAppState();
   const { selectedOutfit } = character;
+  const displayName = useProfile().data?.displayName;
   return (
     <PageFrame title="캐릭터 꾸미기">
       <div className="page-intro">
@@ -20,7 +22,7 @@ export default function CharacterPage() {
             src={AVATAR_SRC}
             alt={`${selectedOutfit} 캐릭터 미리보기`}
           />
-          <strong>{character.nickname}</strong>
+          <strong>{displayName}</strong>
           <span>{selectedOutfit} 스타일</span>
         </div>
         <div className="wardrobe">

@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
+import { mockSupabase } from "./supabaseMock.mjs";
 import { companyLayout } from "../src/study/companyLayout.js";
 import {
   navigateFloor,
@@ -28,6 +29,7 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
     const page = await browser.newPage({
       viewport: { width: 1536, height: 1024 },
     });
+    await mockSupabase(page);
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
     await page.goto(url);

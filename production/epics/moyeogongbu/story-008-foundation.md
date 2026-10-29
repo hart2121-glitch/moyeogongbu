@@ -1,7 +1,7 @@
 # Story 008: 기반 구조
 
 > **Epic**: moyeogongbu
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: L
@@ -137,3 +137,10 @@
 
 - Depends on: None
 - Unlocks: `production/epics/moyeogongbu/story-001-account-foundation.md`
+
+## Completion Notes
+**Completed**: 2026-10-29
+**Criteria**: 9/9 passing (none deferred)
+**Deviations**: ADVISORY, `src/features/shop/model/shop.ts`의 임시 상품과 시작 코인은 리팩터링 전 `main.jsx` 값을 그대로 옮긴 것이며 Story 007에서 교체된다.
+**Test Evidence**: `production/qa/evidence/story-008-foundation/` (전후 캡처, 운영 배포 캡처), CI 통과. 테스트 파일은 qa.level minimal이라 면제.
+**Reviewed by**: self, no independent review

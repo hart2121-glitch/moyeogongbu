@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import RoomPreview from "../../../components/RoomPreview";
 import { roomPreviews } from "../../../roomPreviews";
 import { AVATAR_SRC } from "../../character/model/character";
+import { useProfile } from "../../account/viewmodel/useAccount";
 import FriendList from "../../friends/view/FriendList";
 import { useRoomNavigation } from "../../rooms/viewmodel/useRoomNavigation";
 import { ROUTES } from "../../shell/model/paths";
@@ -23,6 +24,7 @@ import { NOTICES } from "../model/notices";
 
 function ProfilePanel() {
   const { character, shop, modal } = useAppState();
+  const displayName = useProfile().data?.displayName;
   return (
     <Panel title="내 프로필" className="profile-panel">
       <div className="profile-main">
@@ -33,13 +35,10 @@ function ProfilePanel() {
         />
         <div className="profile-info">
           <div className="profile-name">
-            <h1>{character.nickname}</h1>
+            <h1>{displayName}</h1>
             <button
               aria-label="프로필 수정"
-              onClick={() => {
-                character.setNameInput(character.nickname);
-                modal.openModal("profile");
-              }}
+              onClick={() => modal.openModal("profile")}
             >
               <PencilSimple />
             </button>

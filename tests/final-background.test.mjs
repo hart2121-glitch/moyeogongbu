@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { chromium } from "@playwright/test";
+import { mockSupabase } from "./supabaseMock.mjs";
 
 test("첨부 원본 해시 보존 및 인물 제거 영역 밖 표시 픽셀 보존", async () => {
   const original = readFileSync("public/assets/company-study-room-final.png");
@@ -17,6 +18,7 @@ test("첨부 원본 해시 보존 및 인물 제거 영역 밖 표시 픽셀 보
   });
   try {
     const page = await browser.newPage();
+    await mockSupabase(page);
     await page.goto(process.env.APP_URL || "http://127.0.0.1:4173/");
     const stats = await page.evaluate(async () => {
       const load = async (src) => {
