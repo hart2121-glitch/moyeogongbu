@@ -21,7 +21,7 @@
 |---|-------|------|--------|-----|
 | 008 | 기반 구조 (001보다 먼저) | Integration | Complete | N/A |
 | 001 | 계정 | Integration | Complete | N/A |
-| 002 | 공부 세션 | Logic | Ready | N/A |
+| 002 | 공부 세션 | Logic | Complete | N/A |
 | 003 | 시급 코인과 퇴근 정산 | Logic | Ready | N/A |
 | 004 | 실시간 6석 회사 방 | Integration | Ready | N/A |
 | 005 | 공부 기록과 날짜별 할 일 | UI | Ready | N/A |

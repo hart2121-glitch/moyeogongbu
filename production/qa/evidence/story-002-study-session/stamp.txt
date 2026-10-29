@@ -1,0 +1,12 @@
+Reviewed-Content-Hash: src/features/rooms/view/CompanyRoomPage.tsx 216162985af9abb2a50edd77f4649b9b6149a124
+Reviewed-Content-Hash: src/features/session/model/session.ts 02496b05cc85d19612b3a4fb1f385f6a4e23ea0b
+Reviewed-Content-Hash: src/features/session/model/sessionConfig.ts e0dab58d67fe94b2aa9b83d39e2f012324b1cdbf
+Reviewed-Content-Hash: src/features/session/model/sessionMachine.ts b140ed1237c4c6d02daa66513e3fd69917ea5809
+Reviewed-Content-Hash: src/features/session/model/sessionStore.ts 874e58e59d70594f9a2738e2754df33106c17274
+Reviewed-Content-Hash: src/features/session/view/StudySessionBar.tsx 9831e2d3c541f70c92798574d66045d49d0ddf0c
+Reviewed-Content-Hash: src/features/session/viewmodel/useStudySession.ts 8ff72746ba87c39bd5fa56cb806b41c9409d5c0e
+Reviewed-Content-Hash: src/study/CharacterSprite.jsx 5e3c80f9dc3d72ff556a296a933ae6a216a3194b
+Reviewed-Content-Hash: src/study/CompanyRoom.jsx b0371dbf285872ee0a1a983c57c8274844a2205e
+Reviewed-Content-Hash: supabase/migrations/20261029154830_study_sessions.sql 19a029fbf5c7f998b2494cc8ced6187ccc7cf15a
+Reviewed-Content-Hash: tests/session.test.mjs 52240518511389c05ff0942feba8554865569700
+Reviewed-Content-Hash: tests/supabaseMock.mjs 2e52742baa99f50fd78fc207d6c13ca6e410dacb

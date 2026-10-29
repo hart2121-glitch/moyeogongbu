@@ -84,7 +84,7 @@ export default function CharacterSprite({ character, nickname }) {
       data-direction={character.direction}
     >
       <span className="character-name">
-        {nickname} ·{" "}
+        {nickname}{" "}
         {{ up: "↑", down: "↓", left: "←", right: "→" }[character.direction]}
       </span>
       {failed ? (
