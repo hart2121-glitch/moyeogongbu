@@ -1706,3 +1706,69 @@ button:active {
   flex-wrap: wrap;
   gap: 4px;
 }
+
+/* Story 007: 레이어 합성, 꾸미기, 상점 */
+.layer-stack {
+  position: relative;
+  width: 100%;
+  background: #f1dfc6;
+  border: 2px solid #bc9f86;
+}
+.avatar-preview .layer-stack img,
+.layer-stack img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  image-rendering: pixelated;
+}
+.study-character img.character-layer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+}
+.wardrobe-slot h2 {
+  margin-bottom: 10px;
+}
+.item-options {
+  flex-wrap: wrap;
+}
+.item-options button {
+  width: 132px;
+  gap: 4px;
+  text-align: center;
+}
+.item-options button small {
+  color: #826a56;
+  font-size: 12px;
+}
+.item-options button.not-owned {
+  border-style: dashed;
+}
+.try-on-note,
+.buy-reason {
+  color: #8b5a3c;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.customize-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.shop-section h2 {
+  font-size: 20px;
+  margin: 18px 0 12px;
+}
+.shop-item h3 {
+  font-size: 16px;
+}
+.shop-balance {
+  color: #68437e;
+}
+.shop-note {
+  margin: 16px 0 10px;
+}

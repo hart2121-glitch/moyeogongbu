@@ -16,6 +16,8 @@ import { useNavigate } from "react-router-dom";
 import RoomPreview from "../../../components/RoomPreview";
 import { roomPreviews } from "../../../roomPreviews";
 import { AVATAR_SRC } from "../../character/model/character";
+import { bodyTintOf } from "../../character/model/layers";
+import { useMyLook } from "../../character/viewmodel/useCharacter";
 import { useProfile } from "../../account/viewmodel/useAccount";
 import FriendList from "../../friends/view/FriendList";
 import { useRoomNavigation } from "../../rooms/viewmodel/useRoomNavigation";
@@ -27,14 +29,16 @@ import { useCoinSummary } from "../../coins/viewmodel/useCoins";
 import PendingSettlementPopup from "../../coins/view/PendingSettlementPopup";
 
 function ProfilePanel() {
-  const { character, modal } = useAppState();
+  const { modal } = useAppState();
+  const look = useMyLook().data;
   const balance = useCoinSummary().data?.balance ?? 0;
   const displayName = useProfile().data?.displayName;
   return (
     <Panel title="내 프로필" className="profile-panel">
       <div className="profile-main">
         <img
-          className={`profile-avatar outfit-${character.outfit}`}
+          className={`profile-avatar ${bodyTintOf(look)}`}
+          data-look-outfit={look?.outfit ?? ""}
           src={AVATAR_SRC}
           alt="보라색 리본을 단 밍구 캐릭터"
         />

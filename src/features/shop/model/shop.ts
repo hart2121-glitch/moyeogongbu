@@ -1,49 +1,75 @@
-export type ShopIcon = "cat" | "coffee" | "star" | "flower";
-
-export interface ShopItem {
-  name: string;
-  icon: ShopIcon;
-  cost: number;
-}
-
-/** 처음 보유한 코인. */
-export const INITIAL_COINS = 1250;
-
-export const SHOP_ITEMS: readonly ShopItem[] = [
-  { name: "포근한 고양이 쿠션", icon: "cat", cost: 300 },
-  { name: "따뜻한 머그컵", icon: "coffee", cost: 200 },
-  { name: "반짝이는 별 장식", icon: "star", cost: 450 },
-  { name: "작은 꽃 화분", icon: "flower", cost: 350 },
-];
-
-export const INSUFFICIENT_COINS_MESSAGE =
-  "코인이 부족해요. 다음에 다시 들러 주세요!";
-export const purchasedMessage = (item: string) =>
-  `${item} 구매 완료! 보관함에 담았어요.`;
-
-export interface Wallet {
-  coins: number;
-  owned: readonly string[];
-}
-
-export type PurchaseResult =
-  | { status: "owned" }
-  | { status: "insufficient" }
-  | { status: "bought"; wallet: Wallet };
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { socialRpc } from "../../friends/model/socialError";
 
 /**
- * 구매 규칙. 이미 가진 물건은 다시 살 수 없고, 코인이 모자라면 살 수 없다.
- * @example purchase({ coins: 1250, owned: [] }, "따뜻한 머그컵", 200)
+ * 상점 (Story 007). 목록, 가격, 보유 여부, 구매 판정은 모두 서버(`shop_items`, `buy_item`)가 정한다.
+ * 첫 출시 상점은 캐릭터 아이템만 판다: 액세서리, 의상, 머리.
  */
-export function purchase(
-  wallet: Wallet,
-  item: string,
-  cost: number,
-): PurchaseResult {
-  if (wallet.owned.includes(item)) return { status: "owned" };
-  if (wallet.coins < cost) return { status: "insufficient" };
-  return {
-    status: "bought",
-    wallet: { coins: wallet.coins - cost, owned: [...wallet.owned, item] },
-  };
+
+export type ItemSlot = "body" | "face" | "hair" | "outfit" | "accessory";
+
+export interface ShopItem {
+  id: string;
+  slot: ItemSlot;
+  name: string;
+  price: number;
+  /** 가입하면 무료로 받는 기본 아이템 (상점에 안 나온다). */
+  isDefault: boolean;
+  owned: boolean;
 }
+
+export type BuyResult =
+  | { status: "bought"; balance: number }
+  | { status: "owned"; balance: number }
+  | { status: "insufficient"; balance: number };
+
+/** 상점 진열 순서와 칸 이름. */
+export const SHOP_SLOTS: readonly { slot: ItemSlot; label: string }[] = [
+  { slot: "accessory", label: "액세서리" },
+  { slot: "outfit", label: "의상" },
+  { slot: "hair", label: "머리" },
+];
+
+interface ItemRow {
+  id: string;
+  slot: ItemSlot;
+  name: string;
+  price: number;
+  is_default: boolean;
+  owned: boolean;
+}
+
+/** 모든 아이템과 내 보유 여부. */
+export const fetchShop = async (client: SupabaseClient): Promise<ShopItem[]> =>
+  ((await socialRpc<ItemRow[]>(client, "get_shop")) ?? []).map((r) => ({
+    id: r.id,
+    slot: r.slot,
+    name: r.name,
+    price: Number(r.price) || 0,
+    isDefault: !!r.is_default,
+    owned: !!r.owned,
+  }));
+
+/** 구매. 코인 차감과 중복 방지는 서버가 한 번에 처리한다. */
+export const buyItem = async (client: SupabaseClient, itemId: string): Promise<BuyResult> => {
+  const r = await socialRpc<{ status: BuyResult["status"]; balance: number }>(client, "buy_item", { p_item: itemId });
+  return { status: r.status, balance: Number(r.balance) || 0 };
+};
+
+/** 상점에 진열하는 아이템 (기본 아이템 제외). */
+export const sellable = (items: readonly ShopItem[]) => items.filter((i) => !i.isDefault);
+
+/**
+ * 구매 버튼을 막는 이유. 살 수 있으면 null.
+ * @example buyBlockReason({ owned: false, price: 300 } as ShopItem, 120) // "180코인이 더 모이면 살 수 있어요."
+ */
+export function buyBlockReason(item: Pick<ShopItem, "owned" | "price">, balance: number): string | null {
+  if (item.owned) return "보유 중";
+  if (balance < item.price) return `${(item.price - balance).toLocaleString()}코인이 더 모이면 살 수 있어요.`;
+  return null;
+}
+
+export const purchasedMessage = (item: string) => `${item}을(를) 샀어요! 꾸미기에서 바로 입어 볼 수 있어요.`;
+export const insufficientMessage = "코인이 조금 모자라요. 공부하며 코인을 모은 뒤 다시 들러 주세요.";
+export const alreadyOwnedMessage = "이미 가지고 있는 아이템이에요.";
+export const buyErrorMessage = "구매하지 못했어요. 잠시 뒤에 다시 시도해 주세요.";

@@ -8,6 +8,7 @@ import {
   characterSprites,
 } from "./characterSprites";
 import { companyLayout } from "./companyLayout";
+import { composeLayers, defaultLook, poseKey } from "../features/character/model/layers";
 
 // 방향 전환마다 src를 바꾸지 않고 로드한 이미지를 유지합니다.
 const registeredSources = [
@@ -20,9 +21,10 @@ const registeredSources = [
 ];
 /**
  * testId, className, children, onClick: 같은 방 다른 사람 캐릭터의 구분과 반응, 마우스 올림 카드 (Story 004).
- * @param {{ character: any, nickname: string, testId?: string, className?: string, children?: import("react").ReactNode, onClick?: (e: any) => void }} props
+ * look: 저장한 꾸밈 (Story 007). 몸 레이어는 지금 프레임의 완성형 그림이고, 다른 레이어는 그림이 있는 자세에서만 겹친다.
+ * @param {{ character: any, nickname: string, look?: any, testId?: string, className?: string, children?: import("react").ReactNode, onClick?: (e: any) => void }} props
  */
-export default function CharacterSprite({ character, nickname, testId = "study-character", className = "", children = null, onClick = undefined }) {
+export default function CharacterSprite({ character, nickname, look = undefined, testId = "study-character", className = "", children = null, onClick = undefined }) {
   const [frame, setFrame] = useState(0);
   const [status, setStatus] = useState({});
   const activity =
@@ -71,6 +73,11 @@ export default function CharacterSprite({ character, nickname, testId = "study-c
       : null);
   const footPadding = anchor?.padding || 0;
   const footOffsetX = anchor ? ((43.5 - anchor.centerX) / 87) * 100 : 0;
+  const action = activity === "walking" ? "walk" : activity === "seated" || activity === "sitting" ? "sit" : activity === "resting" ? "rest" : "idle";
+  const frameIndex = Math.max(0, frames.indexOf(source));
+  const layers = composeLayers(look ?? defaultLook(), poseKey(action, facing, frameIndex), source);
+  const bodyClass = layers.find((l) => l.id === "body")?.className ?? "";
+  const overlays = layers.filter((l) => l.id !== "body" && l.src);
   const failed =
     status[desired] === "error" && status[approvedBackup] === "error";
   return (
@@ -86,6 +93,7 @@ export default function CharacterSprite({ character, nickname, testId = "study-c
       data-x={character.position.x}
       data-y={character.position.y}
       data-direction={character.direction}
+      {...Object.fromEntries(layers.map((l) => [`data-layer-${l.id.replace("_", "-")}`, l.itemId ?? ""]))}
       onClick={onClick}
     >
       <span className="character-name">
@@ -100,6 +108,7 @@ export default function CharacterSprite({ character, nickname, testId = "study-c
           <img
             key={path}
             src={path}
+            className={bodyClass}
             data-active={path === source}
             aria-hidden={path !== source}
             alt={
@@ -125,6 +134,11 @@ export default function CharacterSprite({ character, nickname, testId = "study-c
           />
         ))
       )}
+      {!failed &&
+        overlays.map((l) => (
+          <img key={l.id} data-layer={l.id} src={l.src} alt="" aria-hidden="true" className="character-layer"
+            style={{ zIndex: l.order, aspectRatio: "87 / 110", transform: `translate(${footOffsetX}%, ${(footPadding / 110) * 100}%)` }} />
+        ))}
     </div>
   );
 }

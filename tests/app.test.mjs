@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
 import { mockSupabase } from "./supabaseMock.mjs";
 
-test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
+test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_PATH || "/usr/bin/chromium",
     headless: true,
@@ -118,20 +118,25 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
       .getByRole("navigation")
       .getByRole("button", { name: "캐릭터 꾸미기", exact: true })
       .click();
-    await page.getByRole("button", { name: "세이지", exact: true }).click();
-    await page.getByRole("button", { name: "이 스타일로 적용하기" }).click();
+    // 처음 꾸미기: 기본 머리 2종과 의상 2종에서 고른다 (Story 007).
+    await page.getByRole("heading", { name: "처음 꾸미기" }).waitFor();
+    await page.getByRole("button", { name: /^세이지 옷/ }).click();
+    await page.getByRole("button", { name: "이 모습으로 시작하기" }).click();
+    await page.getByRole("button", { name: "이 모습으로 저장하기" }).waitFor();
     await page
       .getByRole("navigation")
       .getByRole("button", { name: "상점", exact: true })
       .click();
-    await page
-      .getByRole("button", { name: "구매하기", exact: true })
-      .first()
-      .click();
-    // 상점 구매 체험은 Story 007 전까지 서버 잔액을 바꾸지 않는다.
-    assert.equal(await page.locator(".wallet").innerText(), "342");
+    // 구매는 서버가 처리한다: 342 - 120 = 222. 코인이 모자란 아이템은 버튼이 막힌다.
+    await page.getByRole("button", { name: "보라 리본 구매하기" }).click();
+    await page.getByRole("button", { name: "보라 리본 보유 중" }).waitFor();
+    await page.waitForFunction(() => document.querySelector(".wallet")?.textContent?.trim() === "222");
     assert.equal(
-      await page.getByRole("button", { name: "보관함에 있어요" }).isDisabled(),
+      await page.getByRole("button", { name: "긴 생머리 구매하기" }).isDisabled(),
+      true,
+    );
+    assert.equal(
+      await page.getByRole("button", { name: "보라 리본 보유 중" }).isDisabled(),
       true,
     );
     await page
