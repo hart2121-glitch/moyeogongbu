@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
+import { mockSupabase } from "./supabaseMock.mjs";
 
 test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
   const browser = await chromium.launch({
@@ -12,6 +13,7 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
     const page = await browser.newPage({
       viewport: { width: 1536, height: 1024 },
     });
+    await mockSupabase(page);
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
     await page.goto(process.env.APP_URL || "http://127.0.0.1:4173/");
@@ -23,11 +25,9 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
         .count(),
       0,
     );
-    assert.equal(
-      await page
-        .locator(".profile-avatar")
-        .evaluate((img) => img.complete && img.naturalWidth > 0),
-      true,
+    // 로비는 프로필을 받은 뒤 그려지므로 아바타 이미지가 실제로 불러와질 때까지 기다린다.
+    await page.waitForFunction(
+      () => document.querySelector(".profile-avatar")?.naturalWidth > 0,
     );
     const officePreview = page.getByRole("img", {
       name: "회사 스터디룸 미리보기",
@@ -140,7 +140,7 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
     );
     assert.equal(await page.getByLabel("React 공부하기").isChecked(), true);
     await page.getByRole("button", { name: "프로필 수정" }).click();
-    await page.getByLabel("닉네임", { exact: true }).fill("공부친구");
+    await page.getByLabel("화면 이름", { exact: true }).fill("공부친구");
     await page.getByRole("button", { name: "저장하기", exact: true }).click();
     await page
       .getByRole("heading", { name: "공부친구", exact: true })
@@ -172,6 +172,7 @@ test("원본 경로 등록과 이미지 실패 시에도 카드 크기와 입장
     const page = await browser.newPage({
       viewport: { width: 1536, height: 1024 },
     });
+    await mockSupabase(page);
     // 실제 원본 대신 브라우저 테스트에서만 이미지 응답과 설정을 주입합니다.
     await page.route("**/src/roomPreviews.js*", async (route) => {
       await route.fulfill({
@@ -194,7 +195,7 @@ test("원본 경로 등록과 이미지 실패 시에도 카드 크기와 입장
     await page.route("**/test-school.png", (route) =>
       route.fulfill({ status: 404, body: "" }),
     );
-    await page.goto("http://127.0.0.1:4173/");
+    await page.goto(process.env.APP_URL || "http://127.0.0.1:4173/");
     await page.getByRole("heading", { name: "밍구", exact: true }).waitFor();
     const image = page.getByRole("img", {
       name: "회사 스터디룸 미리보기",

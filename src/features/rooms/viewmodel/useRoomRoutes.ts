@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
+import { useProfile } from "../../account/viewmodel/useAccount";
 import { ROUTES } from "../../shell/model/paths";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
 import { findRoomByCode, findThemeRoom } from "../model/rooms";
@@ -10,10 +11,11 @@ import { findRoomByCode, findThemeRoom } from "../model/rooms";
 export function useCompanyRoomRoute() {
   const { code = "" } = useParams();
   const navigate = useNavigate();
-  const { rooms, character } = useAppState();
+  const { rooms } = useAppState();
+  const displayName = useProfile().data?.displayName ?? "";
   return {
     room: findRoomByCode(rooms.rooms, code),
-    nickname: character.nickname,
+    nickname: displayName,
     exit: () => navigate(ROUTES.lobby),
   };
 }

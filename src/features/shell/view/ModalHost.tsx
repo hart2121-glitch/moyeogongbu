@@ -3,6 +3,7 @@ import FriendDetail from "../../friends/view/FriendDetail";
 import NoticeDetail from "../../lobby/view/NoticeDetail";
 import NoticeList from "../../lobby/view/NoticeList";
 import TaskForm from "../../lobby/view/TaskForm";
+import SettingsPanel from "../../account/view/SettingsPanel";
 import ProfileForm from "../../character/view/ProfileForm";
 import { modalTitle } from "../model/modal";
 import { useAppState } from "../viewmodel/AppStateContext";
@@ -20,18 +21,7 @@ function ModalBody() {
       <NoticeDetail title={modal.title} />
     );
   }
-  if (modal === "settings") {
-    return (
-      <>
-        <h2>편안한 공부를 위한 설정</h2>
-        <p>현재 버전은 소리 없이 사용할 수 있어요.</p>
-        <p className="muted">
-          로그인 없이 체험하는 첫 버전으로, 변경한 정보는 새로고침하면
-          초기화됩니다.
-        </p>
-      </>
-    );
-  }
+  if (modal === "settings") return <SettingsPanel />;
   return (
     <div className="empty-state">
       <Envelope />

@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
+import { mockSupabase } from "./supabaseMock.mjs";
 import { mkdir, writeFile } from "node:fs/promises";
 
 test("정면 걷기 4프레임 순환·정지 대기·프레임별 실제 발 정렬·픽셀 렌더링", async () => {
@@ -15,6 +16,7 @@ test("정면 걷기 4프레임 순환·정지 대기·프레임별 실제 발 �
     const page = await browser.newPage({
       viewport: { width: 1536, height: 1024 },
     });
+    await mockSupabase(page);
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
     await page.goto(process.env.APP_URL || "http://127.0.0.1:4173/");
@@ -87,6 +89,26 @@ test("정면 걷기 4프레임 순환·정지 대기·프레임별 실제 발 �
         pixelated: true,
       };
       window.collectWalk = true;
+      // 프레임 순서는 화면 갱신 표본이 아니라 속성 변경마다 기록한다.
+      // 표본만 보면 바쁜 컴퓨터에서 짧게 보인 프레임을 건너뛴다.
+      const recordFrame = () => {
+        if (!window.collectWalk) return;
+        const e = document.querySelector(".study-character"),
+          img = e?.querySelector("img[data-active=true]"),
+          src = img?.getAttribute("src");
+        if (
+          e?.dataset.activity === "walking" &&
+          e.dataset.direction === "down" &&
+          anchors[src] &&
+          window.walkReport.sequence.at(-1) !== src
+        )
+          window.walkReport.sequence.push(src);
+      };
+      new MutationObserver(recordFrame).observe(document.body, {
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["src", "data-active", "data-activity", "data-direction"],
+      });
       const collect = () => {
         if (!window.collectWalk) return;
         const e = document.querySelector(".study-character"),
@@ -116,7 +138,6 @@ test("정면 걷기 4프레임 순환·정지 대기·프레임별 실제 발 �
               a = anchors[src];
             if (a) {
               report.samples++;
-              if (report.sequence.at(-1) !== src) report.sequence.push(src);
               const r = img.getBoundingClientRect(),
                 w = e.getBoundingClientRect(),
                 stage = e.closest(".company-stage").getBoundingClientRect();

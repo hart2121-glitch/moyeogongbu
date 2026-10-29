@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
+import { mockSupabase } from "./supabaseMock.mjs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { companyLayout as layout } from "../src/study/companyLayout.js";
 
@@ -16,6 +17,7 @@ test("실제 브라우저 1·3·4·6번 각각 좌우 이동·퇴석·재착석 
     const page = await browser.newPage({
       viewport: { width: 1536, height: 1024 },
     });
+    await mockSupabase(page);
     page.on("pageerror", (e) => results.errors.push(e.message));
     await page.goto(process.env.APP_URL || "http://127.0.0.1:4173/");
     await page

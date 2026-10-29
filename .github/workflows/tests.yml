@@ -8,6 +8,11 @@ on:
 jobs:
   app:
     runs-on: ubuntu-latest
+    # 비밀이 아닌 가짜 값. 빌드와 개발 서버가 뜨기만 하면 되고,
+    # 브라우저 테스트는 이 주소의 Supabase 요청을 tests/supabaseMock.mjs가 가로챈다.
+    env:
+      VITE_SUPABASE_URL: http://127.0.0.1:54321
+      VITE_SUPABASE_ANON_KEY: ci-dummy-key
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

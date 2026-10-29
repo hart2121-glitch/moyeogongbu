@@ -1363,3 +1363,49 @@ button:active {
   fill: currentColor;
   color: #b2846e;
 }
+
+/* 로그인 전후 단계(로그인, 첫 화면 이름 설정): 기존 패널을 가운데에 놓기만 한다. */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+.auth-page .panel-body > * + *,
+.settings-actions + p {
+  margin-top: 12px;
+}
+.modal .check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.modal .check-row input {
+  width: auto;
+}
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 10px;
+}
+.privacy .panel-body {
+  line-height: 1.8;
+}
+.privacy h2 {
+  font-size: 19px;
+  margin: 26px 0 8px;
+}
+/* 새 화면의 링크와 되돌릴 수 없는 동작 버튼. 기존 색만 쓴다. */
+.auth-page a,
+.modal a,
+.privacy a {
+  color: #49533f;
+}
+.primary.danger {
+  background: #d88777;
+  border-color: #b2846e;
+  box-shadow:
+    inset 2px 2px #d9a28f,
+    0 2px #d1b899;
+}

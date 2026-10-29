@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
+import { mockSupabase } from "./supabaseMock.mjs";
 
 test("로비 메뉴 → 방 목록 → 생성·입장, 재접속 저장, 초대 코드 검증", async () => {
   const browser = await chromium.launch({
@@ -12,6 +13,7 @@ test("로비 메뉴 → 방 목록 → 생성·입장, 재접속 저장, 초대 
     const page = await browser.newPage({
       viewport: { width: 1536, height: 1024 },
     });
+    await mockSupabase(page);
     await page.goto(process.env.APP_URL || "http://127.0.0.1:4173/");
     await page.getByRole("heading", { name: "밍구", exact: true }).waitFor();
     await page
