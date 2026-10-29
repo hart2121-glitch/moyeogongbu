@@ -3,6 +3,9 @@ dist/
 playwright-report/
 test-results/
 *.log
+.env
+.env.*
+!.env.example
 
 # Claude Code Game Studios — local and runtime state
 .claude/settings.local.json
@@ -14,3 +17,4 @@ production/session-state/
 .claude/agent-memory/
 .claude/worktrees/
 docs/consistency-failures.md
+.omc/
