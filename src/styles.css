@@ -1429,3 +1429,204 @@ button:active {
   border-top: 2px dashed #b6a084;
   padding-top: 8px;
 }
+
+/* Story 005: 공부 기록과 할 일. 기존 팔레트 색만 쓴다. */
+.secondary-button {
+  background: #fff8e8;
+  border: 2px solid #b6a084;
+  color: #49533f;
+  border-radius: 5px;
+  padding: 10px 18px;
+  margin-top: 15px;
+}
+.text-button {
+  color: #49533f;
+  text-decoration: underline;
+  padding: 2px 4px;
+  font-size: 14px;
+}
+.record-today {
+  grid-template-columns: repeat(3, 1fr);
+}
+.records-section {
+  margin-top: 30px;
+  background: #fff5e6;
+  border: 2px solid #b7a284;
+  border-radius: 6px;
+  padding: 20px 24px;
+}
+.records-section h2 {
+  font-size: 19px;
+  margin-bottom: 4px;
+}
+.records-section > .muted {
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+.records-message {
+  margin-top: 24px;
+  color: #8a755e;
+}
+.week-bars {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 14px;
+}
+.week-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+}
+.week-bar-value {
+  font-size: 12px;
+  color: #806c54;
+  white-space: nowrap;
+}
+.week-bar-track {
+  position: relative;
+  width: 34px;
+  height: 140px;
+  background: #e7d9bf;
+  border: 2px solid #b7a284;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.week-bar-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #93a087;
+}
+.week-bar.is-today .week-bar-fill {
+  background: #6c7b61;
+}
+.week-bar-day {
+  font-size: 14px;
+}
+.week-bar.is-today .week-bar-day {
+  color: #49533f;
+  font-weight: 700;
+}
+.year-calendar {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.year-grid {
+  display: flex;
+  gap: 3px;
+}
+.year-week {
+  display: grid;
+  grid-template-rows: 16px repeat(7, 12px);
+  gap: 3px;
+}
+.year-month,
+.year-weekday {
+  font-size: 10px;
+  line-height: 12px;
+  color: #806c54;
+  white-space: nowrap;
+  width: 12px;
+}
+.year-weekdays {
+  margin-right: 4px;
+}
+.year-cell {
+  display: block;
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border-radius: 2px;
+  border: 1px solid #d6c3a9;
+}
+.year-cell.is-empty {
+  visibility: hidden;
+}
+.year-cell.is-today {
+  outline: 2px solid #49533f;
+  outline-offset: 1px;
+}
+.heat-0 {
+  background: #efe6cf;
+}
+.heat-1 {
+  background: #c9ccb5;
+  border-color: #aeb29a;
+}
+.heat-2 {
+  background: #93a087;
+  border-color: #78876b;
+}
+.heat-3 {
+  background: #6c7b61;
+  border-color: #57684e;
+}
+.heat-4 {
+  background: #49533f;
+  border-color: #3a493b;
+}
+.heat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+  font-size: 12px;
+  color: #806c54;
+}
+.heat-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.day-detail-heading {
+  font-size: 16px;
+  margin: 18px 0 8px;
+}
+.day-done-list,
+.day-todo-list,
+.carry-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.day-done-list li::before {
+  content: "✓ ";
+  color: #6c7b61;
+}
+.day-todo-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.day-todo-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.modal .day-todo-add {
+  margin-top: 16px;
+}
+.carry-list {
+  margin: 12px 0 4px;
+}
+.form-error {
+  color: #9b3b2f;
+}
+.room-task select {
+  max-width: 170px;
+  padding: 2px 4px;
+  font: inherit;
+  background: #fff8e8;
+  border: 2px solid #b6a084;
+  border-radius: 4px;
+  color: #34312c;
+}
