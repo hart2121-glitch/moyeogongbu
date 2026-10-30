@@ -59,11 +59,10 @@ test("실제 브라우저 1·3·4·6번 각각 좌우 이동·퇴석·재착석 
         .getByTestId("movement-status")
         .filter({ hasText: `${id}번 좌석 착석` })
         .waitFor({ timeout: 20000 });
-      assert.match(
-        await page
-          .locator(".study-character img[data-active=true]")
-          .getAttribute("src"),
-        /idle-down/,
+      // Story 009: 의자 앉기는 레이어 시트의 정면 앉기 칸이다.
+      assert.equal(
+        await page.getByTestId("study-character").getAttribute("data-pose"),
+        "sit.down",
       );
       assert.equal(await page.locator(".seat-foreground").count(), 1);
     };

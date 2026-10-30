@@ -88,39 +88,29 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
         await p.getByTestId("study-character").getAttribute("data-direction"),
         direction,
       );
-      const sprite = p.locator(".study-character img[data-active=true]");
-      await sprite.evaluate((img) => img.decode());
-      assert.match(
-        await sprite.getAttribute("src"),
-        new RegExp(`idle-${direction}\\.png\\.png$`),
-      );
-      const geometry = await sprite.evaluate((img) => {
-        const r = img.getBoundingClientRect(),
-          wrapper = img.parentElement.getBoundingClientRect();
+      // Story 009: 레이어 시트의 서기 칸. 칸(56×72)이 캐릭터 상자를 꽉 채우고, 칸 맨 아래 줄이 발이다.
+      const character = p.getByTestId("study-character");
+      assert.equal(await character.getAttribute("data-pose"), `idle.${direction}`);
+      const geometry = await character.evaluate((el) => {
+        const cell = el.querySelector('.sheet-frame[data-layer="body"]').getBoundingClientRect(),
+          box = el.getBoundingClientRect(),
+          img = el.querySelector('.sheet-frame[data-layer="body"] img');
         return {
-          ratio: r.width / r.height,
-          width: r.width,
-          wrapper: wrapper.width,
-          stage: img.closest(".company-stage").getBoundingClientRect().width,
-          footBottom: r.bottom - wrapper.bottom,
-          horizontalOffset: r.left - wrapper.left,
+          ratio: cell.width / cell.height,
+          width: cell.width,
+          box: box.width,
+          stage: el.closest(".company-stage").getBoundingClientRect().width,
+          footBottom: cell.bottom - box.bottom,
+          pixelated: getComputedStyle(img).imageRendering === "pixelated",
         };
       });
-      assert.ok(Math.abs(geometry.ratio - 87 / 110) < 0.001);
-      assert.ok(Math.abs(geometry.width - geometry.wrapper) < 0.1);
+      assert.ok(Math.abs(geometry.ratio - 56 / 72) < 0.001);
+      assert.ok(Math.abs(geometry.width - geometry.box) < 0.1);
       assert.ok(
         Math.abs(geometry.width / geometry.stage - 0.042 * 1.2 * 1.1 * 1.1) < 0.0001,
       );
-      const center = { up: 44, down: 43, left: 37.5, right: 49 }[direction];
-      assert.ok(
-        Math.abs(
-          geometry.horizontalOffset - ((43.5 - center) / 87) * geometry.width,
-        ) < 0.1,
-      );
-      const padding = { up: 6, down: 10, left: 5, right: 6 }[direction];
-      assert.ok(
-        Math.abs(geometry.footBottom - (padding / 87) * geometry.width) < 0.1,
-      );
+      assert.ok(Math.abs(geometry.footBottom) < 0.1);
+      assert.ok(geometry.pixelated);
     }
     await floor(p, { x: 0.74, y: 0.8 });
     await p.waitForFunction(

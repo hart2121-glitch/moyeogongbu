@@ -137,11 +137,10 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
     });
     await page.getByRole("button", { name: "휴식하기", exact: true }).click();
     await waitStatus(page, "소파에서 휴식 중");
-    assert.match(
-      await page
-        .locator(".study-character img[data-active=true]")
-        .getAttribute("src"),
-      /idle-down/,
+    // Story 009: 소파 휴식은 레이어 시트의 휴식 칸(정면)이다.
+    assert.equal(
+      await page.getByTestId("study-character").getAttribute("data-pose"),
+      "rest.down",
     );
     const resting = await page
       .getByTestId("study-character")
