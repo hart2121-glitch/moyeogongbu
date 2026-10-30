@@ -37,79 +37,72 @@
     "/assets/characters/walk-down-01.png.png",
     "/assets/characters/walk-down-02.png.png",
     "/assets/characters/walk-down-03.png.png",
-    "/assets/characters/walk-down-04.png.png",
-    "/assets/characters/walk-down-01.png.png"
+    "/assets/characters/walk-down-04.png.png"
   ],
   "changes": [
     {
       "signature": "idle|up|/assets/characters/idle-up.png.png",
-      "time": 5781.89999999851,
+      "time": 17927.39999999851,
       "x": "0.3145817912657291",
       "y": "0.4544443493883138"
     },
     {
       "signature": "walking|up|/assets/characters/idle-up.png.png",
-      "time": 5815.599999997765,
+      "time": 17979.5,
       "x": "0.3145817912657291",
       "y": "0.4544443493883138"
     },
     {
       "signature": "walking|down|/assets/characters/walk-down-01.png.png",
-      "time": 5831.199999999255,
+      "time": 17996,
       "x": "0.3145817912657291",
       "y": "0.4544443493883138"
     },
     {
       "signature": "walking|down|/assets/characters/walk-down-02.png.png",
-      "time": 5964.699999999255,
+      "time": 18147.60000000149,
       "x": "0.3145817912657291",
-      "y": "0.4934801411453635"
+      "y": "0.4984291650065353"
     },
     {
       "signature": "walking|down|/assets/characters/walk-down-03.png.png",
-      "time": 6114.39999999851,
+      "time": 18296.89999999851,
       "x": "0.3145817912657291",
-      "y": "0.5374063884338667"
+      "y": "0.5423554122950385"
     },
     {
       "signature": "walking|down|/assets/characters/walk-down-04.png.png",
-      "time": 6248,
+      "time": 18446,
       "x": "0.3145817912657291",
-      "y": "0.5764421801909168"
+      "y": "0.5863695120781186"
     },
     {
       "signature": "walking|down|/assets/characters/walk-down-01.png.png",
-      "time": 6398.39999999851,
+      "time": 18596,
       "x": "0.3145817912657291",
-      "y": "0.62036842747942"
+      "y": "0.6302957593666219"
     },
     {
       "signature": "walking|down|/assets/characters/walk-down-02.png.png",
-      "time": 6531.199999999255,
+      "time": 18729.70000000298,
       "x": "0.3145817912657291",
-      "y": "0.65940421923647"
+      "y": "0.6693901194533897"
     },
     {
       "signature": "walking|down|/assets/characters/walk-down-03.png.png",
-      "time": 6681.199999999255,
+      "time": 18895.70000000298,
       "x": "0.3145817912657291",
-      "y": "0.7033304665249732"
+      "y": "0.718236106438205"
     },
     {
       "signature": "walking|down|/assets/characters/walk-down-04.png.png",
-      "time": 6815.099999997765,
+      "time": 19048,
       "x": "0.3145817912657291",
-      "y": "0.742395542446882"
-    },
-    {
-      "signature": "walking|down|/assets/characters/walk-down-01.png.png",
-      "time": 6964.699999999255,
-      "x": "0.3145817912657291",
-      "y": "0.7862925055705264"
+      "y": "0.7622794903861447"
     },
     {
       "signature": "idle|down|/assets/characters/idle-down.png.png",
-      "time": 6982.599999997765,
+      "time": 19155.10000000149,
       "x": "0.3145817912657291",
       "y": "0.7898023783043887"
     }

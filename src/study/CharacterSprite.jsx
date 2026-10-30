@@ -19,10 +19,10 @@ const registeredSources = [
   ]),
 ];
 /**
- * testId, className, children: 같은 방 다른 사람 캐릭터의 구분과 반응, 마우스 올림 카드 (Story 004).
- * @param {{ character: any, nickname: string, testId?: string, className?: string, children?: import("react").ReactNode }} props
+ * testId, className, children, onClick: 같은 방 다른 사람 캐릭터의 구분과 반응, 마우스 올림 카드 (Story 004).
+ * @param {{ character: any, nickname: string, testId?: string, className?: string, children?: import("react").ReactNode, onClick?: (e: any) => void }} props
  */
-export default function CharacterSprite({ character, nickname, testId = "study-character", className = "", children = null }) {
+export default function CharacterSprite({ character, nickname, testId = "study-character", className = "", children = null, onClick = undefined }) {
   const [frame, setFrame] = useState(0);
   const [status, setStatus] = useState({});
   const activity =
@@ -86,6 +86,7 @@ export default function CharacterSprite({ character, nickname, testId = "study-c
       data-x={character.position.x}
       data-y={character.position.y}
       data-direction={character.direction}
+      onClick={onClick}
     >
       <span className="character-name">
         {nickname}{" "}

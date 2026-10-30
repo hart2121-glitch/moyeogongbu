@@ -432,3 +432,12 @@
   font-size: 13px;
   margin: 8px 0 2px;
 }
+
+.study-character.is-remote.is-open .character-card {
+  display: flex;
+}
+.character-card button {
+  margin-top: 2px;
+  font-size: 11px;
+  padding: 1px 4px;
+}

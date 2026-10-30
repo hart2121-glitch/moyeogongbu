@@ -3,6 +3,8 @@ import { nextPomodoroClaim } from "../../coins/model/coinMath";
 import { coinStore } from "../../coins/model/coinStore";
 import { useCoinSummary, useRefreshCoins } from "../../coins/viewmodel/useCoins";
 import { useSession } from "../../account/viewmodel/SessionContext";
+import { promptNotificationKind } from "../../notifications/model/notifications";
+import { usePushNotification } from "../../notifications/viewmodel/useNotifications";
 import { SESSION_CONFIG } from "../model/sessionConfig";
 import { SessionTakenError, type SessionSnapshot } from "../model/session";
 import { sessionStore } from "../model/sessionStore";
@@ -173,8 +175,17 @@ export function useStudySession() {
     void chain.current.then(send);
   }, [link, coinRules, machine.prompt, machine.pomodoro, machine.awaySince]);
 
-  // 탭이 뒤에 있고 사용자가 허용했을 때만 브라우저 알림을 보낸다.
+  // 뽀모도로 종료와 자리 비움 확인은 종 아이콘 알림 목록에도 남긴다 (Story 006, 서버가 짧은 간격 중복을 거른다).
   const promptKind = machine.prompt?.kind;
+  const push = usePushNotification();
+  const pushRef = useRef(push);
+  pushRef.current = push;
+  const promptShownAt = machine.prompt?.shownAt;
+  useEffect(() => {
+    if (promptKind && promptShownAt !== undefined) pushRef.current(promptNotificationKind(promptKind));
+  }, [promptKind, promptShownAt]);
+
+  // 탭이 뒤에 있고 사용자가 허용했을 때만 브라우저 알림을 보낸다.
   useEffect(() => {
     if (!promptKind || !document.hidden) return;
     if (typeof Notification === "undefined" || Notification.permission !== "granted") return;

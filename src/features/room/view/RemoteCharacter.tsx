@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import FriendRequestAction from "../../friends/view/FriendRequestAction";
 import CharacterSprite from "../../../study/CharacterSprite";
 import { COMPANY_BACKGROUND, companyLayout } from "../../../study/companyLayout";
 import { useCharacterMovement } from "../../../study/useCharacterMovement";
@@ -59,13 +60,16 @@ export default function RemoteCharacter({ meta, status, reaction, subscribeMoves
   }, [character.activity]);
 
   const name = status?.displayName ?? meta.name;
+  // 캐릭터를 누르면 카드가 고정되어 "친구 요청"을 누를 수 있다. 클릭은 그대로 바닥까지 전달해 기존 이동 클릭을 막지 않는다.
+  const [open, setOpen] = useState(false);
   const seat = companyLayout.seats.find(
     (s) => s.id === (character.occlusionSeatId || (character.activity === "seated" ? character.seatId : null)),
   );
   const rect = (seat as { foreground?: { left: number; top: number; right: number; bottom: number } } | undefined)?.foreground;
   return (
     <>
-      <CharacterSprite character={character} nickname={name} testId="remote-character" className="is-remote">
+      <CharacterSprite character={character} nickname={name} testId="remote-character" className={`is-remote ${open ? "is-open" : ""}`}
+        onClick={() => setOpen((v) => !v)}>
         {reaction && (
           <span className="character-reaction" data-testid="character-reaction">
             {reactionLabel(reaction.key)}
@@ -76,6 +80,7 @@ export default function RemoteCharacter({ meta, status, reaction, subscribeMoves
           <span>{presenceLabel(character.activity, status?.state)}</span>
           <span>오늘 {formatStudyTime(status?.todaySeconds ?? 0)}</span>
           {status?.currentTask && <span>지금 하는 일: {status.currentTask}</span>}
+          <FriendRequestAction userId={meta.userId} />
         </span>
       </CharacterSprite>
       {rect && (

@@ -62,6 +62,21 @@ export function createFakeServer() {
     /** topic -> Map(key -> meta) */
     realtimePresence: new Map(),
     broadcasts: [],
+    /** Story 006 친구, 우편, 알림. 판정 규칙은 *_friends_mail.sql과 같다. */
+    social: { codes: new Map(), friends: new Set(), requests: new Set(), blocks: new Map(), mail: [], notifications: [], mailSeq: 1, notifSeq: 1 },
+    /** 두 사람을 바로 친구로 묶는다 (테스트 준비용). */
+    addFriend(a, b) {
+      server.social.friends.add([a, b].sort().join("|"));
+    },
+    /** 우편을 심는다. kind: friend_request | room_invite | reward */
+    addMail(userId, mail) {
+      const row = { id: server.social.mailSeq++, user_id: userId, claimed: false, days_left: 30, payload: {}, created_at: new Date().toISOString(), ...mail };
+      server.social.mail.push(row);
+      return row.id;
+    },
+    addNotification(userId, n) {
+      server.social.notifications.push({ id: server.social.notifSeq++, user_id: userId, read: false, created_at: new Date().toISOString(), ...n });
+    },
     addRoom({ id = `10000000-0000-4000-8000-${String(++roomSeq).padStart(12, "0")}`, name, code, ownerId }) {
       server.rooms.set(id, { id, name, invite_code: code, owner_id: ownerId, created_at: Date.now() });
       server.members.set(id, new Map([[ownerId, Date.now()]]));
@@ -98,6 +113,162 @@ export function createFakeServer() {
 }
 
 class RpcError extends Error {}
+
+const SOCIAL = { friendCap: 50, attendanceCoins: 10 };
+
+// Story 006 친구, 우편, 알림 RPC. 알 수 없는 이름이면 undefined.
+function socialRpc(server, me, name, args, credit) {
+  const so = server.social;
+  const pair = (a, b) => [a, b].sort().join("|");
+  const isFriend = (a, b) => so.friends.has(pair(a, b));
+  const count = (u) => [...so.friends].filter((p) => p.split("|").includes(u)).length;
+  const nameOf = (u) => server.names.get(u) ?? null;
+  const blocked = (by, who) => so.blocks.get(by)?.has(who);
+  const makeFriends = (a, b) => {
+    if (isFriend(a, b)) return;
+    if (count(a) >= SOCIAL.friendCap) fail("friend_cap");
+    if (count(b) >= SOCIAL.friendCap) fail("friend_cap_other");
+    so.friends.add(pair(a, b));
+    so.requests.delete(a + ">" + b);
+    so.requests.delete(b + ">" + a);
+    so.mail = so.mail.filter((m) => !(m.kind === "friend_request" && pair(m.user_id, m.sender_id) === pair(a, b)));
+  };
+  const request = (target) => {
+    if (!target || !server.names.has(target)) fail("invalid_code");
+    if (target === me) fail("self");
+    if (isFriend(me, target)) return { status: "already_friends" };
+    if (blocked(me, target)) fail("you_blocked");
+    if (blocked(target, me)) return { status: "sent" };
+    if (so.requests.has(target + ">" + me)) {
+      makeFriends(me, target);
+      return { status: "accepted" };
+    }
+    if (count(me) >= SOCIAL.friendCap) fail("friend_cap");
+    if (!so.requests.has(me + ">" + target)) {
+      so.requests.add(me + ">" + target);
+      server.addMail(target, { kind: "friend_request", sender_id: me });
+    }
+    return { status: "sent" };
+  };
+  const mine = (id) => so.mail.find((m) => m.id === id && m.user_id === me);
+  switch (name) {
+    case "send_friend_request": {
+      const code = String(args.p_code ?? "").replace(/\s+/g, "").toUpperCase();
+      return request([...so.codes].find(([, c]) => c === code)?.[0]);
+    }
+    case "send_friend_request_to": {
+      const shared = [...server.members.values()].some((m) => m.has(me) && m.has(args.p_user));
+      if (!shared) fail("not_same_room");
+      return request(args.p_user);
+    }
+    case "respond_friend_request": {
+      const from = args.p_from;
+      if (args.p_action === "block") {
+        socialRpc(server, me, "block_user", { p_user: from }, credit);
+        return { status: "blocked" };
+      }
+      if (!so.requests.has(from + ">" + me)) fail("no_request");
+      if (args.p_action === "accept") {
+        makeFriends(me, from);
+        return { status: "accepted" };
+      }
+      so.requests.delete(from + ">" + me);
+      so.mail = so.mail.filter((m) => !(m.user_id === me && m.kind === "friend_request" && m.sender_id === from));
+      return { status: "rejected" };
+    }
+    case "unfriend":
+      so.friends.delete(pair(me, args.p_user));
+      return null;
+    case "block_user": {
+      if (!so.blocks.has(me)) so.blocks.set(me, new Set());
+      so.blocks.get(me).add(args.p_user);
+      so.friends.delete(pair(me, args.p_user));
+      so.requests.delete(me + ">" + args.p_user);
+      so.requests.delete(args.p_user + ">" + me);
+      so.mail = so.mail.filter((m) => !(m.user_id === me && m.sender_id === args.p_user));
+      return null;
+    }
+    case "unblock_user":
+      so.blocks.get(me)?.delete(args.p_user);
+      return null;
+    case "list_blocks":
+      return [...(so.blocks.get(me) ?? [])].map((u) => ({ user_id: u, display_name: nameOf(u) }));
+    case "list_friends":
+      return [...so.friends]
+        .map((p) => p.split("|"))
+        .filter((p) => p.includes(me))
+        .map((p) => (p[0] === me ? p[1] : p[0]))
+        .map((u) => {
+          const study = server.studyState.get(u)?.state;
+          const state = !study || study === "left" ? "offline" : study;
+          const room = [...server.presence].find(([, map]) => [...map.values()].some((x) => x.userId === u))?.[0] ?? null;
+          const member = room && server.members.get(room)?.has(me);
+          return { user_id: u, display_name: nameOf(u), state, in_room: !!room, room_id: member ? room : null, room_name: member ? server.rooms.get(room)?.name : null };
+        });
+    case "invite_to_room": {
+      if (!server.members.get(args.p_room)?.has(me)) fail("not_member");
+      if (!isFriend(me, args.p_friend)) fail("not_friend");
+      if (server.members.get(args.p_room).size >= RULES.maxMembers) fail("room_full");
+      if (server.members.get(args.p_room).has(args.p_friend)) fail("already_member");
+      server.addMail(args.p_friend, { kind: "room_invite", sender_id: me, room_id: args.p_room });
+      return { status: "sent" };
+    }
+    case "list_mail":
+      return so.mail
+        .filter((m) => m.user_id === me)
+        .sort((a, b) => b.id - a.id)
+        .map((m) => ({ ...m, sender_name: m.sender_id ? nameOf(m.sender_id) : null, room_name: m.room_id ? server.rooms.get(m.room_id)?.name ?? null : null }));
+    case "claim_mail": {
+      const m = mine(args.p_id);
+      if (!m || m.kind !== "reward") fail("no_mail");
+      if (m.claimed) return { status: "already_claimed", amount: 0 };
+      if (m.days_left <= 0) fail("mail_expired");
+      m.claimed = true;
+      credit(Number(m.payload?.coins) || 0);
+      return { status: "claimed", amount: Number(m.payload?.coins) || 0 };
+    }
+    case "accept_room_invite": {
+      const m = mine(args.p_id);
+      if (!m || m.kind !== "room_invite") fail("no_mail");
+      const members = server.members.get(m.room_id);
+      if (!members.has(me)) {
+        if (server.bans.get(m.room_id).has(me)) fail("banned");
+        if (members.size >= RULES.maxMembers) fail("members_full");
+        server.addMember(m.room_id, me);
+      }
+      m.claimed = true;
+      return { id: m.room_id, name: server.rooms.get(m.room_id).name };
+    }
+    case "delete_mail":
+      so.mail = so.mail.filter((m) => !(m.id === args.p_id && m.user_id === me && m.kind !== "friend_request" && !(m.kind === "reward" && !m.claimed)));
+      return null;
+    case "push_notification":
+      if (!["pomodoro_end", "away_check"].includes(args.p_kind)) fail("invalid_kind");
+      server.addNotification(me, { kind: args.p_kind });
+      return null;
+    case "list_notifications":
+      return so.notifications
+        .filter((n) => n.user_id === me)
+        .sort((a, b) => b.id - a.id)
+        .map((n) => ({ ...n, actor_name: n.actor_id ? nameOf(n.actor_id) : null, room_name: n.room_id ? server.rooms.get(n.room_id)?.name ?? null : null }));
+    case "mark_notifications_read":
+      for (const n of so.notifications) if (n.user_id === me) n.read = true;
+      return null;
+    case "inbox_counts":
+      return {
+        mail: so.mail.filter((m) => m.user_id === me && !m.claimed).length,
+        notifications: so.notifications.filter((n) => n.user_id === me && !n.read).length,
+      };
+  }
+  return undefined;
+}
+
+const NOTICES = [
+  { tag: "이벤트", title: "10월 출석 이벤트가 시작되었어요!", body: "하루 첫 착석 때 출석 보상 10코인이 우편함으로 와요." },
+  { tag: "업데이트", title: "새로운 가구가 추가되었어요!", body: "회사 스터디룸에 새 가구가 곧 놓일 예정이에요." },
+  { tag: "안내", title: "서비스 이용 수칙을 확인해 주세요.", body: "서로를 배려하며 조용히 함께 공부해요." },
+  { tag: "이벤트", title: "스터디카페 확장 오픈!", body: "스터디카페는 픽셀아트가 준비되는 대로 열려요." },
+];
 const fail = (code) => {
   throw new RpcError(code);
 };
@@ -200,11 +371,18 @@ function roomRpc(server, me, name, args) {
       requireOwner();
       return [...server.bans.get(room.id)].map((u) => ({ user_id: u, display_name: server.names.get(u) ?? null }));
     case "enter_room":
-    case "heartbeat_room":
+    case "heartbeat_room": {
       requireMember();
       sweep(room.id);
+      const wasHere = [...server.presence.get(room.id).values()].some((p) => p.userId === me);
       touch(room.id, args.p_tab_id);
+      // Story 006: 처음 들어오면 방 안의 친구에게 입장 알림.
+      if (name === "enter_room" && !wasHere)
+        for (const u of new Set([...server.presence.get(room.id).values()].map((p) => p.userId)))
+          if (u !== me && server.social.friends.has([me, u].sort().join("|")))
+            server.addNotification(u, { kind: "friend_entered", actor_id: me, room_id: room.id });
       return state(room.id);
+    }
     case "exit_room": {
       if (!room) return null;
       server.presence.get(room.id).delete(`${me}|${args.p_tab_id}`);
@@ -361,14 +539,16 @@ export async function mockSupabase(
     seedRoom = userId === FAKE_USER_ID,
     todos = [],
     records = [],
+    friendCode = userId === FAKE_USER_ID ? "ABCD2345" : "WXYZ6789",
   } = {},
 ) {
   const session = fakeSession(userId);
   server.names.set(userId, displayName);
+  server.social.codes.set(userId, friendCode);
   if (seedRoom && !server.rooms.has(SEED_ROOM.id))
     server.addRoom({ id: SEED_ROOM.id, name: SEED_ROOM.name, code: SEED_ROOM.code, ownerId: userId });
   const state = {
-    profile: { id: userId, display_name: displayName, friend_code: "ABCD2345" },
+    profile: { id: userId, display_name: displayName, friend_code: friendCode },
     // 공부 세션 RPC의 가짜 서버. 시각은 테스트 프로세스의 실제 시각이다.
     study: { tabId: null, state: null, closedSeconds: 0, openSince: null },
     calls: [],
@@ -540,6 +720,17 @@ export async function mockSupabase(
     }
     const coin = path.match(/\/rpc\/(get_coin_summary|settle_study|pending_settlement|dismiss_settlement|claim_pomodoro_bonus)$/);
     if (coin) return json(route, coinRpc(coin[1], request.postDataJSON() ?? {}));
+    const social = path.match(/\/rpc\/(\w+)$/);
+    if (social) {
+      try {
+        const body = socialRpc(server, userId, social[1], request.postDataJSON() ?? {}, (n) => (state.coins.balance += n));
+        if (body !== undefined) return body === null ? route.fulfill({ status: 204, body: "" }) : json(route, body);
+      } catch (e) {
+        if (e instanceof RpcError) return json(route, { code: "P0001", message: e.message }, 400);
+        throw e;
+      }
+    }
+    if (path.endsWith("/notices")) return json(route, NOTICES);
     const room = path.match(/\/rpc\/(\w+)$/);
     if (room) {
       try {

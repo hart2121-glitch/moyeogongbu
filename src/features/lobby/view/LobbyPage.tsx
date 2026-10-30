@@ -22,7 +22,7 @@ import { useRoomNavigation } from "../../rooms/viewmodel/useRoomNavigation";
 import { ROUTES } from "../../shell/model/paths";
 import Panel from "../../shell/view/Panel";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
-import { NOTICES } from "../model/notices";
+import { useNotices } from "../viewmodel/useNotices";
 import { useCoinSummary } from "../../coins/viewmodel/useCoins";
 import PendingSettlementPopup from "../../coins/view/PendingSettlementPopup";
 
@@ -147,6 +147,7 @@ function TasksPanel() {
 
 function NoticesPanel() {
   const { openModal } = useAppState().modal;
+  const notices = useNotices().slice(0, 4);
   return (
     <Panel
       title="최근 공지사항"
@@ -157,10 +158,10 @@ function NoticesPanel() {
       }
     >
       <div className="notices">
-        {NOTICES.map(({ tag, title }, i) => (
+        {notices.map(({ tag, title, body }, i) => (
           <button
             key={title}
-            onClick={() => openModal({ type: "notice", tag, title })}
+            onClick={() => openModal({ type: "notice", tag, title, body })}
           >
             <span className={`tag tag-${i}`}>{tag}</span>
             <span>{title}</span>
