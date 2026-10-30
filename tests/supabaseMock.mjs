@@ -120,7 +120,14 @@ class RpcError extends Error {}
 // Story 007: 서버 shop_items 시드와 같은 목록 (*_shop.sql).
 export const SHOP_ITEMS = [
   ["body-basic", "body", "기본 몸", 0, true],
-  ["face-basic", "face", "기본 얼굴", 0, true],
+  ["face-basic", "face", "보라 눈", 0, true],
+  // Story 009 눈 색 (*_eye_colors.sql)
+  ["face-black", "face", "검은 눈", 0, true],
+  ["face-brown", "face", "갈색 눈", 0, true],
+  ["face-amber", "face", "호박색 눈", 0, true],
+  ["face-green", "face", "초록 눈", 0, true],
+  ["face-blue", "face", "파란 눈", 0, true],
+  ["face-gray", "face", "회색 눈", 0, true],
   ["hair-lavender", "hair", "라벤더 머리", 0, true],
   ["hair-chestnut", "hair", "밤색 머리", 0, true],
   ["outfit-lavender", "outfit", "라벤더 옷", 0, true],

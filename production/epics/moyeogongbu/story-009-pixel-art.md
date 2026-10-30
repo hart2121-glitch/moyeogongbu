@@ -67,7 +67,7 @@
 
 - 기본 (무료)
   - 몸: `body-basic`
-  - 얼굴: `face-basic`
+  - 얼굴: `face-basic` (보라 눈), 눈 색 6종 (2026-10-31 추가, 눈동자 색만 바꿈): `face-black`, `face-brown`, `face-amber`, `face-green`, `face-blue`, `face-gray`
   - 머리 2종: `hair-lavender`, `hair-chestnut` (각각 뒷머리, 앞머리 2장)
   - 의상 2종: `outfit-lavender`, `outfit-sage`
 - 상점 액세서리 6종: `acc-ribbon`, `acc-hairpin`, `acc-glasses`, `acc-headphones`, `acc-scarf`, `acc-beret`

@@ -47,15 +47,18 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     await page.keyboard.press("Escape");
     await page.goto(`${url}character`);
 
-    // 처음 꾸미기: 기본 아이템만
+    // 처음 꾸미기: 기본 아이템만 (머리 2, 눈 색 7, 의상 2)
     await page.getByRole("heading", { name: "처음 꾸미기" }).waitFor();
-    assert.equal(await page.locator(".item-options button").count(), 4);
+    assert.equal(await page.locator(".item-options button").count(), 11);
     await page.getByRole("button", { name: /^밤색 머리/ }).click();
+    await page.getByRole("button", { name: /^초록 눈/ }).click();
+    assert.equal(await page.getByTestId("character-layers").first().getAttribute("data-layer-face"), "face-green");
     await page.getByRole("button", { name: /^세이지 옷/ }).click();
     await shot(page, "customize-first-time-default-pick.png");
     await page.getByRole("button", { name: "이 모습으로 시작하기" }).click();
     await page.getByRole("button", { name: "이 모습으로 저장하기" }).waitFor();
     assert.equal(server.looks.get(FAKE_USER_ID).outfit, "outfit-sage");
+    assert.equal(server.looks.get(FAKE_USER_ID).face, "face-green");
 
     // 상점: 120코인으로 리본은 살 수 있고, 나머지는 부드러운 이유와 함께 막힌다
     await nav(page, "상점");

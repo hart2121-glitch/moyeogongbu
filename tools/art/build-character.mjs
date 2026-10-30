@@ -1,6 +1,6 @@
 // 사용법: node tools/art/build-character.mjs
 // art-src/characters/src/의 기본 몸과 부품 원재료로 23프레임 시트를 만든다 (Story 009).
-// 출력: art-src/characters/body-basic.png, face-<id>.png, hair-<id>-front.png, hair-<id>-back.png, outfit-<id>.png
+// 출력: art-src/characters/body-basic.png, face-<id>.png, hair-<id>-front.png, hair-<id>-back.png, outfit-<id>.png, 색 바꾸기 변형
 // 게임은 뒷머리 → 몸 → 옷 → 얼굴 → 앞머리 순서로 같은 칸을 겹친다.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -190,15 +190,15 @@ function rampColor(ramp, v) {
 
 /**
  * 색 바꾸기 변형 (src/recolor/<시트 이름>.json: from, hue, ramp).
- * 이미 만든 시트에서 hue 범위 안의 픽셀만 명도 순서를 지켜 새 색 띠로 바꾼다. 생성 없이 같은 모양의 다른 색 아이템을 만든다.
- * 눈동자처럼 진한 색(채도 0.7, 명도 0.5 초과)은 부품에 섞여 들어온 얼굴 픽셀이라 그대로 둔다.
+ * 이미 만든 시트에서 hue 범위 안의 픽셀만 명도 순서를 지켜 새 색 띠로 바꾼다. 생성 없이 같은 모양의 다른 색 아이템을 만든다
+ * (머리 색, 눈 색). 흰자처럼 채도가 낮은 픽셀은 그대로 둔다.
  */
 function recolorSheet(sheet, { hue: [h0, h1], ramp }) {
   const out = { ...sheet, pixels: sheet.pixels.slice() };
   for (let i = 0; i < out.pixels.length; i += 4) {
     if (!out.pixels[i + 3]) continue;
     const c = hsv(out.pixels[i], out.pixels[i + 1], out.pixels[i + 2]);
-    if (c.h >= h0 && c.h <= h1 && c.s >= 0.15 && !(c.s > 0.7 && c.v > 0.5)) out.pixels.set(rampColor(ramp, c.v), i);
+    if (c.h >= h0 && c.h <= h1 && c.s >= 0.15) out.pixels.set(rampColor(ramp, c.v), i);
   }
   return out;
 }

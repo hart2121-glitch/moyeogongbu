@@ -26,6 +26,8 @@ export interface ItemAsset {
 }
 
 const sheet = (name: string): LayerSource => ({ sheet: `/assets/characters/layers/${name}.png` });
+/** 눈 색 아이템: 얼굴 레이어 시트 하나. */
+const face = (id: string): ItemAsset => ({ placeholder: false, layers: { face: sheet(id) } });
 /** 머리 아이템: 같은 이름의 뒷머리와 앞머리 시트 한 쌍. */
 const hair = (id: string): ItemAsset => ({ placeholder: false, layers: { hair_back: sheet(`${id}-back`), hair_front: sheet(`${id}-front`) } });
 
@@ -33,8 +35,15 @@ const hair = (id: string): ItemAsset => ({ placeholder: false, layers: { hair_ba
 export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   // 기본 몸: 머리카락과 눈, 입이 없는 몸, 회색 바디슈트.
   "body-basic": { placeholder: false, layers: { body: sheet("body-basic") } },
-  // 기본 얼굴: 승인 시안 N1의 눈과 입 (art-src/characters/src/face/basic).
-  "face-basic": { placeholder: false, layers: { face: sheet("face-basic") } },
+  // 기본 얼굴(보라 눈): 승인 시안 N1의 눈과 입 (art-src/characters/src/face/basic).
+  "face-basic": face("face-basic"),
+  // 아래 눈 색은 기본 얼굴의 눈동자 색만 바꿨다 (art-src/characters/src/recolor/<id>.json).
+  "face-black": face("face-black"),
+  "face-brown": face("face-brown"),
+  "face-amber": face("face-amber"),
+  "face-green": face("face-green"),
+  "face-blue": face("face-blue"),
+  "face-gray": face("face-gray"),
   "hair-lavender": hair("hair-lavender"),
   // 아래 머리 색은 라벤더 머리의 색만 바꿨다 (art-src/characters/src/recolor/<id>.json).
   "hair-chestnut": hair("hair-chestnut"),
