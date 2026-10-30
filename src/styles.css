@@ -111,8 +111,7 @@ button:active {
   gap: 9px;
   font-size: 21px;
 }
-.wallet svg,
-.profile-coins svg {
+.wallet svg {
   color: #b77828;
   fill: #f1b854;
   width: 30px;
@@ -221,16 +220,6 @@ button:active {
   background: #30293815;
   z-index: -1;
 }
-.lobby {
-  display: grid;
-  grid-template-columns: minmax(340px, 1.21fr) minmax(100px, 1.08fr) minmax(
-      300px,
-      0.96fr
-    );
-  gap: 20px;
-  padding: 27px 13px 24px 18px;
-  min-height: calc(100vh - 72px);
-}
 .panel {
   background: #f5e9d7;
   border: 3px solid #51463a;
@@ -272,61 +261,6 @@ button:active {
 .panel-body {
   padding: 13px 16px;
 }
-.left-column {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  align-items: flex-start;
-}
-.profile-panel {
-  width: 87%;
-  min-width: 340px;
-}
-.profile-panel .panel-body {
-  padding: 10px 16px;
-}
-.profile-main {
-  display: flex;
-  gap: 18px;
-  align-items: center;
-}
-.profile-avatar {
-  width: 119px;
-  height: 115px;
-  object-fit: cover;
-  border: 2px solid #ac8d76;
-  background: #dfbfad;
-  border-radius: 4px;
-  image-rendering: pixelated;
-}
-.profile-info {
-  flex: 1;
-  min-width: 0;
-}
-.profile-name {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.profile-name h1 {
-  font-size: 27px;
-  font-weight: 900;
-}
-.profile-name button {
-  padding: 0;
-}
-.profile-name svg {
-  color: #8e6547;
-  width: 24px;
-  height: 24px;
-}
-.profile-coins {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 8px 0 12px;
-  font-size: 24px;
-}
 .level {
   display: flex;
   gap: 7px;
@@ -334,226 +268,8 @@ button:active {
   font-size: 14px;
   white-space: nowrap;
 }
-.level-track {
-  height: 17px;
-  background: #756e61;
-  border: 2px solid #b89f85;
-  flex: 1;
-  border-radius: 6px;
-  box-shadow: inset 0 2px #484c48;
-}
-.level-track div {
-  height: 100%;
-  width: 80%;
-  background: #ac83cf;
-  border-right: 4px solid #cbb3e0;
-  border-radius: 4px;
-}
-.status-message {
-  border: 2px solid #c9ad94;
-  border-radius: 7px;
-  margin-top: 10px;
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 16px;
-  background: #fff6e780;
-}
-.status-message svg {
-  color: #cf8070;
-  width: 31px;
-  height: 31px;
-}
-.quick-panel {
-  width: 100%;
-}
-.theme-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-.theme-card {
-  padding: 0;
-  border: 2px solid #8e7965;
-  border-radius: 6px;
-  overflow: hidden;
-  background: #f2e1cb;
-  box-shadow: 0 3px #bca38c;
-  text-align: center;
-}
-.theme-image {
-  height: 114px;
-  background: #e4d5bf;
-  border-bottom: 2px solid #786a57;
-  image-rendering: pixelated;
-}
 .school {
   filter: sepia(0.28) hue-rotate(325deg);
-}
-.theme-image img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.theme-placeholder {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 9px;
-  color: #76634f;
-  padding: 8px;
-}
-.theme-placeholder span {
-  font-size: 14px;
-}
-.theme-placeholder small {
-  font-size: 10px;
-  font-weight: 400;
-}
-.theme-card > span {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  padding: 9px 3px;
-  font-size: 15px;
-  white-space: nowrap;
-}
-.theme-card svg {
-  width: 24px;
-  height: 24px;
-  fill: #d2aa80;
-}
-.cafe-button {
-  margin-top: 15px;
-  width: 100%;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  background: #62745b;
-  color: #fff9ec;
-  border: 2px solid #3a493b;
-  box-shadow:
-    inset 3px 3px #93a087,
-    inset -3px -3px #4d5d47;
-  border-radius: 6px;
-  font-size: 20px;
-  letter-spacing: 1px;
-}
-.cafe-button svg:first-child {
-  width: 32px;
-  height: 32px;
-  fill: #efe6cf;
-  color: #473b32;
-}
-.cafe-button svg:last-child {
-  margin-left: auto;
-  margin-right: 10px;
-}
-.cafe-button svg:first-child {
-  margin-left: auto;
-}
-.daily-note {
-  margin: 20px 0 0 100px;
-  width: 210px;
-  min-height: 165px;
-  background: #f3ddbc;
-  border: 3px solid #8e674d;
-  box-shadow:
-    6px 6px #483b3e55,
-    inset 0 0 18px #b8936d77;
-  transform: rotate(-5deg);
-  padding: 22px 20px 15px;
-  text-align: center;
-  position: relative;
-  font-family: "Gowun Batang", serif;
-}
-.daily-note p {
-  font-size: 20px;
-  margin-bottom: 12px;
-}
-.daily-note strong {
-  font-size: 19px;
-  line-height: 1.8;
-}
-.daily-note > svg {
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
-  color: #bb795f;
-  width: 34px;
-  height: 34px;
-}
-.note-pin {
-  position: absolute;
-  top: -12px;
-  left: 28px;
-  width: 12px;
-  height: 26px;
-  background: #cfb397;
-  border: 2px solid #7e634b;
-  box-shadow: 2px 2px #886c55;
-}
-.center-column {
-  position: relative;
-}
-.date-card {
-  position: absolute;
-  right: 4px;
-  top: 65px;
-  background: #e7cfb2;
-  border: 6px ridge #95745b;
-  box-shadow: 3px 3px #443a39;
-  padding: 13px 16px;
-  text-align: center;
-  font-size: 26px;
-  line-height: 1.2;
-  transform: rotate(1deg);
-}
-.date-card strong {
-  font-weight: 500;
-}
-.date-card span {
-  display: block;
-  font-size: 21px;
-}
-.speech {
-  position: absolute;
-  top: 39%;
-  left: 10%;
-  padding: 17px 19px;
-  background: #fff4e0;
-  border: 3px solid #5f493b;
-  border-radius: 27px;
-  box-shadow: 3px 4px #3e353844;
-  white-space: nowrap;
-  font-size: 17px;
-}
-.speech span {
-  color: #cf7f75;
-}
-.right-column {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.tasks-panel {
-  position: relative;
-  min-height: 270px;
-}
-.tasks-panel .panel-body {
-  padding: 0 20px 15px;
-}
-.add-task {
-  border: 2px solid #6a5642 !important;
-  border-radius: 50%;
-  background: #fff4e3;
-  padding: 3px !important;
 }
 .task-list {
   list-style: none;
@@ -601,26 +317,6 @@ button:active {
   border-bottom: 3px solid #26372c;
   transform: rotate(-45deg) translateY(-2px);
 }
-.task-mascot {
-  position: absolute;
-  right: 13px;
-  bottom: 12px;
-  width: 43px;
-  height: 43px;
-  color: #d58a7b;
-  opacity: 0.8;
-  pointer-events: none;
-}
-.more {
-  font-size: 12px;
-  white-space: nowrap;
-  gap: 2px;
-  letter-spacing: 0;
-}
-.more svg {
-  width: 15px !important;
-  height: 15px !important;
-}
 .notices {
   display: flex;
   flex-direction: column;
@@ -655,15 +351,6 @@ button:active {
   padding: 4px 5px;
   border-radius: 4px;
   display: inline-block;
-}
-.tag-1 {
-  background: #87a7bc;
-  border-color: #a3bccc;
-}
-.tag-2 {
-  background: #d7bba0;
-  color: #3e3326;
-  border-color: #ba987e;
 }
 .friend-list {
   display: flex;
@@ -716,45 +403,6 @@ button:active {
 }
 .friend > svg {
   color: #5c5c4b;
-}
-.encouragement {
-  position: absolute;
-  bottom: 30px;
-  left: -139px;
-  width: 175px;
-  background: #efdec6ee;
-  border: 2px solid #7c6b58;
-  border-radius: 5px;
-  box-shadow: 3px 3px #302b3844;
-  display: flex;
-  align-items: center;
-  padding: 16px 8px 8px;
-  z-index: 4;
-  gap: 4px;
-}
-.encouragement > button {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  padding: 0;
-  color: #8a7763;
-}
-.encouragement > svg:first-of-type {
-  width: 66px;
-  height: 66px;
-  color: #bf8970;
-  fill: #fff0d8;
-}
-.encouragement p {
-  font-size: 13px;
-  line-height: 1.9;
-}
-.encouragement > svg:last-of-type {
-  position: absolute;
-  bottom: 6px;
-  right: 6px;
-  width: 20px;
-  color: #78876b;
 }
 .page-area {
   padding: 25px 4%;
@@ -1196,25 +844,8 @@ button:active {
   margin-bottom: 15px;
 }
 @media (min-width: 1450px) {
-  .lobby {
-    gap: 24px;
-    padding-top: 28px;
-  }
-  .profile-panel {
-    width: 84%;
-  }
-  .profile-avatar {
-    width: 132px;
-    height: 122px;
-  }
-  .tasks-panel {
-    min-height: 295px;
-  }
   .task-list label {
     min-height: 47px;
-  }
-  .theme-image {
-    height: 125px;
   }
   .notices {
     gap: 13px;
@@ -1224,11 +855,6 @@ button:active {
   }
   .friend {
     min-height: 52px;
-  }
-  .daily-note {
-    margin-top: 26px;
-    width: 225px;
-    min-height: 180px;
   }
   .panel-heading {
     height: 44px;
@@ -1252,50 +878,11 @@ button:active {
     width: 41px;
     height: 41px;
   }
-  .lobby {
-    grid-template-columns: minmax(310px, 1fr) minmax(20px, 0.3fr) minmax(
-        280px,
-        0.9fr
-      );
-    gap: 12px;
-    padding-left: 12px;
-  }
-  .profile-panel {
-    min-width: 310px;
-    width: 100%;
-  }
-  .profile-main {
-    gap: 10px;
-  }
-  .profile-avatar {
-    width: 100px;
-    height: 100px;
-  }
   .panel-body {
     padding: 12px;
   }
   .panel-heading {
     font-size: 16px;
-  }
-  .theme-grid {
-    gap: 10px;
-  }
-  .theme-card > span {
-    font-size: 12px;
-  }
-  .speech {
-    left: -50%;
-    font-size: 13px;
-    top: 50%;
-  }
-  .date-card {
-    right: -5px;
-    top: 30px;
-    font-size: 21px;
-    padding: 10px;
-  }
-  .daily-note {
-    margin-left: 55px;
   }
   .notices button {
     gap: 7px;
@@ -1314,13 +901,6 @@ button:active {
   }
   .shop-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .encouragement {
-    left: -123px;
-    width: 150px;
-  }
-  .encouragement > svg:first-of-type {
-    width: 47px;
   }
   .customizer {
     grid-template-columns: 220px 1fr;
@@ -1362,16 +942,7 @@ button:active {
   fill: currentColor;
   color: #655645;
 }
-.theme-card svg {
-  fill: currentColor;
-  color: #8d7152;
-}
-.cafe-button svg:first-child {
-  fill: currentColor;
-  color: #f5e5cd;
-}
-.wallet svg,
-.profile-coins svg {
+.wallet svg {
   fill: currentColor;
   color: #c68a36;
 }
@@ -1380,18 +951,6 @@ button:active {
 }
 .scene-shade {
   display: none;
-}
-.encouragement {
-  position: fixed;
-  left: 8px;
-  bottom: 45px;
-  z-index: 5;
-  width: 175px;
-}
-
-.encouragement > svg:first-of-type {
-  fill: currentColor;
-  color: #b2846e;
 }
 
 /* 로그인 전후 단계(로그인, 첫 화면 이름 설정): 기존 패널을 가운데에 놓기만 한다. */
