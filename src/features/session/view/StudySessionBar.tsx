@@ -58,7 +58,7 @@ export default function StudySessionBar({ session, onGoLounge, canGoLounge, toda
 
   const pomodoro = session.pomodoro;
   return (
-    <section className="movement-status" aria-label="공부 세션" data-testid="study-session">
+    <section className="session-strip" aria-label="공부 세션" data-testid="study-session">
       <div className="company-controls">
         <p role="timer" aria-label="오늘 근무 시간" data-testid="today-study-time">
           오늘 근무 <strong>{clockText(session.todaySeconds)}</strong>

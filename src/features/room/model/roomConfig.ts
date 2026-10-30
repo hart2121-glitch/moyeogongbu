@@ -34,19 +34,19 @@ export const ROOM_CONFIG = {
 } as const;
 
 /**
- * 보낼 수 있는 반응. 키는 전송값이고 label은 지금 화면 표시다.
+ * 보낼 수 있는 반응. 키는 전송값이고 label은 지금 화면 표시, name은 버튼 이름(화면 낭독과 마우스 올림)이다.
  * 나중에 픽셀아트 아이콘으로 바꿀 때는 label 대신 그림을 그리면 되고 키는 그대로 둔다.
  */
 export const REACTIONS = [
-  { key: "thumbs", label: "👍", kind: "emoji" },
-  { key: "fire", label: "🔥", kind: "emoji" },
-  { key: "clap", label: "👏", kind: "emoji" },
-  { key: "coffee", label: "☕", kind: "emoji" },
-  { key: "muscle", label: "💪", kind: "emoji" },
-  { key: "heart", label: "❤️", kind: "emoji" },
-  { key: "cheer", label: "화이팅", kind: "phrase" },
-  { key: "goodjob", label: "수고했어요", kind: "phrase" },
-  { key: "rest", label: "잠깐 쉬어요", kind: "phrase" },
+  { key: "thumbs", label: "👍", name: "좋아요", kind: "emoji" },
+  { key: "fire", label: "🔥", name: "불타오르네", kind: "emoji" },
+  { key: "clap", label: "👏", name: "박수", kind: "emoji" },
+  { key: "coffee", label: "☕", name: "커피 한잔", kind: "emoji" },
+  { key: "muscle", label: "💪", name: "힘내요", kind: "emoji" },
+  { key: "heart", label: "❤️", name: "하트", kind: "emoji" },
+  { key: "cheer", label: "화이팅", name: "화이팅", kind: "phrase" },
+  { key: "goodjob", label: "수고했어요", name: "수고했어요", kind: "phrase" },
+  { key: "rest", label: "잠깐 쉬어요", name: "잠깐 쉬어요", kind: "phrase" },
 ] as const;
 
 export type ReactionKey = (typeof REACTIONS)[number]["key"];

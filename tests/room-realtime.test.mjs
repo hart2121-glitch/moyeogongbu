@@ -17,7 +17,7 @@ const viewport = { width: 1536, height: 1024 };
 const shot = (page, name) => page.screenshot({ path: `${evidence}/${name}`, fullPage: true });
 async function enterQuick(page) {
   await page.goto(url);
-  await page.getByRole("button", { name: "회사 테마로 가기", exact: true }).click();
+  await page.getByRole("button", { name: / 방으로 출근$/ }).first().click();
   await page.getByTestId("movement-status").filter({ hasText: "출입구에 도착" }).waitFor({ timeout: 20000 });
 }
 async function floor(page, p) {
@@ -102,7 +102,7 @@ test("두 사람이 같은 방: 이동 재생, 이름표와 마우스 올림, �
     // 반응: 정해진 목록만, 3초 표시, 같은 사람은 5초에 한 번.
     await a.mouse.move(5, 5);
     await card.waitFor({ state: "hidden" });
-    await b.getByRole("button", { name: "반응 🔥", exact: true }).click();
+    await b.getByRole("button", { name: "반응 불타오르네", exact: true }).click();
     const bubble = a.getByTestId("remote-character").getByTestId("character-reaction");
     await bubble.filter({ hasText: "🔥" }).waitFor({ timeout: 5000 });
     await shot(a, "reaction-above-head.png");
