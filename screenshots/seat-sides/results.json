@@ -10,7 +10,7 @@
     "6번 right: 일어서기→통로 우회→바닥 도착→재착석"
   ],
   "errors": [],
-  "samples": 2803,
+  "samples": 3494,
   "hiddenFrames": 0,
   "result": "passed"
 }

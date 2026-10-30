@@ -8,7 +8,8 @@ import { chromium } from "@playwright/test";
 import { createFakeServer, FAKE_USER_ID, mockSupabase, SECOND_USER_ID, SEED_ROOM } from "./supabaseMock.mjs";
 import { friendPlace, normalizeFriendCode } from "../src/features/friends/model/friendText.ts";
 
-const url = process.env.APP_URL || "http://127.0.0.1:4173/";
+// CI는 끝에 / 없이 넘기므로 붙여서 경로를 이어 쓴다.
+const url = (process.env.APP_URL || "http://127.0.0.1:4173/").replace(//?$/, "/");
 const evidence = process.env.EVIDENCE_DIR_STORY_006 || "production/qa/evidence/story-006-friends-mail";
 const launch = () =>
   chromium.launch({
