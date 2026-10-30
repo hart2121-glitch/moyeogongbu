@@ -65,11 +65,30 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     assert.equal(await page.getByRole("button", { name: "별 머리핀 구매하기" }).isDisabled(), true);
     await page.locator('[data-item="acc-hairpin"]').getByText("30코인이 더 모이면 살 수 있어요.").waitFor();
     await shot(page, "shop-prices-insufficient.png");
+    // 구매 확인: 줄어들 코인을 보여 주고, 그만두면 사지 않는다
     await page.getByRole("button", { name: "보라 리본 구매하기" }).click();
+    const confirm = page.getByRole("group", { name: "보라 리본 구매 확인" });
+    await confirm.getByText("환불할 수 없어요.").waitFor();
+    assert.match(await confirm.innerText(), /코인 120에서 0으로 줄어요/);
+    await shot(page, "shop-buy-confirm.png");
+    await confirm.getByRole("button", { name: "그만두기" }).click();
+    await page.getByRole("button", { name: "보라 리본 구매하기" }).waitFor();
+    assert.equal(state.coins.balance, 120);
+    // 되팔기와 환불이 없어서 카드 안에서 한 번 더 확인한 뒤에 산다.
+    await page.getByRole("button", { name: "보라 리본 구매하기" }).click();
+    await page.getByRole("button", { name: "보라 리본 사기", exact: true }).click();
     await page.getByRole("button", { name: "보라 리본 보유 중" }).waitFor();
     await page.getByTestId("shop-balance").filter({ hasText: /^0$/ }).waitFor();
     await shot(page, "shop-purchase-success.png");
     assert.equal(state.coins.balance, 0);
+
+    // 상점 카드의 "입어 보기"는 그 아이템을 입힌 꾸미기 화면으로 간다 (저장은 산 뒤에만)
+    await page.getByRole("button", { name: "로즈 옷 입어 보기" }).click();
+    await page.waitForURL(/\/character\?try=/);
+    await page.getByText("입어 보는 중이에요. 사지 않은 아이템은 저장되지 않아요.").waitFor();
+    assert.equal(await page.getByRole("button", { name: /^로즈 옷/ }).getAttribute("aria-pressed"), "true");
+    await nav(page, "상점");
+    await page.getByRole("button", { name: "보라 리본 보유 중" }).waitFor();
 
     // 꾸미기: 산 리본 적용, 사지 않은 로즈 옷은 입어 보기만
     await nav(page, "캐릭터 꾸미기");
@@ -91,10 +110,10 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     assert.equal(await stack.getAttribute("data-layer-accessory"), "acc-ribbon");
     assert.equal(await stack.getAttribute("data-layer-hair-front"), "hair-chestnut");
 
-    // 로비 아바타
+    // 로비 캐릭터 (꾸미기와 같은 레이어로 그린다)
     await page.goto(`${url}lobby`);
-    await page.locator('.profile-avatar[data-look-outfit="outfit-sage"]').waitFor();
-    assert.match(await page.locator(".profile-avatar").getAttribute("class"), /세이지/);
+    await page.locator('.desk-character [data-layer-outfit="outfit-sage"]').waitFor();
+    assert.match(await page.locator('.desk-character img[data-layer="body"]').getAttribute("class"), /세이지/);
     await shot(page, "lobby-avatar-saved-look.png");
 
     // 같은 방 멤버의 꾸민 캐릭터

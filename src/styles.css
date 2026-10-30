@@ -973,7 +973,42 @@ button:active {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  color: #98713c;
+  color: #50483f;
+}
+.price svg {
+  color: #b77828;
+  fill: #f1b854;
+}
+/* 구매 확인: 카드 안에서 바로, 줄어드는 코인과 환불 불가를 보여 준다 */
+.buy-confirm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+.buy-confirm p {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #50483f;
+}
+.buy-confirm {
+  word-break: keep-all;
+}
+.buy-confirm .primary,
+.buy-confirm .secondary-button {
+  margin: 0;
+  width: 100%;
+  padding-inline: 4px;
+  white-space: nowrap;
+}
+.try-on-link {
+  margin-top: 6px;
+  padding: 6px;
+  font-size: 13px;
+  color: #50483f;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .record-grid {
   display: grid;

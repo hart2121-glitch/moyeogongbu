@@ -1,5 +1,6 @@
 import { Check } from "@phosphor-icons/react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { characterSprites } from "../../../study/characterSprites";
 import { useProfile } from "../../account/viewmodel/useAccount";
 import type { ItemSlot } from "../../shop/model/shop";
@@ -30,10 +31,18 @@ export default function CharacterPage() {
   const slots = c.firstTime ? SLOTS.filter((s) => s.slot !== "accessory") : SLOTS;
   const shown = c.firstTime ? c.items.filter((i) => i.isDefault) : c.items;
   const trying = c.tryingOn.map((i) => i.name).join(", ");
+  // 상점의 "입어 보기"는 `?try=아이템id`로 들어온다. 목록이 오면 한 번만 입혀 본다.
+  const [params] = useSearchParams();
+  const tried = useRef(false);
+  useEffect(() => {
+    const item = c.items.find((i) => i.id === params.get("try"));
+    if (tried.current || !item || c.firstTime) return;
+    tried.current = true;
+    c.wear(item);
+  }, [c.items, c.firstTime, params]);
   return (
     <PageFrame title="캐릭터 꾸미기">
       <div className="page-intro">
-        <span className="eyebrow">{c.firstTime ? "FIRST LOOK" : "MY LITTLE CHARACTER"}</span>
         <h1>{c.firstTime ? "처음 꾸미기" : "오늘은 어떤 모습으로 공부할까?"}</h1>
         <p>
           {c.firstTime

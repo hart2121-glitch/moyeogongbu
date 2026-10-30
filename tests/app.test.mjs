@@ -97,6 +97,8 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
       .click();
     // 구매는 서버가 처리한다: 342 - 120 = 222. 코인이 모자란 아이템은 버튼이 막힌다.
     await page.getByRole("button", { name: "보라 리본 구매하기" }).click();
+    // 되팔기와 환불이 없어서 카드 안에서 한 번 더 확인한다.
+    await page.getByRole("button", { name: "보라 리본 사기", exact: true }).click();
     await page.getByRole("button", { name: "보라 리본 보유 중" }).waitFor();
     await page.waitForFunction(() => document.querySelector(".wallet")?.textContent?.trim() === "222");
     assert.equal(
