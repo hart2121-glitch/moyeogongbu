@@ -5,7 +5,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { decodePng, encodePng, FRAME } from "./pixelArt.mjs";
-import { cropCell, eraseFace, extractFace, extractPart, feetAlignment, fitWalkFrame, mirror, NECK, placeHeadPart, shift, SIT_DROP, toSheet } from "./characterParts.mjs";
+import { cropCell, eraseFace, extractFace, extractPart, feetAlignment, fitWalkFrame, mirror, NECK, placeHeadPart, shift, SIT_DROP, symmetricEyes, toSheet } from "./characterParts.mjs";
 import { emptyLike, hsv } from "./rigImage.mjs";
 import { restFrame, sitFrame } from "./rigidRig.mjs";
 
@@ -75,13 +75,14 @@ function buildHair(id, base) {
   return { front: headSheet(parts, base, "front"), back: headSheet(parts, base, "back") };
 }
 
-/** 얼굴(눈과 입): 방향당 1장에서 떼어 내 머리카락처럼 붙인다. 뒷모습(북쪽)은 그림이 없어 빈 칸이다. */
+/** 얼굴(눈과 입): 방향당 1장에서 떼어 내 머리카락처럼 붙인다. 뒷모습(북쪽)은 그림이 없어 빈 칸이고, 정면은 두 눈을 같은 모양으로 맞춘다. */
 function buildFace(id, base) {
   const parts = {};
   for (const dir of DIRS)
     parts[dir] = existsSync(join(SRC, "face", id, "rot", `${srcDir(dir)}.png`))
       ? extractFace(loadRot(base, dir, "face", id, "rot"), base[dir].stand)
       : emptyLike(base[dir].stand);
+  parts.south = symmetricEyes(parts.south, base.south.stand);
   return headSheet(parts, base, "all");
 }
 

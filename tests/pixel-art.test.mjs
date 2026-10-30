@@ -107,6 +107,21 @@ test("얼굴 찾기는 눈과 흰자만 잡고 머리 윤곽선은 빼며, 지�
   assert.deepEqual([...bare.pixels.subarray(at(10, 36) * 4, at(10, 36) * 4 + 4)], INK);
 });
 
+test("정면 얼굴의 두 눈은 좌우 같은 모양이다 (한쪽에만 속눈썹이 있으면 막는다)", (t) => {
+  if (!existsSync("art-src/characters/face-basic.png")) return t.skip("아직 얼굴 시트가 없어요");
+  const sheet = decodePng(readFileSync("art-src/characters/face-basic.png"));
+  // 정면 칸: 서기, 걷기 4칸, 앉기, 휴식
+  for (const cell of [0, 4, 5, 6, 7, 21, 22]) {
+    const opaqueAt = (x, y) => sheet.pixels[(y * sheet.width + cell * FRAME.width + x) * 4 + 3] > 0;
+    const dots = [];
+    for (let y = 0; y < FRAME.height; y++) for (let x = 0; x < FRAME.width; x++) if (opaqueAt(x, y)) dots.push([x, y]);
+    const axis2 = Math.min(...dots.map(([x]) => x)) + Math.max(...dots.map(([x]) => x));
+    // 가운데 축 가까이(입)는 한 픽셀이라 접지 않는다
+    const lonely = dots.filter(([x, y]) => Math.abs(2 * x - axis2) > 4 && !opaqueAt(axis2 - x, y));
+    assert.deepEqual(lonely, [], `${cell}칸`);
+  }
+});
+
 test("art-src의 실제 그림이 규칙을 지킨다", (t) => {
   if (!existsSync("art-src/characters") && !existsSync("art-src/rooms")) return t.skip("아직 art-src에 정식 그림이 없어요");
   const failures = validateArtDir("art-src").filter((r) => r.problems.length);

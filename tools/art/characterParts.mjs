@@ -156,6 +156,23 @@ export function extractFace(dressed, base) {
 }
 
 /**
+ * 정면 얼굴의 두 눈을 같은 모양으로 맞춘다. 생성 그림은 속눈썹이 한쪽 눈에만 있기도 해서,
+ * 기본 몸 눈의 가운데 축으로 접어 한쪽에만 있는 픽셀을 반대쪽에도 찍는다. 축 가까이(입)는 접지 않는다.
+ */
+export function symmetricEyes(part, base) {
+  const xs = [...faceFeatures(base)].map((k) => k % base.width);
+  const axis2 = Math.min(...xs) + Math.max(...xs);
+  const out = { ...part, pixels: part.pixels.slice() };
+  for (let y = 0; y < part.height; y++)
+    for (let x = 0; x < part.width; x++) {
+      const i = pixelIndex(part, x, y), m = pixelIndex(part, axis2 - x, y);
+      if (!part.pixels[i + 3] || Math.abs(2 * x - axis2) <= 4 || m < 0 || part.pixels[m + 3]) continue;
+      out.pixels.set(part.pixels.subarray(i, i + 4), m);
+    }
+  return out;
+}
+
+/**
  * 서기 그림의 머리 조각이 큰 프레임의 어디에 있는지 찾는다 (불투명 픽셀 색 차이 평균이 가장 작은 곳).
  * @returns {{x:number, y:number, score:number}} 서기 그림 왼쪽 위가 놓일 프레임 좌표
  */
