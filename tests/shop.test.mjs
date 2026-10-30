@@ -6,7 +6,8 @@ import { join } from "node:path";
 import { chromium } from "@playwright/test";
 import { createFakeServer, FAKE_USER_ID, mockSupabase, SEED_ROOM } from "./supabaseMock.mjs";
 
-const url = process.env.APP_URL || "http://127.0.0.1:4173/";
+// CI는 끝에 / 없이 넘기므로 붙여서 경로를 이어 쓴다.
+const url = (process.env.APP_URL || "http://127.0.0.1:4173/").replace(/\/?$/, "/");
 const evidence = process.env.EVIDENCE_DIR_STORY_007 || "production/qa/evidence/story-007-shop-customize";
 const viewport = { width: 1440, height: 900 };
 const launch = () =>
