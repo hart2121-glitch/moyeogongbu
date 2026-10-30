@@ -2,7 +2,7 @@
 // art-src/에 정식 시트가 있으면 실제 그림도 검사한다.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { checkImage, decodePng, encodePng, FRAME, SHEET } from "../tools/art/pixelArt.mjs";
@@ -128,3 +128,19 @@ test("art-src의 실제 그림이 규칙을 지킨다", (t) => {
   assert.deepEqual(failures, []);
 });
 
+test("로비 물건 틀은 16픽셀 격자, 완전 불투명과 완전 투명만 쓰고, 화면용 파일은 원본과 같다", () => {
+  // 준비: tools/art/lobby-props.mjs가 찍은 원본 (확인용 preview는 제외)
+  const names = readdirSync("art-src/lobby").filter((n) => n.endsWith(".png") && !n.startsWith("preview"));
+  assert.ok(names.length >= 10, `물건 그림 ${names.length}개`);
+  for (const name of names) {
+    // 실행: 원본과 화면용 파일을 읽는다
+    const source = readFileSync(join("art-src/lobby", name));
+    const image = decodePng(source);
+    // 확인
+    assert.equal(image.width % 16, 0, `${name} 너비 ${image.width}`);
+    assert.equal(image.height % 16, 0, `${name} 높이 ${image.height}`);
+    const partial = image.pixels.filter((v, i) => i % 4 === 3 && v !== 0 && v !== 255).length;
+    assert.equal(partial, 0, `${name} 반투명 픽셀`);
+    assert.ok(source.equals(readFileSync(join("public/assets/lobby", name))), `${name} 화면용 사본이 원본과 달라요`);
+  }
+});
