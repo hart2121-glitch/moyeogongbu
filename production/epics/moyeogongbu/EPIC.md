@@ -27,3 +27,4 @@
 | 005 | 공부 기록과 날짜별 할 일 | UI | Complete | N/A |
 | 006 | 친구, 우편함, 알림 | Integration | Complete | N/A |
 | 007 | 상점과 캐릭터 꾸미기 | UI | Complete | N/A |
+| 009 | 진짜 픽셀아트로 다시 그리기 | Visual/Feel | Ready | N/A |
