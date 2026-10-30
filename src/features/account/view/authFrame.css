@@ -1,0 +1,78 @@
+/* 로그인과 환영: 집 현관 (2026-10-31). 벽지 타일 위에 패널을 두고 화면 아래에 마루를 깐다 (art-src/home).
+   환영 화면의 캐릭터를 2배로 세우므로 현관 장면은 벽지, 마루, 문패까지 모두 정수 2배로 맞춘다 (한 장면 한 배율).
+   집 현관 그림이 나오면 패널 옆 액자로 건다. */
+.auth-page {
+  position: relative;
+  padding-block: 12px;
+  background: #f1e2c8 url("/assets/home/wallpaper.png") 0 0 / 32px 32px repeat;
+  image-rendering: pixelated;
+  isolation: isolate;
+}
+.auth-page::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 18vh;
+  z-index: -1;
+  border-top: 12px solid #7a4d2b;
+  background: url("/assets/home/floor.png") 0 0 / 96px 32px repeat;
+}
+.auth-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(480px, 100%);
+}
+.auth-stack > .panel {
+  width: 100%;
+  image-rendering: auto;
+}
+
+/* 환영 화면: 위에 방문 문패, 그 아래 문 앞에 선 캐릭터, 그 아래 이름 입력 */
+.door-scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+/* 문패 9조각(nameplate.png 48×48, 모서리 16px)을 2배로: 그림 폭 32px = 테두리 24px + 바깥 8px */
+.door-nameplate {
+  min-width: 240px;
+  max-width: 340px;
+  display: flex;
+  justify-content: center;
+  border: 24px solid transparent;
+  border-image: url("/assets/home/nameplate.png") 16 fill / 32px / 8px stretch;
+  background: #d0a067;
+  background-clip: padding-box;
+  padding: 0 8px;
+  color: #3b2416;
+  filter: drop-shadow(0 8px 0 #0004);
+  image-rendering: pixelated;
+}
+.door-nameplate strong {
+  font-family: "Gowun Batang", serif;
+  font-size: 22px;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+.door-nameplate strong span {
+  font-size: 16px;
+  margin-left: 2px;
+}
+.door-nameplate strong.is-empty {
+  font-size: 16px;
+  color: #4a2f1d;
+}
+/* 캐릭터는 정수 2배 (56×72 → 112×144) */
+.door-character {
+  width: 112px;
+}
+.door-character .layer-stack {
+  background: none;
+  border: 0;
+}
