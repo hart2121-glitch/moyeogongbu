@@ -1,0 +1,1051 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-30T18:29:15.210Z",
+  "title": "Design System: 모여공부",
+  "extensions": {
+    "colorMeta": {
+      "app-backdrop": {
+        "role": "neutral",
+        "displayName": "앱 바탕 자두회색",
+        "canonical": "#45424c",
+        "oklch": "oklch(38.6% 0.017 299.3)",
+        "tonalRamp": [
+          "#0c0a11",
+          "#27252e",
+          "#46434d",
+          "#67646f",
+          "#8a8792",
+          "#afacb8",
+          "#d2cfdb",
+          "#f0ecf9"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "종이",
+        "canonical": "#f4e8d5",
+        "oklch": "oklch(93.5% 0.028 79.5)",
+        "tonalRamp": [
+          "#110a01",
+          "#2e2516",
+          "#4d4334",
+          "#6f6554",
+          "#928876",
+          "#b8ac9a",
+          "#dbcfbd",
+          "#f9edda"
+        ]
+      },
+      "panel-cream": {
+        "role": "neutral",
+        "displayName": "패널 크림",
+        "canonical": "#f5e9d7",
+        "oklch": "oklch(93.9% 0.027 78.2)",
+        "tonalRamp": [
+          "#110a01",
+          "#2e2517",
+          "#4d4335",
+          "#6f6455",
+          "#928777",
+          "#b8ac9b",
+          "#dbcfbe",
+          "#f9eddb"
+        ]
+      },
+      "topbar-tan": {
+        "role": "neutral",
+        "displayName": "위쪽 바 황갈",
+        "canonical": "#ecddc8",
+        "oklch": "oklch(90.4% 0.033 76.4)",
+        "tonalRamp": [
+          "#130900",
+          "#302414",
+          "#4f4331",
+          "#716451",
+          "#958774",
+          "#baac98",
+          "#ddcfba",
+          "#fbecd7"
+        ]
+      },
+      "sidebar-tan": {
+        "role": "neutral",
+        "displayName": "사이드바 황갈",
+        "canonical": "#e4d3bc",
+        "oklch": "oklch(87.5% 0.036 75.5)",
+        "tonalRamp": [
+          "#130900",
+          "#312411",
+          "#50422f",
+          "#72644f",
+          "#968771",
+          "#bcab95",
+          "#dfceb7",
+          "#fdecd4"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "잉크",
+        "canonical": "#24231f",
+        "oklch": "oklch(25.6% 0.007 95.4)",
+        "tonalRamp": [
+          "#0c0b08",
+          "#272622",
+          "#464541",
+          "#676661",
+          "#8a8984",
+          "#afaea9",
+          "#d2d1cc",
+          "#f0eee9"
+        ]
+      },
+      "walnut-line": {
+        "role": "neutral",
+        "displayName": "호두색 선",
+        "canonical": "#50483f",
+        "oklch": "oklch(40.7% 0.018 70.6)",
+        "tonalRamp": [
+          "#100a04",
+          "#2c251d",
+          "#4b443b",
+          "#6d655b",
+          "#90887e",
+          "#b6aca2",
+          "#d9cfc4",
+          "#f7ede2"
+        ]
+      },
+      "muted-umber": {
+        "role": "neutral",
+        "displayName": "흐린 고동",
+        "canonical": "#86735e",
+        "oklch": "oklch(56.8% 0.039 69.7)",
+        "tonalRamp": [
+          "#140800",
+          "#332310",
+          "#53412e",
+          "#75624e",
+          "#998570",
+          "#bfaa94",
+          "#e2cdb6",
+          "#feebd6"
+        ]
+      },
+      "field-cream": {
+        "role": "neutral",
+        "displayName": "입력 크림",
+        "canonical": "#fff8e8",
+        "oklch": "oklch(98.0% 0.022 87.1)",
+        "tonalRamp": [
+          "#0f0a02",
+          "#2b261a",
+          "#4a4438",
+          "#6c6658",
+          "#8f897a",
+          "#b4ad9e",
+          "#d7d0c1",
+          "#f5eede"
+        ]
+      },
+      "field-line": {
+        "role": "neutral",
+        "displayName": "입력 선",
+        "canonical": "#b6a084",
+        "oklch": "oklch(71.8% 0.047 73.6)",
+        "tonalRamp": [
+          "#130900",
+          "#342309",
+          "#544128",
+          "#776248",
+          "#9b856a",
+          "#c0aa8e",
+          "#e4cdb0",
+          "#ffebd3"
+        ]
+      },
+      "sage": {
+        "role": "primary",
+        "displayName": "세이지 잉크",
+        "canonical": "#6c7b61",
+        "oklch": "oklch(56.3% 0.043 132.1)",
+        "tonalRamp": [
+          "#050f00",
+          "#1e2b14",
+          "#3c4a32",
+          "#5d6c52",
+          "#808f74",
+          "#a4b498",
+          "#c7d7bb",
+          "#e4f5d8"
+        ]
+      },
+      "sage-deep": {
+        "role": "primary",
+        "displayName": "짙은 세이지",
+        "canonical": "#49533f",
+        "oklch": "oklch(42.7% 0.034 129.4)",
+        "tonalRamp": [
+          "#070e01",
+          "#212a18",
+          "#3f4935",
+          "#606a55",
+          "#828e78",
+          "#a7b39c",
+          "#cad6be",
+          "#e7f4db"
+        ]
+      },
+      "sage-active": {
+        "role": "neutral",
+        "displayName": "눌린 세이지 회색",
+        "canonical": "#aeb29a",
+        "oklch": "oklch(75.4% 0.034 114.9)",
+        "tonalRamp": [
+          "#0b0d00",
+          "#262815",
+          "#444733",
+          "#656953",
+          "#888c75",
+          "#adb199",
+          "#d0d4bb",
+          "#edf2d8"
+        ]
+      },
+      "lavender-focus": {
+        "role": "secondary",
+        "displayName": "포커스 라벤더",
+        "canonical": "#9b70bc",
+        "oklch": "oklch(61.8% 0.120 309.3)",
+        "tonalRamp": [
+          "#150022",
+          "#380a51",
+          "#582e75",
+          "#7a509a",
+          "#9f74c0",
+          "#c498e7",
+          "#e3c1fe",
+          "#f4e9fe"
+        ]
+      },
+      "lavender-level": {
+        "role": "secondary",
+        "displayName": "레벨 라벤더",
+        "canonical": "#ac83cf",
+        "oklch": "oklch(67.8% 0.117 308.3)",
+        "tonalRamp": [
+          "#140023",
+          "#370c51",
+          "#572f74",
+          "#795199",
+          "#9d75bf",
+          "#c399e7",
+          "#e1c2ff",
+          "#f4eafe"
+        ]
+      },
+      "coral": {
+        "role": "tertiary",
+        "displayName": "산호",
+        "canonical": "#d88777",
+        "oklch": "oklch(70.4% 0.103 31.9)",
+        "tonalRamp": [
+          "#1e0100",
+          "#4d0600",
+          "#722b1f",
+          "#984d3f",
+          "#bf7161",
+          "#e89585",
+          "#fec0b3",
+          "#ffe9e4"
+        ]
+      },
+      "coin-gold": {
+        "role": "tertiary",
+        "displayName": "코인 금색",
+        "canonical": "#f1b854",
+        "oklch": "oklch(81.6% 0.133 79.0)",
+        "tonalRamp": [
+          "#120900",
+          "#352301",
+          "#5c3f00",
+          "#865e02",
+          "#b37e07",
+          "#dba33c",
+          "#fec767",
+          "#ffeccf"
+        ]
+      },
+      "lobby-wall": {
+        "role": "neutral",
+        "displayName": "로비 벽",
+        "canonical": "#2b201c",
+        "oklch": "oklch(25.5% 0.019 40.9)",
+        "tonalRamp": [
+          "#120906",
+          "#2f241f",
+          "#4e423d",
+          "#70635e",
+          "#948681",
+          "#b9aaa5",
+          "#ddcdc8",
+          "#faebe5"
+        ]
+      },
+      "wallpaper-cream": {
+        "role": "neutral",
+        "displayName": "벽지 크림",
+        "canonical": "#f1e2c8",
+        "oklch": "oklch(91.8% 0.038 81.5)",
+        "tonalRamp": [
+          "#130900",
+          "#2d220d",
+          "#4a3e28",
+          "#695c45",
+          "#897b64",
+          "#ab9d84",
+          "#d1c2a9",
+          "#fcedd2"
+        ]
+      },
+      "baseboard-walnut": {
+        "role": "neutral",
+        "displayName": "걸레받이 호두",
+        "canonical": "#7a4d2b",
+        "oklch": "oklch(46.4% 0.078 56.4)",
+        "tonalRamp": [
+          "#210000",
+          "#3f1700",
+          "#5e3310",
+          "#7f5130",
+          "#a1714f",
+          "#c4926f",
+          "#ecb893",
+          "#ffe2bc"
+        ]
+      },
+      "floor-edge": {
+        "role": "neutral",
+        "displayName": "마루 가장자리",
+        "canonical": "#b47849",
+        "oklch": "oklch(62.5% 0.098 57.8)",
+        "tonalRamp": [
+          "#250000",
+          "#441100",
+          "#652f00",
+          "#864e1d",
+          "#a96e3f",
+          "#cc8f5f",
+          "#f5b484",
+          "#ffdfad"
+        ]
+      },
+      "desk-wood": {
+        "role": "neutral",
+        "displayName": "책상 나무",
+        "canonical": "#c8925a",
+        "oklch": "oklch(70.0% 0.098 66.1)",
+        "tonalRamp": [
+          "#230000",
+          "#411500",
+          "#613200",
+          "#825113",
+          "#a57138",
+          "#c8925a",
+          "#f0b87f",
+          "#ffe2a8"
+        ]
+      },
+      "notebook-paper": {
+        "role": "neutral",
+        "displayName": "노트 종이",
+        "canonical": "#fbf5e8",
+        "oklch": "oklch(97.1% 0.018 86.1)",
+        "tonalRamp": [
+          "#0f0b04",
+          "#28241a",
+          "#443f35",
+          "#625d52",
+          "#827d71",
+          "#a39e92",
+          "#c9c4b7",
+          "#f4eee1"
+        ]
+      },
+      "margin-red": {
+        "role": "neutral",
+        "displayName": "여백선 분홍",
+        "canonical": "#e8a79c",
+        "oklch": "oklch(78.7% 0.079 29.7)",
+        "tonalRamp": [
+          "#230000",
+          "#43100b",
+          "#632e26",
+          "#844c43",
+          "#a76b61",
+          "#cb8c82",
+          "#f3b1a6",
+          "#ffdbd0"
+        ]
+      },
+      "sticker-white": {
+        "role": "neutral",
+        "displayName": "스티커 흰색",
+        "canonical": "#fffaf0",
+        "oklch": "oklch(98.6% 0.014 84.6)",
+        "tonalRamp": [
+          "#0e0b05",
+          "#27241c",
+          "#433f37",
+          "#615d55",
+          "#817d74",
+          "#a29e95",
+          "#c8c4ba",
+          "#f3eee4"
+        ]
+      },
+      "memo-yellow": {
+        "role": "tertiary",
+        "displayName": "메모 노랑",
+        "canonical": "#f6e39c",
+        "oklch": "oklch(91.5% 0.092 94.9)",
+        "tonalRamp": [
+          "#170700",
+          "#322100",
+          "#4f3e00",
+          "#6e5c10",
+          "#8e7c37",
+          "#b09e59",
+          "#d7c47e",
+          "#ffefa7"
+        ]
+      },
+      "memo-yellow-light": {
+        "role": "tertiary",
+        "displayName": "밝은 메모 노랑",
+        "canonical": "#fbeeb8",
+        "oklch": "oklch(94.6% 0.071 96.1)",
+        "tonalRamp": [
+          "#140900",
+          "#2e2300",
+          "#4b3f09",
+          "#695d2c",
+          "#8a7d4b",
+          "#ab9f6b",
+          "#d1c590",
+          "#fcefb9"
+        ]
+      },
+      "nameplate-wood": {
+        "role": "neutral",
+        "displayName": "문패 나무",
+        "canonical": "#d0a067",
+        "oklch": "oklch(73.8% 0.093 70.3)",
+        "tonalRamp": [
+          "#210000",
+          "#3f1800",
+          "#5e3500",
+          "#7f5316",
+          "#a1733a",
+          "#c4945b",
+          "#ebba80",
+          "#ffe4a9"
+        ]
+      },
+      "nameplate-ink": {
+        "role": "neutral",
+        "displayName": "문패 잉크",
+        "canonical": "#3b2416",
+        "oklch": "oklch(28.6% 0.042 51.7)",
+        "tonalRamp": [
+          "#180500",
+          "#341e10",
+          "#52392b",
+          "#715748",
+          "#927766",
+          "#b59887",
+          "#dbbdac",
+          "#ffe7d5"
+        ]
+      },
+      "nameplate-hint": {
+        "role": "neutral",
+        "displayName": "문패 흐린 글자",
+        "canonical": "#4a2f1d",
+        "oklch": "oklch(33.3% 0.049 53.9)",
+        "tonalRamp": [
+          "#1a0400",
+          "#361d0b",
+          "#543926",
+          "#745643",
+          "#957662",
+          "#b89782",
+          "#debca7",
+          "#ffe6d0"
+        ]
+      },
+      "wall-ink": {
+        "role": "neutral",
+        "displayName": "벽 글자",
+        "canonical": "#f3e7d3",
+        "oklch": "oklch(93.2% 0.030 80.7)",
+        "tonalRamp": [
+          "#110a00",
+          "#2e2515",
+          "#4d4433",
+          "#6f6553",
+          "#938875",
+          "#b8ac99",
+          "#dbcfbc",
+          "#f9edd9"
+        ]
+      },
+      "frame-black": {
+        "role": "neutral",
+        "displayName": "액자 검정",
+        "canonical": "#140e0c",
+        "oklch": "oklch(17.1% 0.011 39.3)",
+        "tonalRamp": [
+          "#0f0a08",
+          "#2b2522",
+          "#4b4341",
+          "#6c6461",
+          "#908784",
+          "#b5aca9",
+          "#d8cfcc",
+          "#f6ece9"
+        ]
+      },
+      "plate-cream": {
+        "role": "neutral",
+        "displayName": "명패 크림",
+        "canonical": "#f3e5cc",
+        "oklch": "oklch(92.7% 0.036 82.2)",
+        "tonalRamp": [
+          "#110a00",
+          "#2f2511",
+          "#4f432e",
+          "#71644e",
+          "#948771",
+          "#baac94",
+          "#ddcfb7",
+          "#fbedd4"
+        ]
+      },
+      "plate-ink": {
+        "role": "neutral",
+        "displayName": "명패 잉크",
+        "canonical": "#3b2c22",
+        "oklch": "oklch(30.7% 0.028 55.1)",
+        "tonalRamp": [
+          "#140802",
+          "#312319",
+          "#514137",
+          "#736257",
+          "#978579",
+          "#bdaa9d",
+          "#e0cdc0",
+          "#feeadd"
+        ]
+      },
+      "go-lavender": {
+        "role": "primary",
+        "displayName": "가기 라벤더",
+        "canonical": "#7d55a0",
+        "oklch": "oklch(52.5% 0.121 307.3)",
+        "tonalRamp": [
+          "#140023",
+          "#360b53",
+          "#562f76",
+          "#79519b",
+          "#9d74c2",
+          "#c299ea",
+          "#e0c2fe",
+          "#f4eafe"
+        ]
+      },
+      "go-lavender-shade": {
+        "role": "primary",
+        "displayName": "짙은 가기 라벤더",
+        "canonical": "#5c3d78",
+        "oklch": "oklch(42.2% 0.100 306.9)",
+        "tonalRamp": [
+          "#140024",
+          "#33144c",
+          "#53346e",
+          "#755693",
+          "#9979b9",
+          "#be9de0",
+          "#e0c2ff",
+          "#f4eaff"
+        ]
+      },
+      "wall-focus": {
+        "role": "secondary",
+        "displayName": "벽 포커스",
+        "canonical": "#b892d8",
+        "oklch": "oklch(72.0% 0.107 308.7)",
+        "tonalRamp": [
+          "#140023",
+          "#35114d",
+          "#553270",
+          "#785495",
+          "#9c77bb",
+          "#c19be2",
+          "#e2c2fe",
+          "#f4e9ff"
+        ]
+      },
+      "monitor-titlebar": {
+        "role": "neutral",
+        "displayName": "모니터 제목줄",
+        "canonical": "#3a4a55",
+        "oklch": "oklch(40.0% 0.028 238.4)",
+        "tonalRamp": [
+          "#020d15",
+          "#1a2832",
+          "#374752",
+          "#586974",
+          "#7a8c98",
+          "#9fb1be",
+          "#c1d4e1",
+          "#e0f1fe"
+        ]
+      },
+      "monitor-screen": {
+        "role": "neutral",
+        "displayName": "모니터 화면",
+        "canonical": "#253038",
+        "oklch": "oklch(30.2% 0.021 239.9)",
+        "tonalRamp": [
+          "#040c13",
+          "#1d2830",
+          "#3b474f",
+          "#5c6871",
+          "#7e8b95",
+          "#a3b0ba",
+          "#c5d3de",
+          "#e3f1fb"
+        ]
+      },
+      "monitor-row": {
+        "role": "neutral",
+        "displayName": "모니터 줄",
+        "canonical": "#2f3d47",
+        "oklch": "oklch(35.2% 0.025 239.5)",
+        "tonalRamp": [
+          "#030c15",
+          "#1b2832",
+          "#394751",
+          "#596873",
+          "#7c8c97",
+          "#a0b1bd",
+          "#c3d4e0",
+          "#e0f1fe"
+        ]
+      },
+      "screen-ink": {
+        "role": "neutral",
+        "displayName": "화면 글자",
+        "canonical": "#eef3ef",
+        "oklch": "oklch(95.9% 0.007 151.9)",
+        "tonalRamp": [
+          "#090c0a",
+          "#242825",
+          "#424643",
+          "#636764",
+          "#868a87",
+          "#abafac",
+          "#cdd2ce",
+          "#ebf0ec"
+        ]
+      },
+      "screen-amber": {
+        "role": "tertiary",
+        "displayName": "화면 호박색",
+        "canonical": "#f1c27d",
+        "oklch": "oklch(84.1% 0.102 76.2)",
+        "tonalRamp": [
+          "#130900",
+          "#362201",
+          "#5e3e00",
+          "#875d0e",
+          "#ac803b",
+          "#d3a561",
+          "#f7c883",
+          "#feecd1"
+        ]
+      },
+      "memo-ink": {
+        "role": "neutral",
+        "displayName": "메모 잉크",
+        "canonical": "#3a2f22",
+        "oklch": "oklch(31.3% 0.027 71.2)",
+        "tonalRamp": [
+          "#120901",
+          "#2f2418",
+          "#4e4335",
+          "#706455",
+          "#948778",
+          "#b9ab9c",
+          "#ddcebe",
+          "#faecdb"
+        ]
+      },
+      "phone-statusbar": {
+        "role": "neutral",
+        "displayName": "휴대폰 상태줄",
+        "canonical": "#e8d4be",
+        "oklch": "oklch(88.1% 0.037 70.0)",
+        "tonalRamp": [
+          "#140800",
+          "#322311",
+          "#52422f",
+          "#74634f",
+          "#988671",
+          "#beaa95",
+          "#e1cdb7",
+          "#feebd6"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "brand": {
+        "displayName": "Brand",
+        "purpose": "위쪽 바의 서비스 이름에만."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "노트 안 페이지의 큰 제목, 회사 방 제목. Gowun Batang."
+      },
+      "nameplate-name": {
+        "displayName": "Nameplate Name",
+        "purpose": "나무 문패에 새긴 내 이름. Gowun Batang. 뒤의 \"의 방\"은 16px Dodum."
+      },
+      "page-sticker": {
+        "displayName": "Page Sticker",
+        "purpose": "노트 위 가장자리에 붙인 페이지 이름 스티커."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "패널 머리글, 모달 제목. 큰 패널은 21px."
+      },
+      "object-title": {
+        "displayName": "Object Title",
+        "purpose": "책상 물건의 이름. 모니터 제목줄 15px, 휴대폰 상태줄 13px로 줄어든다."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "할 일, 목록 줄, 본문. 모달 문단은 줄 간격 1.9."
+      },
+      "body-small": {
+        "displayName": "Body Small",
+        "purpose": "빈 상태 문장, 날짜, 쪽지 내용, 말풍선, 꾸미기 링크."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "작은 이동 링크, 모니터 속 목적지 묶음 이름."
+      },
+      "tag": {
+        "displayName": "Tag",
+        "purpose": "공지 분류 태그."
+      }
+    },
+    "shadows": [
+      {
+        "name": "desk-cast",
+        "value": "filter: drop-shadow(0 6px 0 #0007)",
+        "purpose": "로비 물건, 문패, 메모, 장면 액자. 빛이 위에서 와 바로 아래로 떨어지고, 그림의 투명 칸을 따라간다."
+      },
+      {
+        "name": "notebook-cast",
+        "value": "0 8px 0 0 #0004",
+        "purpose": "책상 위에 펼친 노트 종이."
+      },
+      {
+        "name": "postit-cast",
+        "value": "0 4px 0 0 #0004",
+        "purpose": "노트에 붙인 로비로 돌아가기 포스트잇."
+      },
+      {
+        "name": "sticker-edge",
+        "value": "0 0 0 1px #e1d3bb, 0 3px 0 0 #0002",
+        "purpose": "페이지 이름 스티커의 가장자리 선과 얕은 아래 그림자."
+      },
+      {
+        "name": "door-nameplate-cast",
+        "value": "filter: drop-shadow(0 8px 0 #0004)",
+        "purpose": "현관(2배 장면)의 문패."
+      },
+      {
+        "name": "note-cast",
+        "value": "0 3px 0 0 #0004",
+        "purpose": "코르크판 쪽지와 제목."
+      },
+      {
+        "name": "go-press",
+        "value": "inset -3px -3px 0 0 #5c3d78",
+        "purpose": "라벤더 행동 단추의 눌림 면."
+      },
+      {
+        "name": "panel",
+        "value": "inset 0 0 0 2px #e7d5bc, 3px 4px 0 #342c3540",
+        "purpose": "종이 패널의 가장자리와 비스듬한 단단한 그림자."
+      },
+      {
+        "name": "toast",
+        "value": "4px 4px #30283744",
+        "purpose": "떠 있는 알림."
+      },
+      {
+        "name": "sage-press",
+        "value": "inset 2px 2px #98a184, 0 2px #d1b899",
+        "purpose": "세이지 주요 버튼의 빛 받은 면과 받침."
+      },
+      {
+        "name": "nav-pressed",
+        "value": "inset 3px 3px #c9ccb5, inset -3px -3px #a2a88f",
+        "purpose": "사이드바 현재 칸."
+      }
+    ],
+    "motion": [
+      {
+        "name": "press",
+        "value": "transform 0.15s, translateY(1px) on :active",
+        "purpose": "모든 버튼이 눌릴 때 1px 내려앉는다."
+      },
+      {
+        "name": "hover-brighten",
+        "value": "filter: brightness(1.06)",
+        "purpose": "버튼을 가리킬 때 밝기만 올린다."
+      },
+      {
+        "name": "desk-lift",
+        "value": "transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), translateY(-2px)",
+        "purpose": "책상 물건을 가리키거나 포커스가 들어오면 떠오른다."
+      },
+      {
+        "name": "speech-in",
+        "value": "0.35s cubic-bezier(0.16, 1, 0.3, 1), from opacity 0 translateY(6px)",
+        "purpose": "말풍선 등장."
+      },
+      {
+        "name": "desk-breathe",
+        "value": "2.4s steps(1) infinite, translateY(-1px) at 85%",
+        "purpose": "캐릭터 숨쉬기. 도트답게 계단식."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "숨쉬기, 말풍선 등장, 물건 떠오름을 모두 끈다."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "app-min",
+        "value": "980px"
+      },
+      {
+        "name": "shell-compact",
+        "value": "max-width: 1180px"
+      },
+      {
+        "name": "lobby-stack",
+        "value": "max-width: 1240px"
+      },
+      {
+        "name": "wide",
+        "value": "min-width: 1450px"
+      }
+    ],
+    "pixelArt": {
+      "scaling": "정수 배율만, image-rendering: pixelated. 한 장면 한 배율: 로비 내 방은 1배, 노트 페이지(책상과 고리)와 현관(로그인, 환영, 벽지, 마루, 문패, 캐릭터)은 2배",
+      "propFrame": "48×48 9조각, 모서리 16px, border-image로 걸기 (로비 물건과 문패는 1배, 현관 문패는 2배)",
+      "propGrid": "16px",
+      "characterTarget": "AGENTS.md 기준 56×72, 화면 1배(현관은 정수 2배 112×144). 지금 빌드의 레이어 캔버스도 56×72",
+      "roomSource": "회사 방은 목적지다. 새 도트 회사 방 원본은 672×432(원본 화면용 사본의 x 0~1340, y 60~922 범위, 그림 속 가짜 UI 제외)이고 1배로 그린다(AGENTS.md, 2026-10-30 확정). 그 전까지 회사 방 화면은 확정 이미지에서 방 영역만 보이게 자르고(companyFinalLayout.js view) 오른쪽에 할 일 메모 열을 둔다. 로비는 회사 이미지를 쓰지 않는다: 로비는 집, 내 방이고 내 방 그림(770×455, 1배)이 나오기 전까지 벽지와 마루 타일로 임시 방을 깐다",
+      "alpha": "실루엣 가장자리에만. 로비 소품은 반투명 없이 찍는다",
+      "lighting": "위에서 온다: 윗변과 왼변 밝게, 아랫변과 오른변 어둡게",
+      "provenance": "tools/art/home-props.mjs가 art-src/home과 public/assets/home을, tools/art/lobby-props.mjs가 art-src/lobby와 public/assets/lobby를 함께 찍는다. 공통 도우미는 tools/art/propKit.mjs",
+      "homeTiles": "public/assets/home: wallpaper 16×16, floor 48×16, desk 48×16, spiral-ring 16×16, nameplate 48×48 9조각. 로비 내 방은 1배, 노트 페이지의 책상과 고리, 현관은 2배"
+    }
+  },
+  "components": [
+    {
+      "name": "세이지 주요 버튼",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "종이 패널 층의 저장, 확인 같은 주요 행동.",
+      "html": "<button class=\"ds-btn-primary\">저장하기</button>",
+      "css": ".ds-btn-primary{font-family:'Gowun Dodum',sans-serif;font-size:16px;background:var(--sage,#6c7b61);border:2px solid #49533f;color:#fff5e4;box-shadow:inset 2px 2px #98a184,0 2px #d1b899;border-radius:5px;padding:10px 18px;cursor:pointer;transition:background .15s,transform .15s}.ds-btn-primary:hover{filter:brightness(1.06)}.ds-btn-primary:active{transform:translateY(1px)}.ds-btn-primary:focus-visible{outline:3px solid #9b70bc;outline-offset:4px}"
+    },
+    {
+      "name": "보조 버튼",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "취소, 나중에 하기 같은 두 번째 행동.",
+      "html": "<button class=\"ds-btn-secondary\">나중에 할게요</button>",
+      "css": ".ds-btn-secondary{font-family:'Gowun Dodum',sans-serif;font-size:16px;background:#fff8e8;border:2px solid #b6a084;color:#49533f;border-radius:5px;padding:10px 18px;cursor:pointer;transition:background .15s,transform .15s}.ds-btn-secondary:hover{filter:brightness(1.06)}.ds-btn-secondary:active{transform:translateY(1px)}.ds-btn-secondary:focus-visible{outline:3px solid #9b70bc;outline-offset:4px}"
+    },
+    {
+      "name": "가기 단추 (책상 층)",
+      "kind": "button",
+      "refersTo": "desk-go",
+      "description": "책상 물건 층의 주요 행동. 모니터에서 목적지로 가는 단추(회사는 출근), 방 만들기, 친구 추가.",
+      "html": "<div class=\"ds-wall\"><button class=\"ds-desk-go\">출근</button></div>",
+      "css": ".ds-wall{background:#2b201c;padding:24px}.ds-desk-go{font-family:'Gowun Dodum',sans-serif;font-size:16px;background:#7d55a0;box-shadow:inset -3px -3px 0 0 #5c3d78;color:#fff8e8;border:0;border-radius:0;padding:7px 14px;cursor:pointer;transition:transform .15s}.ds-desk-go:hover{filter:brightness(1.06)}.ds-desk-go:active{transform:translateY(1px)}.ds-desk-go:focus-visible{outline:3px solid #b892d8;outline-offset:3px}"
+    },
+    {
+      "name": "입력칸",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "모달과 폼의 글 입력.",
+      "html": "<input class=\"ds-input\" placeholder=\"친구 코드를 입력해 주세요\">",
+      "css": ".ds-input{font-family:'Gowun Dodum',sans-serif;font-size:16px;padding:12px;background:#fff8e8;border:2px solid #b6a084;border-radius:4px;width:280px;color:#34312c}.ds-input:focus-visible{outline:3px solid #9b70bc;outline-offset:4px}"
+    },
+    {
+      "name": "사이드바 메뉴",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "왼쪽 서랍장 사이드바의 세로 칸.",
+      "html": "<nav class=\"ds-side\"><a class=\"ds-nav is-active\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"40\" height=\"40\" fill=\"#f6d7b4\" stroke=\"#705b46\" stroke-width=\"1.3\"><path d=\"M4 10l8-6 8 6v10H4z\"/></svg>로비</a><a class=\"ds-nav\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"40\" height=\"40\" fill=\"#9ab0bc\" stroke=\"#637d8b\" stroke-width=\"1.3\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"15\"/></svg>기록</a></nav>",
+      "css": ".ds-side{width:145px;background:#e4d3bc;border:3px solid #484138;padding:20px 10px;display:flex;flex-direction:column;gap:6px}.ds-nav{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:102px;border:2px solid transparent;border-radius:4px;font-family:'Gowun Dodum',sans-serif;font-size:17px;color:#24231f;text-decoration:none;transition:background .15s}.ds-nav:hover{background:#c3c1a7}.ds-nav.is-active{background:#aeb29a;border-color:#979e89;box-shadow:inset 3px 3px #c9ccb5,inset -3px -3px #a2a88f}.ds-nav:focus-visible{outline:3px solid #9b70bc;outline-offset:4px}"
+    },
+    {
+      "name": "공지 태그",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "공지 분류 표시.",
+      "html": "<span class=\"ds-tag\">공지</span> <span class=\"ds-tag ds-tag-sky\">이벤트</span>",
+      "css": ".ds-tag{display:inline-block;font-family:'Gowun Dodum',sans-serif;font-size:12px;background:#d88777;border:1px solid #d9a28f;color:#fff9ed;min-width:62px;text-align:center;padding:4px 5px;border-radius:4px}.ds-tag-sky{background:#87a7bc;border-color:#a3bccc}"
+    },
+    {
+      "name": "종이 패널",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "종이 패널 층의 기본 그릇. 머리글과 본문.",
+      "html": "<section class=\"ds-panel\"><header class=\"ds-panel-head\">오늘의 기록</header><div class=\"ds-panel-body\">오늘 2시간 10분 공부했어요.</div></section>",
+      "css": ".ds-panel{width:320px;background:#f5e9d7;border:3px solid #51463a;border-radius:13px;box-shadow:inset 0 0 0 2px #e7d5bc,3px 4px 0 #342c3540;overflow:hidden;font-family:'Gowun Dodum',sans-serif;color:#24231f}.ds-panel-head{height:42px;display:flex;align-items:center;padding:0 13px;border-bottom:2px solid #bca38e;background:#e8d4be77;font-size:18px;letter-spacing:.5px}.ds-panel-body{padding:13px 16px;font-size:16px;line-height:1.6}"
+    },
+    {
+      "name": "모니터 \"오늘 어디로 갈까\" (책상 물건)",
+      "kind": "custom",
+      "refersTo": "monitor-room-row",
+      "description": "로비에서 오늘 갈 곳을 고르는 입구. 목적지 묶음(회사) 아래 방 줄. 실제 화면은 9조각 베젤 그림을 쓰고, 이 미리보기는 같은 색 단색 테두리로 근사한다.",
+      "html": "<div class=\"ds-wall\"><section class=\"ds-monitor\"><header class=\"ds-mon-head\">오늘 어디로 갈까</header><div class=\"ds-mon-body\"><p class=\"ds-mon-group\">회사</p><button class=\"ds-mon-row\"><strong>함께하는 회사</strong><span>3명 공부 중</span><em>출근</em></button></div></section></div>",
+      "css": ".ds-wall{background:#2b201c;padding:24px}.ds-monitor{width:340px;border:16px solid #1d1a1c;filter:drop-shadow(0 6px 0 #0007);font-family:'Gowun Dodum',sans-serif;transition:transform .2s cubic-bezier(.16,1,.3,1)}.ds-monitor:hover,.ds-monitor:focus-within{transform:translateY(-2px)}.ds-mon-head{padding:4px 6px 4px 10px;background:#3a4a55;color:#eef3ef;font-size:15px;letter-spacing:.3px}.ds-mon-body{padding:8px;background:#253038}.ds-mon-row{width:100%;display:grid;grid-template-columns:1fr auto;column-gap:10px;align-items:center;padding:8px 10px;background:#2f3d47;color:#eef3ef;border:0;text-align:left;font:inherit;cursor:pointer}.ds-mon-row:hover{background:#3a4a55}.ds-mon-row:focus-visible{outline:3px solid #b892d8;outline-offset:3px}.ds-mon-row strong{font-size:16px}.ds-mon-row span{grid-column:1;font-size:13px;color:#c9d6d2}.ds-mon-row em{grid-column:2;grid-row:1/span 2;font-style:normal;padding:7px 14px;background:#7d55a0;box-shadow:inset -3px -3px 0 0 #5c3d78;color:#fff8e8;font-size:16px}.ds-mon-group{margin:0 0 6px;font-size:13px;color:#c9d6d2}"
+    },
+    {
+      "name": "코르크판 쪽지 (책상 물건)",
+      "kind": "custom",
+      "refersTo": "board-note",
+      "description": "압정으로 꽂은 명패 크림 쪽지. 살짝 기울고 그림자가 바로 아래로 진다. 미리보기의 틀과 코르크는 단색 근사.",
+      "html": "<div class=\"ds-cork\"><button class=\"ds-note\">이번 주 백색소음이 새로 들어왔어요</button><button class=\"ds-note ds-note-even\">친구 초대 이벤트를 시작해요</button></div>",
+      "css": ".ds-cork{background:#b98a5a;border:16px solid #6e4a2e;padding:16px;display:flex;flex-direction:column;gap:14px;width:300px}.ds-note{position:relative;background:#f3e5cc;color:#3b2c22;box-shadow:0 3px 0 0 #0004;border:0;border-radius:0;padding:9px 12px 9px 10px;font-family:'Gowun Dodum',sans-serif;font-size:14px;line-height:1.45;text-align:left;cursor:pointer}.ds-note:hover{background:#fff3dd}.ds-note:focus-visible{outline:3px solid #b892d8;outline-offset:3px}.ds-note-even{transform:rotate(.6deg)}"
+    },
+    {
+      "name": "스프링 노트 (공통 페이지 틀)",
+      "kind": "card",
+      "refersTo": "notebook-page",
+      "description": "상점, 기록, 친구, 꾸미기, 가이드의 공통 틀. 책상 나무 위 노트, 위 고리 줄, 분홍 여백선, 페이지 이름 스티커, 로비로 돌아가기 포스트잇. 고리는 미리보기에서 단색 근사.",
+      "html": "<div class=\"ds-desk\"><section class=\"ds-note-page\"><span class=\"ds-rings\"></span><span class=\"ds-sticker\">상점</span><button class=\"ds-postit\">로비로 돌아가기</button><div class=\"ds-note-body\"><h1>공부하며 모은 코인으로 나를 꾸며요</h1><p>지금 가진 코인 340</p></div></section></div>",
+      "css": ".ds-desk{background:#c8925a;padding:40px 24px 24px;font-family:'Gowun Dodum',sans-serif}.ds-note-page{position:relative;background:#fbf5e8;box-shadow:0 8px 0 0 #0004;color:#24231f}.ds-note-page::after{content:'';position:absolute;top:16px;bottom:0;left:40px;width:2px;background:#e8a79c}.ds-rings{position:absolute;left:24px;right:24px;top:-16px;height:32px;background:repeating-linear-gradient(90deg,transparent 0 10px,#3b3a40 10px 22px,transparent 22px 32px)}.ds-sticker{position:absolute;top:-20px;left:56px;z-index:1;padding:6px 14px;background:#fffaf0;box-shadow:0 0 0 1px #e1d3bb,0 3px 0 0 #0002;font-size:22px;transform:rotate(-1.5deg)}.ds-postit{position:absolute;top:-22px;right:18px;z-index:1;padding:10px 14px 12px;background:#f6e39c;border:0;border-radius:0;color:#3a2f22;box-shadow:0 4px 0 0 #0004;transform:rotate(2deg);font:inherit;font-size:14px;cursor:pointer}.ds-postit:hover{background:#fbeeb8}.ds-postit:focus-visible{outline:3px solid #9b70bc;outline-offset:4px}.ds-note-body{padding:44px 30px 34px 64px}.ds-note-body h1{font-family:'Gowun Batang',serif;font-size:29px;font-weight:400;margin:0 0 12px}.ds-note-body p{margin:0;font-size:14px;color:#75624e}"
+    },
+    {
+      "name": "나무 문패와 벽 메모",
+      "kind": "custom",
+      "refersTo": "wooden-nameplate",
+      "description": "내 방 벽과 현관 문에 거는 같은 문패. 이름은 Gowun Batang으로 새긴다. 로비에서는 아래에 날짜와 꾸미기 링크를 적은 노란 메모를 붙인다. 실제 화면은 9조각 그림, 미리보기는 단색 근사.",
+      "html": "<div class=\"ds-paper-wall\"><div class=\"ds-plate\"><strong>밍구<span>의 방</span></strong></div><div class=\"ds-wall-memo\"><span>10월 30일 금요일</span><a href=\"#\">캐릭터 꾸미기</a></div></div>",
+      "css": ".ds-paper-wall{background:#f1e2c8;padding:24px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;font-family:'Gowun Dodum',sans-serif}.ds-plate{background:#d0a067;border:3px solid #7a4d2b;box-shadow:inset 2px 2px #e2b47c;padding:8px 14px;color:#3b2416;filter:drop-shadow(0 6px 0 #0007)}.ds-plate strong{font-family:'Gowun Batang',serif;font-size:22px;letter-spacing:.5px;font-weight:400}.ds-plate strong span{font-family:'Gowun Dodum',sans-serif;font-size:16px;margin-left:2px}.ds-wall-memo{display:flex;flex-direction:column;gap:2px;background:#f6e39c;padding:10px 14px;color:#3a2f22;font-size:14px;filter:drop-shadow(0 6px 0 #0007)}.ds-wall-memo a{color:#5c3d78;text-decoration:none}.ds-wall-memo a:hover{text-decoration:underline;text-underline-offset:3px}.ds-wall-memo a:focus-visible{outline:3px solid #9b70bc;outline-offset:3px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "집에서 나서는 도트 공부길",
+    "overview": "**Creative North Star: \"집에서 나서는 도트 공부길\"**\n\n모여공부의 화면은 앱이 아니라 집이다. 로비는 내 방이고, 사용자는 메뉴를 고르는 대신 내 방 책상에서 \"오늘 어디로 갈까\"를 고른다. 회사 방, 스터디카페, 학교는 집에서 골라 나서는 목적지이고, 출근이나 퇴근 같은 회사 말은 회사 안에서만 쓴다. 공통 화면(상점, 기록, 친구, 꾸미기, 가이드 등)은 내 책상 위에 펼친 스프링 노트이고, 로그인과 환영은 집 현관이다. 앱 전체를 감싸는 껍데기(위쪽 바, 왼쪽 서랍장 같은 사이드바)는 따뜻한 문구점 재질이고, 그 안의 장면은 도트 그림이다. 모든 층은 같은 갈색 잉크와 같은 서체로 묶인다.\n\n이 시스템은 지금 네 가지 재질로 존재한다. **종이 패널 층**(패널, 모달, 카드, 입력칸)은 크림 종이 위에 짙은 호두색 선과 살짝 둥근 모서리를 쓰고, 노트 안이나 현관 위에 놓여도 같은 모양을 지킨다. **집 층**은 장면의 바탕이다: 로비의 내 방(벽지와 나무 마루 타일, 1배), 공통 페이지의 책상 나무와 스프링 고리(2배), 노트 종이, 현관의 벽지와 마루(2배). **책상 물건 층**(로비)은 내 방 장면 둘레의 짙은 벽 위에 기능 하나하나를 물건(검은 베젤 모니터, 노란 메모지, 코르크판, 둥근 휴대폰)으로 그린다. 물건과 명패의 틀은 손으로 찍은 도트 9조각이고 모서리는 CSS 둥글림이 아니라 그림 속 계단이다. **목적지 층**(회사 방 화면)은 그곳만의 테마를 따르고 집 세계의 규칙을 덮어쓰지 않는다.\n\n로비는 집 세계로 재설계 중이다(2026-10-31, AGENTS.md). 캐릭터는 꾸미기와 같은 레이어 부품이고, 배경 장면과 물건은 서로 분리된 부품이다. 지금 내 방 그림은 타일로 깐 임시본이고, 내 방 도트 그림이 나오면 같은 크기(770×455)로 바꾼다.",
+    "keyCharacteristics": [
+      "로비는 집, 내 방이다. 회사, 스터디카페, 학교는 집에서 고르는 목적지다",
+      "고양이 모티프와 따뜻한 갈색 잉크, 크림 종이, 나무 재질",
+      "서체는 Gowun Dodum 하나로 거의 모든 글을 쓰고, 페이지 제목과 나무 문패의 이름만 Gowun Batang",
+      "도트 그림은 정수 배율로만, 한 장면에는 한 배율. 로비는 1배, 노트 페이지와 현관은 2배",
+      "그림자는 번지지 않고 바로 아래로 떨어진다",
+      "주요 행동색은 두 가지: 종이 층은 세이지, 책상 물건 층은 라벤더"
+    ],
+    "rules": [
+      {
+        "name": "The 장면 바탕 하나 Rule",
+        "body": "장면의 바탕은 화면마다 하나다. 로비는 짙은 로비 벽, 공통 페이지는 책상 나무, 현관은 벽지. 크림과 노랑은 바탕이 아니라 그 위에 놓인 물건(노트, 패널, 문패, 메모지, 쪽지)의 재질로만 나온다.",
+        "section": "colors"
+      },
+      {
+        "name": "The 행동색 하나 Rule",
+        "body": "한 층에는 주요 행동색이 하나다. 종이 층은 세이지, 책상 물건 층은 라벤더. 같은 화면에 두 주요 행동색을 나란히 두지 않는다.",
+        "section": "colors"
+      },
+      {
+        "name": "The 한 목소리 Rule",
+        "body": "화면 글은 Gowun Dodum이다. Gowun Batang은 페이지 제목과 문패에 새긴 이름에만 쓰고, 버튼, 라벨, 물건 이름, 스티커에는 쓰지 않는다.",
+        "section": "typography"
+      },
+      {
+        "name": "The 가운뎃점 없음 Rule",
+        "body": "UI 문구에 가운뎃점을 쓰지 않는다. 나열은 쉼표, 줄바꿈, 별도 요소로 나눈다. 예: \"함께하는 회사, 6석, 초대 코드 TEAM26\".",
+        "section": "typography"
+      },
+      {
+        "name": "The 끊지 않는 낱말 Rule",
+        "body": "한국어 문장은 낱말 단위로 줄을 바꾼다(`word-break: keep-all`). 긴 영문과 숫자만 아무 곳에서나 끊을 수 있다.",
+        "section": "typography"
+      },
+      {
+        "name": "The 정수 배율 Rule",
+        "body": "도트 그림(방, 타일, 캐릭터, 물건 틀)은 1배, 2배처럼 정수 배율로만 그린다. 화면 크기에 맞춰 늘이거나 줄이지 않는다. 장면이 좁으면 그림을 줄이지 않고 잘라 쓴다.",
+        "section": "layout"
+      },
+      {
+        "name": "The 한 장면 한 배율 Rule",
+        "body": "한 장면 안의 도트 그림은 모두 같은 배율이다. 로비 내 방과 그 둘레 물건은 1배. 노트 페이지는 스프링 고리를 2배로 그리므로 책상 나무도 2배로 깐다. 현관은 캐릭터를 2배로 세우므로 벽지, 마루, 걸레받이, 문패까지 모두 2배로 맞춘다.",
+        "section": "layout"
+      },
+      {
+        "name": "The 위에서 오는 빛 Rule",
+        "body": "집 세계에 새로 그리는 물건과 장면 요소는 빛이 위에서 온다. 그림은 윗변이 밝고 아랫변이 어둡고, 그림자는 오른쪽이 아니라 바로 아래로 떨어진다.",
+        "section": "elevation"
+      },
+      {
+        "name": "The 흐림 없는 그림자 Rule",
+        "body": "바깥으로 떨어지는 그림자에는 흐림 값을 주지 않는다. 흐림은 안쪽 재질 그늘과 모달 뒤 배경(3px)에만 있다.",
+        "section": "elevation"
+      },
+      {
+        "name": "The 그림이 모서리 Rule",
+        "body": "책상 물건과 문패에 `border-radius`를 주지 않는다. 둥근 휴대폰도 둥근 모서리는 그림 속 계단이다.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do 도트 그림을 정수 배율로만 그리고 `image-rendering: pixelated`를 건다.",
+      "Do 한 장면 안의 도트는 한 배율로 맞춘다. 로비는 1배, 노트 페이지와 현관은 2배.",
+      "Do 새 물건 틀과 문패는 48×48 9조각, 16px 모서리로 찍는다. 타일과 소품은 16px 격자에 맞춘다.",
+      "Do 새 그림은 빛이 위에서 오게 칠하고, 그림자는 흐림 없이 바로 아래로(`drop-shadow(0 6px 0 #0007)`) 떨어뜨린다.",
+      "Do 반투명 픽셀은 실루엣 가장자리(완전 투명 픽셀과 맞닿은 곳)에만 쓰고 안쪽은 불투명으로 둔다.",
+      "Do 캐릭터 새 원본은 56×72, 회사 방 원본은 672×432로 그리고 둘 다 화면에 1배로 그린다(AGENTS.md 기준).",
+      "Do 새 공통 페이지는 스프링 노트 틀에 넣고, 페이지 이름은 스티커로, 로비로 가는 길은 포스트잇으로 둔다.",
+      "Do 종이 패널 층의 주요 행동은 세이지, 책상 물건 층의 주요 행동은 라벤더로 한다.",
+      "Do 벽 위의 글자와 포커스는 밝은 쪽(벽 글자, 벽 포커스)으로 바꿔 대비를 지킨다.",
+      "Do 움직임 줄이기 설정에서 반복과 등장 움직임을 모두 끈다."
+    ],
+    "donts": [
+      "Don't 로비를 사무실로 그리거나 부르지 않는다. 로비는 집, 내 방이다. 출근, 퇴근 같은 회사 말은 회사 안에서만 쓴다.",
+      "Don't 도트 그림을 1.5배나 화면 맞춤 비율로 늘이지 않는다.",
+      "Don't 생성 이미지나 자동 변환 결과를 손 보정 없이 화면에 쓰지 않는다. 회사 방 원본 파일은 바이트 하나도 바꾸지 않는다.",
+      "Don't 책상 물건과 문패에 `border-radius`나 CSS 테두리로 모양을 흉내 내지 않는다. 모양은 그림이 맡는다.",
+      "Don't 바깥으로 떨어지는 그림자에 흐림 값을 주지 않는다.",
+      "Don't 노트 종이에 가로줄을 긋지 않는다. 여백선 하나면 충분하다.",
+      "Don't UI 문구에 가운뎃점을 쓰지 않는다.",
+      "Don't 버튼, 라벨, 물건 이름, 스티커에 Gowun Batang을 쓰지 않는다.",
+      "Don't 페이지 제목 위에 영문 대문자 머리말을 새로 얹지 않는다.",
+      "Don't 확정된 로비의 배치와 디자인을 바꾸지 않는다. 로비는 문구만 다듬는다."
+    ]
+  }
+}
