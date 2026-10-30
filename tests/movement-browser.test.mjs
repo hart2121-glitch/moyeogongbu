@@ -12,7 +12,7 @@ const url = process.env.APP_URL || "http://127.0.0.1:4173/";
 async function enter(page) {
   await page.goto(url);
   await page
-    .getByRole("button", { name: "회사 테마로 가기", exact: true })
+    .getByRole("button", { name: / 방으로 출근$/ }).first()
     .click();
   await page.getByTestId("study-character").waitFor();
   await page

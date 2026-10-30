@@ -25,7 +25,7 @@ test("정면 걷기 4프레임 순환, 정지 대기, 시트 칸, 픽셀 렌더�
     page.on("pageerror", (e) => errors.push(e.message));
     await page.goto(process.env.APP_URL || "http://127.0.0.1:4173/");
     await page
-      .getByRole("button", { name: "회사 테마로 가기", exact: true })
+      .getByRole("button", { name: / 방으로 출근$/ }).first()
       .click();
     await page.getByTestId("study-character").waitFor();
     await page

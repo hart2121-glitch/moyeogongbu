@@ -21,7 +21,7 @@ test("실제 브라우저 1·3·4·6번 각각 좌우 이동·퇴석·재착석 
     page.on("pageerror", (e) => results.errors.push(e.message));
     await page.goto(process.env.APP_URL || "http://127.0.0.1:4173/");
     await page
-      .getByRole("button", { name: "회사 테마로 가기", exact: true })
+      .getByRole("button", { name: / 방으로 출근$/ }).first()
       .click();
     await page.getByTestId("study-character").waitFor();
     await page

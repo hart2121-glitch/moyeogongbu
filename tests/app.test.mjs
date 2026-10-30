@@ -25,57 +25,29 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
         .count(),
       0,
     );
-    // 로비는 프로필을 받은 뒤 그려지므로 아바타 이미지가 실제로 불러와질 때까지 기다린다.
-    await page.waitForFunction(
-      () => document.querySelector(".profile-avatar")?.naturalWidth > 0,
+    // 로비는 "내 자리" 장면이다 (2026-10-30 재설계). 캐릭터 레이어가 실제로 불러와질 때까지 기다린다.
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll(".desk-character img")].some((img) => img.naturalWidth > 0),
     );
-    const officePreview = page.getByRole("img", {
-      name: "회사 스터디룸 미리보기",
-      exact: true,
-    });
-    await officePreview.waitFor();
-    await page.waitForFunction(
-      () => document.querySelector(".theme-image img")?.naturalWidth > 0,
-    );
+    // 로비는 집, 내 방이다. 벽지와 나무 마루 도트 타일을 1배로 깐다 (회사 사무실 그림은 쓰지 않는다).
     assert.deepEqual(
-      await officePreview.evaluate((img) => ({
-        src: img.getAttribute("src"),
-        width: img.naturalWidth,
-        height: img.naturalHeight,
-        fit: getComputedStyle(img).objectFit,
-      })),
-      {
-        src: "/assets/company-study-room-final-display.png",
-        width: 1705,
-        height: 922,
-        fit: "contain",
-      },
+      await page.locator(".desk-scene-art").evaluate((node) => {
+        const box = node.getBoundingClientRect();
+        const bg = (sel) => getComputedStyle(node.querySelector(sel));
+        return {
+          wall: bg(".home-wall").backgroundImage.includes("/assets/home/wallpaper.png"),
+          wallTile: bg(".home-wall").backgroundSize,
+          floor: bg(".home-floor").backgroundImage.includes("/assets/home/floor.png"),
+          floorTile: bg(".home-floor").backgroundSize,
+          office: node.innerHTML.includes("company-study-room"),
+          width: box.width,
+          height: box.height,
+        };
+      }),
+      { wall: true, wallTile: "16px 16px", floor: true, floorTile: "48px 16px", office: false, width: 770, height: 455 },
     );
-    assert.equal(
-      await page
-        .getByRole("img", {
-          name: "학교 스터디룸 미리보기: 미리보기 준비 중",
-          exact: true,
-        })
-        .count(),
-      1,
-    );
-    const previewBoxes = await page
-      .locator(".theme-image")
-      .evaluateAll((nodes) =>
-        nodes.map((node) => ({
-          background: getComputedStyle(node).backgroundImage,
-          height: node.getBoundingClientRect().height,
-        })),
-      );
-    assert.deepEqual(
-      previewBoxes.map((box) => box.background),
-      ["none", "none"],
-    );
-    assert.deepEqual(
-      previewBoxes.map((box) => box.height),
-      [125, 125],
-    );
+    assert.equal(await page.getByRole("heading", { name: "오늘 어디로 갈까" }).count(), 1);
+    assert.match(await page.locator(".desk-date").innerText(), /^\d+월 \d+일 [일월화수목금토]요일$/);
     await page.screenshot({
       path: "/tmp/moyeogongbu-lobby.png",
       fullPage: true,
@@ -87,15 +59,11 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
     assert.equal(await page.getByLabel("React 공부하기").isChecked(), true);
     // 할 일 완료는 서버가 코인을 준다 (가짜 서버: 잔액 340 + 2).
     await page.locator(".wallet", { hasText: "342" }).waitFor();
+    // 모니터의 내 방에서 바로 출근한다.
     await page
-      .getByRole("button", { name: "회사 테마로 가기", exact: true })
+      .getByRole("button", { name: "함께하는 회사 방으로 출근", exact: true })
       .click();
     await page.getByText("회사 테마 스터디룸", { exact: true }).waitFor();
-    await page.getByRole("button", { name: "모여공부 로비" }).click();
-    await page
-      .getByRole("button", { name: "학교 테마로 가기", exact: true })
-      .click();
-    await page.getByText("학교 테마 스터디룸", { exact: true }).waitFor();
     await page.getByRole("button", { name: "모여공부 로비" }).click();
     for (const label of [
       "공용 스터디카페",
@@ -142,8 +110,10 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
     await page
       .getByRole("button", { name: "모여공부 로비", exact: true })
       .click();
+    // 꾸미기에서 저장한 모습이 로비 캐릭터에 그대로 보인다.
+    await page.locator('.desk-character [data-layer-outfit="outfit-sage"]').waitFor();
     assert.match(
-      await page.locator(".profile-avatar").getAttribute("class"),
+      await page.locator('.desk-character img[data-layer="body"]').getAttribute("class"),
       /세이지/,
     );
     assert.equal(await page.getByLabel("React 공부하기").isChecked(), true);
@@ -170,68 +140,34 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
   }
 });
 
-test("원본 경로 등록과 이미지 실패 시에도 카드 크기와 입장 기능 유지", async () => {
+test("로비: 방이 없으면 방 목록으로 안내하고, 물건을 가리키면 캐릭터가 그쪽을 본다", async () => {
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_PATH || "/usr/bin/chromium",
     headless: true,
     args: ["--no-sandbox"],
   });
   try {
+    // 준비: 방이 하나도 없는 사용자. 1536 폭에서 캐릭터는 내 방 가운데에 서므로 휴대폰은 확실한 오른쪽, 모니터는 바로 아래다.
     const page = await browser.newPage({
       viewport: { width: 1536, height: 1024 },
     });
-    await mockSupabase(page);
-    // 실제 원본 대신 브라우저 테스트에서만 이미지 응답과 설정을 주입합니다.
-    await page.route("**/src/roomPreviews.js*", async (route) => {
-      await route.fulfill({
-        contentType: "application/javascript",
-        body: `export const roomPreviews = {
-        office: {src: '/test-office.png', alt: '회사 스터디룸 미리보기', placeholder: '원본 이미지 필요'},
-        school: {src: '/test-school.png', alt: '학교 스터디룸 미리보기', placeholder: '미리보기 준비 중'}
-      };`,
-      });
-    });
-    await page.route("**/test-office.png", (route) =>
-      route.fulfill({
-        contentType: "image/png",
-        body: Buffer.from(
-          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=",
-          "base64",
-        ),
-      }),
-    );
-    await page.route("**/test-school.png", (route) =>
-      route.fulfill({ status: 404, body: "" }),
-    );
+    await mockSupabase(page, { seedRoom: false });
     await page.goto(process.env.APP_URL || "http://127.0.0.1:4173/");
     await page.getByRole("heading", { name: "밍구", exact: true }).waitFor();
-    const image = page.getByRole("img", {
-      name: "회사 스터디룸 미리보기",
-      exact: true,
-    });
-    await image.waitFor();
-    await page.waitForFunction(
-      () => document.querySelector(".theme-image img")?.naturalWidth > 0,
-    );
-    await page
-      .getByRole("img", {
-        name: "학교 스터디룸 미리보기: 미리보기 준비 중",
-        exact: true,
-      })
-      .waitFor();
-    const heights = await page
-      .locator(".theme-image")
-      .evaluateAll((nodes) =>
-        nodes.map((n) => n.getBoundingClientRect().height),
-      );
-    assert.deepEqual(heights, [125, 125]);
-    for (const theme of ["회사", "학교"]) {
-      await page
-        .getByRole("button", { name: `${theme} 테마로 가기`, exact: true })
-        .click();
-      await page.getByText(`${theme} 테마 스터디룸`, { exact: true }).waitFor();
-      await page.getByRole("button", { name: "모여공부 로비" }).click();
-    }
+    // Story 009: 캐릭터는 레이어 시트를 칸으로 잘라 그리므로, 방향은 LayerStack의 data-direction으로 본다.
+    const facing = (dir) => page.locator(`.desk-character [data-testid="character-layers"][data-direction="${dir}"]`).waitFor();
+    await facing("down");
+
+    // 실행과 확인: 휴대폰을 가리키면 오른쪽, 이어서 모니터를 가리키면 아래를 본다 (방향이 물건 위치를 따라 바뀐다)
+    await page.locator(".desk-phone").hover();
+    await facing("right");
+    await page.locator(".desk-monitor").hover();
+    await facing("down");
+
+    // 실행과 확인: 출근할 방이 없으면 방 목록으로 안내한다
+    await page.getByText("아직 출근할 회사 방이 없어요.").waitFor();
+    await page.getByRole("link", { name: /방 만들거나 초대 코드로 들어가기/ }).click();
+    await page.waitForURL(/\/rooms$/);
   } finally {
     await browser.close();
   }

@@ -42,13 +42,12 @@ test("퇴근 없이 닫은 날은 로비 위에 지난 정산이 한 번 뜨고,
     assert.match(text, /3시간 12분/);
     assert.ok(!text.includes("·"));
     assert.equal(await page.getByTestId("settlement-balance").innerText(), "553");
-    await page.waitForFunction(() => document.querySelector(".profile-avatar")?.naturalWidth > 0);
+    await page.waitForFunction(() => [...document.querySelectorAll(".desk-character img")].some((img) => img.naturalWidth > 0));
     await shot(page, "last-settlement-popup.png");
     await popup.getByRole("button", { name: "닫기", exact: true }).click();
     await popup.waitFor({ state: "detached" });
     assert.ok(state.calls.some((c) => c.endsWith("/rpc/dismiss_settlement")));
     assert.equal(state.pending, null);
-    assert.equal(await page.locator(".profile-coins").innerText(), "553");
     assert.equal(await page.locator(".wallet").innerText(), "553");
     await shot(page, "lobby-server-coins.png");
   } finally {
