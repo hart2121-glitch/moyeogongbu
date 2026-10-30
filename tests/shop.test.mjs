@@ -20,7 +20,10 @@ const shot = async (page, name) => {
 };
 const nav = (page, label) => page.getByRole("navigation").getByRole("button", { name: label, exact: true }).click();
 const COMEMBER = "00000000-0000-4000-8000-000000000021";
-const defaultLook = () => ({ body: "body-basic", face: "face-basic", hair_back: "hair-lavender", hair_front: "hair-lavender", outfit: "outfit-lavender", accessory: null });
+const defaultLook = () => ({
+  body: "body-basic", face: "face-basic", hair_back: "hair-basic", hair_front: "hair-basic", hair_color: "hair-color-lavender",
+  outfit: "outfit-lavender", accessory: null,
+});
 
 test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로비와 방의 꾸민 캐릭터", async () => {
   const browser = await launch();
@@ -47,10 +50,11 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     await page.keyboard.press("Escape");
     await page.goto(`${url}character`);
 
-    // 처음 꾸미기: 기본 아이템만 (머리 2, 눈 색 7, 의상 2)
+    // 처음 꾸미기: 기본 아이템만 (머리 모양 1, 머리 색 2, 눈 색 7, 의상 2)
     await page.getByRole("heading", { name: "처음 꾸미기" }).waitFor();
-    assert.equal(await page.locator(".item-options button").count(), 11);
-    await page.getByRole("button", { name: /^밤색 머리/ }).click();
+    assert.equal(await page.locator(".item-options button").count(), 12);
+    await page.getByRole("button", { name: /^밤색 염색/ }).click();
+    assert.equal(await page.getByTestId("character-layers").first().getAttribute("data-hair-color"), "hair-color-chestnut");
     await page.getByRole("button", { name: /^초록 눈/ }).click();
     assert.equal(await page.getByTestId("character-layers").first().getAttribute("data-layer-face"), "face-green");
     await page.getByRole("button", { name: /^세이지 옷/ }).click();
@@ -59,11 +63,12 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     await page.getByRole("button", { name: "이 모습으로 저장하기" }).waitFor();
     assert.equal(server.looks.get(FAKE_USER_ID).outfit, "outfit-sage");
     assert.equal(server.looks.get(FAKE_USER_ID).face, "face-green");
+    assert.equal(server.looks.get(FAKE_USER_ID).hair_color, "hair-color-chestnut");
 
     // 상점: 120코인으로 리본은 살 수 있고, 나머지는 부드러운 이유와 함께 막힌다
     await nav(page, "상점");
     await page.getByRole("button", { name: "보라 리본 구매하기" }).waitFor();
-    // 액세서리 6, 의상 4, 머리 4, 머리 색 8
+    // 액세서리 6, 의상 4, 머리 모양 4, 머리 색 8
     assert.equal(await page.locator(".shop-item").count(), 22);
     assert.equal(await page.getByRole("button", { name: "별 머리핀 구매하기" }).isDisabled(), true);
     await page.locator('[data-item="acc-hairpin"]').getByText("30코인이 더 모이면 살 수 있어요.").waitFor();
@@ -111,7 +116,8 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     const stack = page.getByTestId("character-layers");
     await stack.waitFor();
     assert.equal(await stack.getAttribute("data-layer-accessory"), "acc-ribbon");
-    assert.equal(await stack.getAttribute("data-layer-hair-front"), "hair-chestnut");
+    assert.equal(await stack.getAttribute("data-layer-hair-front"), "hair-basic");
+    assert.equal(await stack.getAttribute("data-hair-color"), "hair-color-chestnut");
 
     // 로비 캐릭터 (꾸미기와 같은 레이어로 그린다)
     await page.goto(`${url}lobby`);

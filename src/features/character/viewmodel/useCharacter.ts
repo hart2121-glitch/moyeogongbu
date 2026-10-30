@@ -18,16 +18,17 @@ export function useMyLook() {
   return useQuery({ queryKey: lookKey(userId), queryFn: shopStore.myLook, enabled: !!userId });
 }
 
-/** 칸에 아이템을 고른 꾸밈. 머리는 뒷머리와 앞머리를 함께 바꾸고, 액세서리는 같은 것을 다시 고르면 벗는다. */
+/** 칸에 아이템을 고른 꾸밈. 머리 모양은 뒷머리와 앞머리를 함께 바꾸고, 액세서리는 같은 것을 다시 고르면 벗는다. */
 export function wearItem(look: Look, slot: ItemSlot, itemId: string): Look {
   if (slot === "hair") return { ...look, hair_back: itemId, hair_front: itemId };
+  if (slot === "hair_color") return { ...look, hair_color: itemId };
   if (slot === "accessory") return { ...look, accessory: look.accessory === itemId ? null : itemId };
   return { ...look, [slot]: itemId };
 }
 
 /** 꾸밈에 들어간 아이템 중 사지 않은 것 (입어 보기 중인 것). */
 export function unownedIn(look: Look, items: readonly ShopItem[]): ShopItem[] {
-  const ids = new Set([look.body, look.face, look.hair_back, look.hair_front, look.outfit, look.accessory]);
+  const ids = new Set([look.body, look.face, look.hair_back, look.hair_front, look.hair_color, look.outfit, look.accessory]);
   return items.filter((i) => ids.has(i.id) && !i.owned);
 }
 

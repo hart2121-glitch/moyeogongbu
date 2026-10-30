@@ -3,10 +3,10 @@ import { socialRpc } from "../../friends/model/socialError";
 
 /**
  * 상점 (Story 007). 목록, 가격, 보유 여부, 구매 판정은 모두 서버(`shop_items`, `buy_item`)가 정한다.
- * 첫 출시 상점은 캐릭터 아이템만 판다: 액세서리, 의상, 머리.
+ * 첫 출시 상점은 캐릭터 아이템만 판다: 액세서리, 의상, 머리 모양, 머리 색.
  */
 
-export type ItemSlot = "body" | "face" | "hair" | "outfit" | "accessory";
+export type ItemSlot = "body" | "face" | "hair" | "hair_color" | "outfit" | "accessory";
 
 export interface ShopItem {
   id: string;
@@ -27,7 +27,8 @@ export type BuyResult =
 export const SHOP_SLOTS: readonly { slot: ItemSlot; label: string }[] = [
   { slot: "accessory", label: "액세서리" },
   { slot: "outfit", label: "의상" },
-  { slot: "hair", label: "머리" },
+  { slot: "hair", label: "머리 모양" },
+  { slot: "hair_color", label: "머리 색" },
 ];
 
 interface ItemRow {

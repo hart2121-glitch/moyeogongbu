@@ -1,4 +1,4 @@
-import { DEFAULT_LOOK, ITEM_ASSETS, type ItemAsset, type LayerId } from "../../../config/shop";
+import { DEFAULT_LOOK, hairSheet, ITEM_ASSETS, type ItemAsset, type LayerId } from "../../../config/shop";
 import { SHEET_FRAME } from "../../../study/characterSprites";
 
 /**
@@ -17,12 +17,13 @@ export const LAYERS: readonly { id: LayerId; label: string; order: number }[] = 
   { id: "accessory", label: "액세서리", order: 50 },
 ];
 
-/** 저장되는 꾸밈. 값은 서버 `shop_items` id. */
+/** 저장되는 꾸밈. 값은 서버 `shop_items` id. 머리는 모양(hair_back, hair_front)과 색(hair_color)을 따로 고른다. */
 export interface Look {
   body: string;
   face: string;
   hair_back: string;
   hair_front: string;
+  hair_color: string;
   outfit: string;
   accessory: string | null;
 }
@@ -46,7 +47,10 @@ export function composeLayers(look: Look, assets: Readonly<Record<string, ItemAs
   const tint = assets[look.outfit]?.bodyTint ?? "";
   return LAYERS.map(({ id, order }) => {
     const itemId = look[id];
-    const source = itemId ? assets[itemId]?.layers[id] : undefined;
+    const source =
+      id === "hair_back" || id === "hair_front"
+        ? hairSheet(itemId ?? "", look.hair_color, id === "hair_front" ? "front" : "back")
+        : itemId ? assets[itemId]?.layers[id] : undefined;
     return { id, order, itemId, sheet: source?.sheet ?? null, className: id === "body" ? tint : "" };
   });
 }
@@ -61,5 +65,6 @@ export function toLook(row: unknown): Look | null {
   const str = (k: string) => (typeof r[k] === "string" ? (r[k] as string) : null);
   const body = str("body"), face = str("face"), hairBack = str("hair_back"), hairFront = str("hair_front"), outfit = str("outfit");
   if (!body || !face || !hairBack || !hairFront || !outfit) return null;
-  return { body, face, hair_back: hairBack, hair_front: hairFront, outfit, accessory: str("accessory") };
+  const hairColor = str("hair_color") ?? DEFAULT_LOOK.hair_color;
+  return { body, face, hair_back: hairBack, hair_front: hairFront, hair_color: hairColor, outfit, accessory: str("accessory") };
 }

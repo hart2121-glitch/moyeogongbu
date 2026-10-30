@@ -23,13 +23,19 @@ export interface ItemAsset {
   layers: Partial<Record<LayerId, LayerSource>>;
   /** 임시 연결: 전용 그림이 없는 의상의 대체 색상 클래스. 전용 그림이 생기면 지운다. */
   bodyTint?: string;
+  /** 머리 모양 아이템: 머리 시트 이름의 모양 부분. 없으면 머리카락을 그리지 않는다. */
+  hairStyle?: string;
+  /** 머리 색 아이템: 머리 시트 이름의 색 부분. */
+  hairColor?: string;
 }
 
 const sheet = (name: string): LayerSource => ({ sheet: `/assets/characters/layers/${name}.png` });
 /** 눈 색 아이템: 얼굴 레이어 시트 하나. */
 const face = (id: string): ItemAsset => ({ placeholder: false, layers: { face: sheet(id) } });
-/** 머리 아이템: 같은 이름의 뒷머리와 앞머리 시트 한 쌍. */
-const hair = (id: string): ItemAsset => ({ placeholder: false, layers: { hair_back: sheet(`${id}-back`), hair_front: sheet(`${id}-front`) } });
+/** 머리 모양 아이템. 시트는 머리 색과 함께 정해진다 (hairSheet). */
+const hairStyle = (style: string): ItemAsset => ({ placeholder: false, layers: {}, hairStyle: style });
+/** 머리 색 아이템. 모든 머리 모양에 쓴다. */
+const hairColor = (color: string): ItemAsset => ({ placeholder: false, layers: {}, hairColor: color });
 
 /** 아이템 id → 그림. 표에 없는 id는 그리지 않는다 (서버에 새 아이템이 먼저 생겨도 화면이 깨지지 않는다). */
 export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
@@ -44,17 +50,19 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   "face-green": face("face-green"),
   "face-blue": face("face-blue"),
   "face-gray": face("face-gray"),
-  "hair-lavender": hair("hair-lavender"),
-  // 아래 머리 색은 라벤더 머리의 색만 바꿨다 (art-src/characters/src/recolor/<id>.json).
-  "hair-chestnut": hair("hair-chestnut"),
-  "hair-black": hair("hair-black"),
-  "hair-gray": hair("hair-gray"),
-  "hair-ashgray": hair("hair-ashgray"),
-  "hair-white": hair("hair-white"),
-  "hair-blonde": hair("hair-blonde"),
-  "hair-red": hair("hair-red"),
-  "hair-pink": hair("hair-pink"),
-  "hair-skyblue": hair("hair-skyblue"),
+  // 머리 모양. 웨이브는 처음 승인한 N1 머리카락이다 (art-src/characters/src/hair/wave).
+  "hair-wave": hairStyle("wave"),
+  // 머리 색 (art-src/characters/src/recolor/hair-color/<색>.json, 라벤더는 원재료 색 그대로).
+  "hair-color-lavender": hairColor("lavender"),
+  "hair-color-chestnut": hairColor("chestnut"),
+  "hair-color-black": hairColor("black"),
+  "hair-color-gray": hairColor("gray"),
+  "hair-color-ashgray": hairColor("ashgray"),
+  "hair-color-white": hairColor("white"),
+  "hair-color-blonde": hairColor("blonde"),
+  "hair-color-red": hairColor("red"),
+  "hair-color-pink": hairColor("pink"),
+  "hair-color-skyblue": hairColor("skyblue"),
   // 교복: 완성 캐릭터에서 임시로 떼어 냈다 (art-src/characters/src/outfit/uniform/FROM-FULL-CHARACTER).
   "outfit-lavender": { placeholder: false, layers: { outfit: sheet("outfit-uniform") } },
   "acc-ribbon": { placeholder: false, layers: { accessory: sheet("acc-ribbon") } },
@@ -64,9 +72,10 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   "outfit-hoodie": { placeholder: true, layers: {}, bodyTint: "outfit-세이지" },
   "outfit-cardigan": { placeholder: true, layers: {}, bodyTint: "outfit-로즈" },
   "outfit-suit": { placeholder: true, layers: {} },
+  // 기본 머리: 단순한 머리 그림을 만들기 전까지 머리카락 없이 보인다.
+  "hair-basic": { placeholder: true, layers: {} },
   "hair-ponytail": { placeholder: true, layers: {} },
   "hair-short": { placeholder: true, layers: {} },
-  "hair-wave": { placeholder: true, layers: {} },
   "hair-long": { placeholder: true, layers: {} },
   "acc-hairpin": { placeholder: true, layers: {} },
   "acc-glasses": { placeholder: true, layers: {} },
@@ -75,12 +84,23 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   "acc-beret": { placeholder: true, layers: {} },
 };
 
+/**
+ * 머리 모양과 머리 색으로 고른 뒷머리 또는 앞머리 시트. 둘 중 하나라도 그림이 없으면 null.
+ * 시트는 `tools/art/build-character.mjs`가 모양마다 모든 색으로 만든 hair-<모양>-<색>-<front|back>.png다.
+ * @example hairSheet("hair-wave", "hair-color-pink", "front")?.sheet // "/assets/characters/layers/hair-wave-pink-front.png"
+ */
+export function hairSheet(styleId: string, colorId: string, which: "front" | "back"): LayerSource | null {
+  const style = ITEM_ASSETS[styleId]?.hairStyle, color = ITEM_ASSETS[colorId]?.hairColor;
+  return style && color ? sheet(`hair-${style}-${color}-${which}`) : null;
+}
+
 /** 아직 저장한 꾸밈이 없을 때 보여 주는 모습 (서버 기본 아이템 id). */
 export const DEFAULT_LOOK = {
   body: "body-basic",
   face: "face-basic",
-  hair_back: "hair-lavender",
-  hair_front: "hair-lavender",
+  hair_back: "hair-basic",
+  hair_front: "hair-basic",
+  hair_color: "hair-color-lavender",
   outfit: "outfit-lavender",
   accessory: null,
 } as const;

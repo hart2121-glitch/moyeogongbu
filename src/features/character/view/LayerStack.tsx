@@ -15,7 +15,8 @@ interface Props {
 
 /**
  * 꾸밈을 레이어로 겹쳐 그린다 (뒷머리, 몸, 의상, 얼굴, 앞머리, 액세서리). 위치와 확대는 부모가 한 번 정한다.
- * data-layer-* 속성에 레이어마다 고른 아이템 id가, data-direction과 data-frame에 지금 방향과 시트 칸이 남는다.
+ * data-layer-* 속성에 레이어마다 고른 아이템 id(머리는 모양)가, data-hair-color에 머리 색이,
+ * data-direction과 data-frame에 지금 방향과 시트 칸이 남는다.
  */
 export default function LayerStack({ look, action = "idle", direction = "down", frame = 0, label, className = "" }: Props) {
   const index = frameIndex(action, direction, frame);
@@ -24,7 +25,7 @@ export default function LayerStack({ look, action = "idle", direction = "down", 
   return (
     <div className={`layer-stack ${className}`} role="img" aria-label={label} data-testid="character-layers"
       data-direction={direction} data-pose={`${action}.${direction}`} data-frame={index}
-      style={{ aspectRatio: `${CANVAS.width} / ${CANVAS.height}` }} {...data}>
+      style={{ aspectRatio: `${CANVAS.width} / ${CANVAS.height}` }} data-hair-color={look.hair_color} {...data}>
       {layers.map((l) =>
         l.sheet ? <SheetFrame key={l.id} sheet={l.sheet} index={index} layer={l.id} order={l.order} className={l.className} active={l.id === "body"} /> : null,
       )}

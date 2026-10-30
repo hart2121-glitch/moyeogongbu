@@ -1,4 +1,4 @@
-import { Coin, Scissors, Sparkle, TShirt, type Icon } from "@phosphor-icons/react";
+import { Coin, PaintBucket, Scissors, Sparkle, TShirt, type Icon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../../shell/model/paths";
@@ -7,7 +7,7 @@ import { useAppState } from "../../shell/viewmodel/AppStateContext";
 import { SHOP_SLOTS, buyBlockReason, sellable, type ItemSlot } from "../model/shop";
 import { useShop } from "../viewmodel/useShop";
 
-const SLOT_ICONS: Partial<Record<ItemSlot, Icon>> = { accessory: Sparkle, outfit: TShirt, hair: Scissors };
+const SLOT_ICONS: Partial<Record<ItemSlot, Icon>> = { accessory: Sparkle, outfit: TShirt, hair: Scissors, hair_color: PaintBucket };
 
 /**
  * `/shop`: 캐릭터 아이템 상점. 가격과 보유 여부, 잔액은 서버 값이다.

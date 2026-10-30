@@ -128,8 +128,10 @@ export const SHOP_ITEMS = [
   ["face-green", "face", "초록 눈", 0, true],
   ["face-blue", "face", "파란 눈", 0, true],
   ["face-gray", "face", "회색 눈", 0, true],
-  ["hair-lavender", "hair", "라벤더 머리", 0, true],
-  ["hair-chestnut", "hair", "밤색 머리", 0, true],
+  // Story 009 머리 모양과 머리 색 (*_hair_style_color.sql)
+  ["hair-basic", "hair", "기본 머리", 0, true],
+  ["hair-color-lavender", "hair_color", "라벤더 염색", 0, true],
+  ["hair-color-chestnut", "hair_color", "밤색 염색", 0, true],
   ["outfit-lavender", "outfit", "라벤더 옷", 0, true],
   ["outfit-sage", "outfit", "세이지 옷", 0, true],
   ["acc-ribbon", "accessory", "보라 리본", 120, false],
@@ -146,15 +148,14 @@ export const SHOP_ITEMS = [
   ["hair-short", "hair", "짧은 머리", 800, false],
   ["hair-wave", "hair", "웨이브 머리", 1100, false],
   ["hair-long", "hair", "긴 생머리", 1500, false],
-  // Story 009 머리 색 (*_hair_colors.sql)
-  ["hair-black", "hair", "검은 머리", 600, false],
-  ["hair-gray", "hair", "회색 머리", 600, false],
-  ["hair-ashgray", "hair", "애쉬그레이 머리", 600, false],
-  ["hair-white", "hair", "흰 머리", 600, false],
-  ["hair-blonde", "hair", "금발 머리", 600, false],
-  ["hair-red", "hair", "빨간 머리", 600, false],
-  ["hair-pink", "hair", "분홍 머리", 600, false],
-  ["hair-skyblue", "hair", "하늘색 머리", 600, false],
+  ["hair-color-black", "hair_color", "검정 염색", 300, false],
+  ["hair-color-gray", "hair_color", "회색 염색", 300, false],
+  ["hair-color-ashgray", "hair_color", "애쉬그레이 염색", 300, false],
+  ["hair-color-white", "hair_color", "흰색 염색", 300, false],
+  ["hair-color-blonde", "hair_color", "금발 염색", 300, false],
+  ["hair-color-red", "hair_color", "빨강 염색", 300, false],
+  ["hair-color-pink", "hair_color", "분홍 염색", 300, false],
+  ["hair-color-skyblue", "hair_color", "하늘색 염색", 300, false],
 ].map(([id, slot, name, price, is_default]) => ({ id, slot, name, price, is_default }));
 
 // Story 007 상점과 꾸밈 RPC. 판정 규칙은 *_shop.sql과 같다. balance()는 지금 잔액, debit(n)은 차감.
@@ -176,9 +177,13 @@ function shopRpc(server, me, name, args, balance, debit) {
     }
     case "save_look": {
       const ok = canUse(args.p_body, "body") && canUse(args.p_face, "face") && canUse(args.p_hair_back, "hair") &&
-        canUse(args.p_hair_front, "hair") && canUse(args.p_outfit, "outfit") && (args.p_accessory == null || canUse(args.p_accessory, "accessory"));
+        canUse(args.p_hair_front, "hair") && canUse(args.p_hair_color, "hair_color") && canUse(args.p_outfit, "outfit") &&
+        (args.p_accessory == null || canUse(args.p_accessory, "accessory"));
       if (!ok) fail("not_owned");
-      const look = { body: args.p_body, face: args.p_face, hair_back: args.p_hair_back, hair_front: args.p_hair_front, outfit: args.p_outfit, accessory: args.p_accessory ?? null };
+      const look = {
+        body: args.p_body, face: args.p_face, hair_back: args.p_hair_back, hair_front: args.p_hair_front,
+        hair_color: args.p_hair_color, outfit: args.p_outfit, accessory: args.p_accessory ?? null,
+      };
       server.looks.set(me, look);
       return look;
     }

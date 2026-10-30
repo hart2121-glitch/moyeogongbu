@@ -1,6 +1,6 @@
 // 사용법: node tools/art/build-character.mjs
 // art-src/characters/src/의 기본 몸과 부품 원재료로 23프레임 시트를 만든다 (Story 009).
-// 출력: art-src/characters/body-basic.png, face-<id>.png, hair-<id>-front.png, hair-<id>-back.png, outfit-<id>.png, 색 바꾸기 변형
+// 출력: art-src/characters/body-basic.png, face-<id>.png, hair-<모양>-<색>-front.png, hair-<모양>-<색>-back.png, outfit-<id>.png, 색 바꾸기 변형
 // 게임은 뒷머리 → 몸 → 옷 → 얼굴 → 앞머리 순서로 같은 칸을 겹친다.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -204,7 +204,7 @@ function recolorSheet(sheet, { hue: [h0, h1], ramp }) {
 }
 
 /**
- * 머리카락 색 바꾸기: 머리카락 사이에 낀 기본 몸 머리 윤곽선(4방향 이웃 중 머리카락이 2개 이상)은
+ * 머리 색 입히기: 머리카락 사이에 낀 기본 몸 머리 윤곽선(4방향 이웃 중 머리카락이 2개 이상)은
  * 원래 머리 색과 같아 부품에서 빠져 있다. 새 색에서는 선이 튀므로 앞머리 시트에 새 색으로 넣는다.
  */
 function recolorHair(front, back, body, recipe) {
@@ -238,21 +238,25 @@ const built = {};
 const save = (name, image) => { built[name] = image; writeFileSync(join(OUT, `${name}.png`), encodePng(image)); report.push(`${name}.png`); };
 save("body-basic", buildBody(base));
 for (const id of list(join(SRC, "face"))) save(`face-${id}`, buildFace(id, base));
-for (const id of list(join(SRC, "hair"))) {
-  const { front, back } = buildHair(id, base);
-  save(`hair-${id}-front`, front);
-  save(`hair-${id}-back`, back);
+// 머리 모양 원재료는 라벤더색으로 생성한다. 머리 색 recolor/hair-color/<색>.json을 모든 모양에 입혀 hair-<모양>-<색>을 만든다.
+const recipe = (...path) => JSON.parse(readFileSync(join(SRC, "recolor", ...path), "utf8"));
+for (const style of list(join(SRC, "hair"))) {
+  const { front, back } = buildHair(style, base);
+  save(`hair-${style}-lavender-front`, front);
+  save(`hair-${style}-lavender-back`, back);
+  for (const file of list(join(SRC, "recolor", "hair-color"))) {
+    const color = file.replace(/\.json$/, "");
+    const dyed = recolorHair(front, back, built["body-basic"], recipe("hair-color", file));
+    save(`hair-${style}-${color}-front`, dyed.front);
+    save(`hair-${style}-${color}-back`, dyed.back);
+  }
 }
 for (const id of list(join(SRC, "outfit"))) save(`outfit-${id}`, buildOutfit(id, base));
 for (const id of list(join(SRC, "accessory"))) save(`acc-${id}`, buildAccessory(id, base));
-for (const file of list(join(SRC, "recolor"))) {
-  const name = file.replace(/\.json$/, "");
-  const recipe = JSON.parse(readFileSync(join(SRC, "recolor", file), "utf8"));
-  if (recipe.from.startsWith("hair-")) {
-    const { front, back } = recolorHair(built[`${recipe.from}-front`], built[`${recipe.from}-back`], built["body-basic"], recipe);
-    save(`${name}-front`, front);
-    save(`${name}-back`, back);
-  } else save(name, recolorSheet(built[recipe.from], recipe));
+// 그 밖의 색 바꾸기 변형 (눈 색): recolor/<시트 이름>.json의 from 시트에서 만든다.
+for (const file of list(join(SRC, "recolor")).filter((n) => n.endsWith(".json"))) {
+  const r = recipe(file);
+  save(file.replace(/\.json$/, ""), recolorSheet(built[r.from], r));
 }
 const placeholders = DIRS.filter((d) => base[d].walk[0].placeholder);
 console.log("시트:", report.join(", "));

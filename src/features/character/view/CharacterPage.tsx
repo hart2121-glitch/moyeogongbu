@@ -12,7 +12,8 @@ import { isWorn, useCustomize } from "../viewmodel/useCharacter";
 import LayerStack from "./LayerStack";
 
 const SLOTS: readonly { slot: ItemSlot; label: string }[] = [
-  { slot: "hair", label: "머리" },
+  { slot: "hair", label: "머리 모양" },
+  { slot: "hair_color", label: "머리 색" },
   { slot: "face", label: "눈" },
   { slot: "outfit", label: "의상" },
   { slot: "accessory", label: "액세서리" },
@@ -21,7 +22,7 @@ const SLOTS: readonly { slot: ItemSlot; label: string }[] = [
 const BASE_SPRITE = characterSprites.idle.down[0];
 
 /**
- * `/character`: 캐릭터 꾸미기. 상태: 불러오는 중, 불러오기 실패, 처음 꾸미기(기본 머리 2종, 눈 색 7종, 의상 2종에서 고르기), 꾸미기.
+ * `/character`: 캐릭터 꾸미기. 상태: 불러오는 중, 불러오기 실패, 처음 꾸미기(기본 아이템에서 고르기), 꾸미기.
  * 사지 않은 아이템은 입어 볼 수만 있고 저장되지 않는다.
  */
 export default function CharacterPage() {
@@ -47,7 +48,7 @@ export default function CharacterPage() {
         <h1>{c.firstTime ? "처음 꾸미기" : "오늘은 어떤 모습으로 공부할까?"}</h1>
         <p>
           {c.firstTime
-            ? "기본 머리 2종, 눈 색 7종, 의상 2종을 무료로 드려요. 마음에 드는 모습을 골라 시작해 보세요."
+            ? "머리 색 2종, 눈 색 7종, 의상 2종을 무료로 드려요. 마음에 드는 모습을 골라 시작해 보세요."
             : "산 아이템은 바로 적용하고, 사지 않은 아이템은 입어 볼 수 있어요."}
         </p>
       </div>
