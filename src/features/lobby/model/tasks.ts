@@ -4,17 +4,8 @@ export interface Task {
   done: boolean;
 }
 
-/** 할 일 입력 최대 글자 수. */
-export const MAX_TASK_LENGTH = 40;
-
-/** 처음 접속할 때 보이는 예시 할 일. */
-export const INITIAL_TASKS: readonly Task[] = [
-  { id: 1, text: "자소서 쓰기", done: true },
-  { id: 2, text: "포트폴리오 정리", done: true },
-  { id: 3, text: "면접 후기 정리", done: false },
-  { id: 4, text: "운동하기", done: false },
-  { id: 5, text: "방 청소하기", done: false },
-];
+/** 할 일 입력 최대 글자 수. DB `todos.text` 검사(1~50자)와 같다. 새 계정은 빈 목록으로 시작한다. */
+export const MAX_TASK_LENGTH = 50;
 
 /**
  * 입력 글자로 새 할 일을 만든다. 공백뿐이면 null.

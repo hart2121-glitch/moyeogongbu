@@ -1409,3 +1409,23 @@ button:active {
     inset 2px 2px #d9a28f,
     0 2px #d1b899;
 }
+
+/* Story 003: 정산 카드 (모달 패널 재사용) */
+.settlement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 18px;
+}
+.settlement-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.settlement-row dd {
+  font-weight: 700;
+}
+.settlement-sum {
+  border-top: 2px dashed #b6a084;
+  padding-top: 8px;
+}

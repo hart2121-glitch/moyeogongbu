@@ -85,6 +85,8 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
     await page.getByRole("button", { name: "추가하기", exact: true }).click();
     await page.getByLabel("React 공부하기").check();
     assert.equal(await page.getByLabel("React 공부하기").isChecked(), true);
+    // 할 일 완료는 서버가 코인을 준다 (가짜 서버: 잔액 340 + 2).
+    await page.locator(".wallet", { hasText: "342" }).waitFor();
     await page
       .getByRole("button", { name: "회사 테마로 가기", exact: true })
       .click();
@@ -126,7 +128,8 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매 체험", async () => {
       .getByRole("button", { name: "구매하기", exact: true })
       .first()
       .click();
-    assert.equal(await page.locator(".wallet").innerText(), "950");
+    // 상점 구매 체험은 Story 007 전까지 서버 잔액을 바꾸지 않는다.
+    assert.equal(await page.locator(".wallet").innerText(), "342");
     assert.equal(
       await page.getByRole("button", { name: "보관함에 있어요" }).isDisabled(),
       true,

@@ -2,10 +2,12 @@ import { Bell, Cat, Coin, Envelope, GearSix } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../model/paths";
 import { useAppState } from "../viewmodel/AppStateContext";
+import { useCoinSummary } from "../../coins/viewmodel/useCoins";
 
 export default function TopBar() {
   const navigate = useNavigate();
-  const { shop, modal } = useAppState();
+  const { modal } = useAppState();
+  const balance = useCoinSummary().data?.balance ?? 0;
   return (
     <header className="topbar">
       <button
@@ -19,7 +21,7 @@ export default function TopBar() {
       <div className="top-actions">
         <span className="wallet">
           <Coin weight="duotone" />
-          {shop.coins.toLocaleString()}
+          {balance.toLocaleString()}
         </span>
         <button aria-label="우편함" onClick={() => modal.openModal("mail")}>
           <Envelope />

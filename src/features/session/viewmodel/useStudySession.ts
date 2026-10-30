@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { nextPomodoroClaim } from "../../coins/model/coinMath";
+import { coinStore } from "../../coins/model/coinStore";
+import { useCoinSummary, useRefreshCoins } from "../../coins/viewmodel/useCoins";
 import { useSession } from "../../account/viewmodel/SessionContext";
 import { SESSION_CONFIG } from "../model/sessionConfig";
 import { SessionTakenError, type SessionSnapshot } from "../model/session";
@@ -49,6 +52,11 @@ export function useStudySession() {
   const sent = useRef<ServerState | null>(null);
   const linkRef = useRef(link);
   linkRef.current = link;
+  const coinRules = useCoinSummary().data?.rules;
+  const refreshCoins = useRefreshCoins();
+  const refreshCoinsRef = useRef(refreshCoins);
+  refreshCoinsRef.current = refreshCoins;
+  const claimedEnd = useRef<number | null>(null);
 
   /** 서버 호출을 하나씩 순서대로 보낸다. 넘겨받았으면 더 보내지 않는다. */
   const enqueue = useCallback((run: () => Promise<SessionSnapshot>) => {
@@ -145,6 +153,26 @@ export function useStudySession() {
     return () => events.forEach((name) => window.removeEventListener(name, onInput));
   }, [clock]);
 
+  // 서버가 RPC마다 공부 코인을 다시 계산하므로 상태를 받을 때마다 코인 숫자를 새로 고친다 (Story 003).
+  useEffect(() => {
+    if (snapshot) refreshCoinsRef.current();
+  }, [snapshot]);
+
+  // 뽀모도로 공부 단계를 끝까지 마치면 보너스를 요청한다. 서버가 실제 공부 구간을 확인한다 (Story 003).
+  useEffect(() => {
+    if (link !== "ready" || !coinRules) return;
+    const claim = nextPomodoroClaim(machine.prompt, machine.pomodoro, claimedEnd.current, coinRules);
+    if (!claim || machine.awaySince !== null) return;
+    claimedEnd.current = machine.prompt!.shownAt;
+    const send = () =>
+      coinStore
+        .claimPomodoro(claim)
+        .then(() => refreshCoinsRef.current())
+        .catch(() => undefined);
+    // 공부 단계 종료와 함께 보내는 상태 변경 뒤에 보낸다.
+    void chain.current.then(send);
+  }, [link, coinRules, machine.prompt, machine.pomodoro, machine.awaySince]);
+
   // 탭이 뒤에 있고 사용자가 허용했을 때만 브라우저 알림을 보낸다.
   const promptKind = machine.prompt?.kind;
   useEffect(() => {
@@ -200,6 +228,8 @@ export function useStudySession() {
       dispatch({ type: "startPomodoro", now: clock(), studyMinutes, breakMinutes }),
     stopPomodoro: () => dispatch({ type: "stopPomodoro", now: clock() }),
     takeBack: claim,
+    /** 보낸 상태 변경이 모두 끝날 때까지 기다린다 (퇴근 정산 전에). */
+    flush: () => chain.current.then(() => undefined),
     requestNotifications: async () => {
       if (typeof Notification === "undefined") return;
       setPermission(await Notification.requestPermission());
