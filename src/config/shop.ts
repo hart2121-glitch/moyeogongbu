@@ -34,11 +34,12 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   // 얼굴은 지금 기본 몸에 들어 있다.
   "face-basic": { placeholder: false, layers: {} },
   "hair-lavender": { placeholder: false, layers: { hair_back: sheet("hair-lavender-back"), hair_front: sheet("hair-lavender-front") } },
+  // 밤색 머리: 라벤더 머리의 색만 바꿨다 (art-src/characters/src/recolor/hair-chestnut.json).
+  "hair-chestnut": { placeholder: false, layers: { hair_back: sheet("hair-chestnut-back"), hair_front: sheet("hair-chestnut-front") } },
   // 교복: 완성 캐릭터에서 임시로 떼어 냈다 (art-src/characters/src/outfit/uniform/FROM-FULL-CHARACTER).
   "outfit-lavender": { placeholder: false, layers: { outfit: sheet("outfit-uniform") } },
   "acc-ribbon": { placeholder: false, layers: { accessory: sheet("acc-ribbon") } },
   // 아래는 전용 레이어 그림이 아직 없다.
-  "hair-chestnut": { placeholder: true, layers: {} },
   "outfit-sage": { placeholder: true, layers: {}, bodyTint: "outfit-세이지" },
   "outfit-rose": { placeholder: true, layers: {}, bodyTint: "outfit-로즈" },
   "outfit-hoodie": { placeholder: true, layers: {}, bodyTint: "outfit-세이지" },

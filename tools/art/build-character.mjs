@@ -4,7 +4,7 @@
 // 게임은 뒷머리 → 몸 → 옷 → 앞머리 순서로 같은 칸을 겹친다.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { decodePng, encodePng } from "./pixelArt.mjs";
+import { decodePng, encodePng, FRAME } from "./pixelArt.mjs";
 import { cropCell, extractPart, feetAlignment, fitWalkFrame, mirror, NECK, placeHeadPart, shift, SIT_DROP, toSheet } from "./characterParts.mjs";
 import { hsv } from "./rigImage.mjs";
 import { restFrame, sitFrame } from "./rigidRig.mjs";
@@ -164,24 +164,79 @@ function keepVivid(part) {
   return out;
 }
 
+const lerp = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+/** 명도 v를 색 띠 [[v, [r,g,b]], ...]에서 고른다 (사이는 선형 보간). */
+function rampColor(ramp, v) {
+  if (v <= ramp[0][0]) return ramp[0][1];
+  for (let k = 1; k < ramp.length; k++)
+    if (v <= ramp[k][0]) return lerp(ramp[k - 1][1], ramp[k][1], (v - ramp[k - 1][0]) / (ramp[k][0] - ramp[k - 1][0]));
+  return ramp.at(-1)[1];
+}
+
+/**
+ * 색 바꾸기 변형 (src/recolor/<시트 이름>.json: from, hue, ramp).
+ * 이미 만든 시트에서 hue 범위 안의 픽셀만 명도 순서를 지켜 새 색 띠로 바꾼다. 생성 없이 같은 모양의 다른 색 아이템을 만든다.
+ * 눈동자처럼 진한 색(채도 0.7, 명도 0.5 초과)은 부품에 섞여 들어온 얼굴 픽셀이라 그대로 둔다.
+ */
+function recolorSheet(sheet, { hue: [h0, h1], ramp }) {
+  const out = { ...sheet, pixels: sheet.pixels.slice() };
+  for (let i = 0; i < out.pixels.length; i += 4) {
+    if (!out.pixels[i + 3]) continue;
+    const c = hsv(out.pixels[i], out.pixels[i + 1], out.pixels[i + 2]);
+    if (c.h >= h0 && c.h <= h1 && c.s >= 0.15 && !(c.s > 0.7 && c.v > 0.5)) out.pixels.set(rampColor(ramp, c.v), i);
+  }
+  return out;
+}
+
+/**
+ * 머리카락 색 바꾸기: 머리카락 사이에 낀 기본 몸 머리 윤곽선(4방향 이웃 중 머리카락이 2개 이상)은
+ * 원래 머리 색과 같아 부품에서 빠져 있다. 새 색에서는 선이 튀므로 앞머리 시트에 새 색으로 넣는다.
+ */
+function recolorHair(front, back, body, recipe) {
+  const [h0, h1] = recipe.hue;
+  const hairAt = (im, i) => { if (!im.pixels[i + 3]) return false; const c = hsv(im.pixels[i], im.pixels[i + 1], im.pixels[i + 2]); return c.h >= h0 && c.h <= h1 && c.s >= 0.15; };
+  const newFront = recolorSheet(front, recipe);
+  const W = body.width;
+  for (let y = 0; y < body.height; y++)
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4;
+      if (front.pixels[i + 3] || body.pixels[i + 3] !== 255) continue;
+      const c = hsv(body.pixels[i], body.pixels[i + 1], body.pixels[i + 2]);
+      if (!(c.v < 0.3 && c.h >= h0 && c.h <= h1)) continue;
+      let hairNeighbors = 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (ny < 0 || ny >= body.height || Math.floor(nx / FRAME.width) !== Math.floor(x / FRAME.width)) continue;
+        const j = (ny * W + nx) * 4;
+        if (hairAt(front, j) || (hairAt(back, j) && !body.pixels[j + 3])) hairNeighbors++;
+      }
+      if (hairNeighbors >= 2) newFront.pixels.set([...rampColor(recipe.ramp, c.v), 255], i);
+    }
+  return { front: newFront, back: recolorSheet(back, recipe) };
+}
+
 const list = (dir) => (existsSync(dir) ? readdirSync(dir).filter((n) => !n.startsWith(".")) : []);
 const base = loadBase();
 const report = [];
-writeFileSync(join(OUT, "body-basic.png"), encodePng(buildBody(base)));
-report.push("body-basic.png");
+/** 만든 시트 (색 바꾸기 변형의 원본). */
+const built = {};
+const save = (name, image) => { built[name] = image; writeFileSync(join(OUT, `${name}.png`), encodePng(image)); report.push(`${name}.png`); };
+save("body-basic", buildBody(base));
 for (const id of list(join(SRC, "hair"))) {
   const { front, back } = buildHair(id, base);
-  writeFileSync(join(OUT, `hair-${id}-front.png`), encodePng(front));
-  writeFileSync(join(OUT, `hair-${id}-back.png`), encodePng(back));
-  report.push(`hair-${id}-front.png`, `hair-${id}-back.png`);
+  save(`hair-${id}-front`, front);
+  save(`hair-${id}-back`, back);
 }
-for (const id of list(join(SRC, "outfit"))) {
-  writeFileSync(join(OUT, `outfit-${id}.png`), encodePng(buildOutfit(id, base)));
-  report.push(`outfit-${id}.png`);
-}
-for (const id of list(join(SRC, "accessory"))) {
-  writeFileSync(join(OUT, `acc-${id}.png`), encodePng(buildAccessory(id, base)));
-  report.push(`acc-${id}.png`);
+for (const id of list(join(SRC, "outfit"))) save(`outfit-${id}`, buildOutfit(id, base));
+for (const id of list(join(SRC, "accessory"))) save(`acc-${id}`, buildAccessory(id, base));
+for (const file of list(join(SRC, "recolor"))) {
+  const name = file.replace(/\.json$/, "");
+  const recipe = JSON.parse(readFileSync(join(SRC, "recolor", file), "utf8"));
+  if (recipe.from.startsWith("hair-")) {
+    const { front, back } = recolorHair(built[`${recipe.from}-front`], built[`${recipe.from}-back`], built["body-basic"], recipe);
+    save(`${name}-front`, front);
+    save(`${name}-back`, back);
+  } else save(name, recolorSheet(built[recipe.from], recipe));
 }
 const placeholders = DIRS.filter((d) => base[d].walk[0].placeholder);
 console.log("시트:", report.join(", "));
