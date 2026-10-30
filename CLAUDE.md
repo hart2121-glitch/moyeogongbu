@@ -34,7 +34,7 @@ Claude Code Game Studios(CCGS) 템플릿의 49개 서브에이전트·스킬·�
 
 - 코드: `src/` (`components/`, `study/`, `character-preview/`)
 - 테스트: `tests/*.test.mjs`
-- 아트 원본: `art-src/` (등록 절차는 `art-src/rooms/README.md`)
+- 아트 원본: `art-src/` (규칙과 검사는 `AGENTS.md`, `tools/art/validate.mjs`)
 - 정적 자산: `public/`
 
 ## Technical Preferences
