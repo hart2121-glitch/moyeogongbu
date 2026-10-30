@@ -26,6 +26,8 @@ export interface ItemAsset {
 }
 
 const sheet = (name: string): LayerSource => ({ sheet: `/assets/characters/layers/${name}.png` });
+/** 머리 아이템: 같은 이름의 뒷머리와 앞머리 시트 한 쌍. */
+const hair = (id: string): ItemAsset => ({ placeholder: false, layers: { hair_back: sheet(`${id}-back`), hair_front: sheet(`${id}-front`) } });
 
 /** 아이템 id → 그림. 표에 없는 id는 그리지 않는다 (서버에 새 아이템이 먼저 생겨도 화면이 깨지지 않는다). */
 export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
@@ -33,9 +35,17 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   "body-basic": { placeholder: false, layers: { body: sheet("body-basic") } },
   // 기본 얼굴: 승인 시안 N1의 눈과 입 (art-src/characters/src/face/basic).
   "face-basic": { placeholder: false, layers: { face: sheet("face-basic") } },
-  "hair-lavender": { placeholder: false, layers: { hair_back: sheet("hair-lavender-back"), hair_front: sheet("hair-lavender-front") } },
-  // 밤색 머리: 라벤더 머리의 색만 바꿨다 (art-src/characters/src/recolor/hair-chestnut.json).
-  "hair-chestnut": { placeholder: false, layers: { hair_back: sheet("hair-chestnut-back"), hair_front: sheet("hair-chestnut-front") } },
+  "hair-lavender": hair("hair-lavender"),
+  // 아래 머리 색은 라벤더 머리의 색만 바꿨다 (art-src/characters/src/recolor/<id>.json).
+  "hair-chestnut": hair("hair-chestnut"),
+  "hair-black": hair("hair-black"),
+  "hair-gray": hair("hair-gray"),
+  "hair-ashgray": hair("hair-ashgray"),
+  "hair-white": hair("hair-white"),
+  "hair-blonde": hair("hair-blonde"),
+  "hair-red": hair("hair-red"),
+  "hair-pink": hair("hair-pink"),
+  "hair-skyblue": hair("hair-skyblue"),
   // 교복: 완성 캐릭터에서 임시로 떼어 냈다 (art-src/characters/src/outfit/uniform/FROM-FULL-CHARACTER).
   "outfit-lavender": { placeholder: false, layers: { outfit: sheet("outfit-uniform") } },
   "acc-ribbon": { placeholder: false, layers: { accessory: sheet("acc-ribbon") } },

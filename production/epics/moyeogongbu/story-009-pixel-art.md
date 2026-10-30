@@ -73,6 +73,7 @@
 - 상점 액세서리 6종: `acc-ribbon`, `acc-hairpin`, `acc-glasses`, `acc-headphones`, `acc-scarf`, `acc-beret`
 - 상점 의상 4종: `outfit-rose`, `outfit-hoodie`, `outfit-cardigan`, `outfit-suit`
 - 상점 머리 4종: `hair-ponytail`, `hair-short`, `hair-wave`, `hair-long` (각각 뒷머리, 앞머리)
+- 상점 머리 색 8종 (2026-10-31 추가, 기본 웨이브 머리의 색만 바꿈, 600코인): `hair-black`, `hair-gray`, `hair-ashgray`, `hair-white`, `hair-blonde`, `hair-red`, `hair-pink`, `hair-skyblue`
 
 합계 시트 26장 (머리 6종 × 2장 + 몸 1 + 얼굴 1 + 의상 6 + 액세서리 6).
 

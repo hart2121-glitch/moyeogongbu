@@ -139,6 +139,15 @@ export const SHOP_ITEMS = [
   ["hair-short", "hair", "짧은 머리", 800, false],
   ["hair-wave", "hair", "웨이브 머리", 1100, false],
   ["hair-long", "hair", "긴 생머리", 1500, false],
+  // Story 009 머리 색 (*_hair_colors.sql)
+  ["hair-black", "hair", "검은 머리", 600, false],
+  ["hair-gray", "hair", "회색 머리", 600, false],
+  ["hair-ashgray", "hair", "애쉬그레이 머리", 600, false],
+  ["hair-white", "hair", "흰 머리", 600, false],
+  ["hair-blonde", "hair", "금발 머리", 600, false],
+  ["hair-red", "hair", "빨간 머리", 600, false],
+  ["hair-pink", "hair", "분홍 머리", 600, false],
+  ["hair-skyblue", "hair", "하늘색 머리", 600, false],
 ].map(([id, slot, name, price, is_default]) => ({ id, slot, name, price, is_default }));
 
 // Story 007 상점과 꾸밈 RPC. 판정 규칙은 *_shop.sql과 같다. balance()는 지금 잔액, debit(n)은 차감.
