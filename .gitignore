@@ -18,3 +18,6 @@ production/session-state/
 .claude/worktrees/
 docs/consistency-failures.md
 .omc/
+
+# Story 009: 버린 도트 시안과 생성 원본 (게임 빌드와 시트 만들기에 쓰지 않음)
+art-src/drafts/
