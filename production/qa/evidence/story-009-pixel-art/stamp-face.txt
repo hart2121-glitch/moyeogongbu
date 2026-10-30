@@ -1,0 +1,3 @@
+Reviewed-Content-Hash: src/config/shop.ts 508aa3e78808a32b90308033a2e84dbce9b9dcd7
+Reviewed-Content-Hash: tools/art/characterParts.mjs a8f13c47f7e3ade46be1904175fd067538aa758a
+Reviewed-Content-Hash: tools/art/build-character.mjs 995f38fe4a9a79c82f00e07b1edca2b2b6974104

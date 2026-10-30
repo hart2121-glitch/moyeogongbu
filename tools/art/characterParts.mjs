@@ -9,27 +9,57 @@ import { emptyLike, hsv, pixelIndex } from "./rigImage.mjs";
 export const NECK = 44;
 /** 앉으면 윗몸을 내리는 양(픽셀). rigidRig.mjs와 같은 값. */
 export const SIT_DROP = 6;
+/** 눈썹 아래 줄. 이 줄부터 목 줄 위까지 얼굴 안쪽에 있는 진한 선, 흰자, 눈동자가 눈과 입이다. */
+export const FACE_TOP = 30;
 /** 기본 몸과 같은 색으로 볼 허용 차이. */
 const SAME_TOLERANCE = 30;
 
 const blank = (w, h) => ({ width: w, height: h, pixels: new Uint8Array(w * h * 4) });
 const opaque = (im, x, y) => { const i = pixelIndex(im, x, y); return i >= 0 && im.pixels[i + 3] > 0; };
 
-/** 기본 몸의 눈(진한 유채색, 살색 아님) 자리. 부품이 눈을 덮어쓰지 않게 뺀다. */
-function eyeMask(base) {
-  const mask = new Set();
-  for (let y = 0; y < NECK; y++)
-    for (let x = 0; x < base.width; x++) {
-      const i = pixelIndex(base, x, y);
-      if (!base.pixels[i + 3]) continue;
-      const c = hsv(...base.pixels.subarray(i, i + 3));
-      if (c.s > 0.3 && !(c.h < 45 || c.h > 340)) mask.add(y * base.width + x);
-    }
-  return mask;
+/** 눈과 입 색: 진한 선, 흰자(채도 낮고 밝음), 눈동자(진한 보라). */
+function isFaceColor(r, g, b) {
+  const c = hsv(r, g, b);
+  return c.v < 0.3 || (c.s < 0.15 && c.v > 0.6) || (c.h >= 250 && c.h <= 320 && c.s > 0.6);
 }
 
-/** 8방향으로 이어진 덩어리들. */
-function components(keys, width) {
+/**
+ * 얼굴 안쪽의 눈과 입 픽셀 (머리가 dy만큼 내려간 그림이면 dy를 준다).
+ * 머리 윤곽선도 진한 색이라, 투명 픽셀에 닿은 덩어리(윤곽선)는 넣지 않는다.
+ * 윤곽선에 대각선으로만 붙은 점(생성 때 생긴 볼의 회색 점 등)은 윤곽선이 아니라 얼굴 쪽으로 본다.
+ * @returns {Set<number>} y * width + x
+ */
+export function faceFeatures(im, dy = 0) {
+  const keys = [];
+  for (let y = FACE_TOP + dy; y < NECK + dy; y++)
+    for (let x = 0; x < im.width; x++) {
+      const i = pixelIndex(im, x, y);
+      if (i >= 0 && im.pixels[i + 3] && isFaceColor(...im.pixels.subarray(i, i + 3))) keys.push(y * im.width + x);
+    }
+  const out = new Set();
+  for (const comp of components(keys, im.width, false)) {
+    const outline = comp.some((k) => {
+      const x = k % im.width, y = Math.floor(k / im.width);
+      return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => !opaque(im, x + dx, y + dy));
+    });
+    if (!outline) for (const k of comp) out.add(k);
+  }
+  return out;
+}
+
+/** 픽셀 집합을 주변 8칸만큼 넓힌다. */
+function grow(set, width) {
+  const out = new Set(set);
+  for (const k of set) {
+    const x = k % width;
+    for (let dy = -1; dy <= 1; dy++)
+      for (let dx = -1; dx <= 1; dx++) if (x + dx >= 0 && x + dx < width) out.add(k + dy * width + dx);
+  }
+  return out;
+}
+
+/** 8방향(diagonal이 false면 상하좌우)으로 이어진 덩어리들. */
+function components(keys, width, diagonal = true) {
   const left = new Set(keys), out = [];
   for (const start of keys) {
     if (!left.has(start)) continue;
@@ -40,6 +70,7 @@ function components(keys, width) {
       comp.push(k);
       for (let dy = -1; dy <= 1; dy++)
         for (let dx = -1; dx <= 1; dx++) {
+          if (!diagonal && dx && dy) continue;
           const n = (y + dy) * width + (x + dx);
           if (left.has(n)) { left.delete(n); stack.push(n); }
         }
@@ -56,7 +87,8 @@ function components(keys, width) {
  * @param kind "head"(머리카락, 머리 장식) | "body"(옷)
  */
 export function extractPart(dressed, base, kind) {
-  const eyes = eyeMask(base), changed = [];
+  // 눈과 입 자리(1픽셀 여유)는 얼굴 레이어 몫이라 부품에 넣지 않는다. 생성 그림이 눈을 조금 다시 그려도 섞이지 않는다.
+  const eyes = grow(faceFeatures(base), base.width), changed = [];
   for (let y = 0; y < dressed.height; y++)
     for (let x = 0; x < dressed.width; x++) {
       const i = pixelIndex(dressed, x, y);
@@ -66,12 +98,59 @@ export function extractPart(dressed, base, kind) {
       if (!same) changed.push(y * dressed.width + x);
     }
   const out = emptyLike(dressed);
-  const minSize = 6;
+  // 생성 때 얼굴에 생긴 1~2픽셀 흔들림은 머리 부품에서도 뺀다.
+  const minSize = kind === "head" ? 3 : 6;
   for (const comp of components(changed, dressed.width)) {
     const top = Math.min(...comp.map((k) => Math.floor(k / dressed.width)));
-    const keep = kind === "head" ? top < NECK : comp.length >= minSize && comp.some((k) => Math.floor(k / dressed.width) >= NECK - 4);
+    const keep = comp.length >= minSize && (kind === "head" ? top < NECK : comp.some((k) => Math.floor(k / dressed.width) >= NECK - 4));
     if (!keep) continue;
     for (const k of comp) out.pixels.set(dressed.pixels.subarray(k * 4, k * 4 + 4), k * 4);
+  }
+  return out;
+}
+
+/**
+ * 몸 그림에서 눈과 입을 지우고 얼굴의 가장 흔한 살색으로 채운다. 눈과 입은 얼굴 레이어가 그린다.
+ * @param dy 걷기 프레임처럼 머리가 내려간 양
+ */
+export function eraseFace(im, dy = 0) {
+  const features = faceFeatures(im, dy), counts = new Map();
+  if (!features.size) return im;
+  for (let y = FACE_TOP + dy; y < NECK + dy; y++)
+    for (let x = 0; x < im.width; x++) {
+      const i = pixelIndex(im, x, y);
+      if (i < 0 || im.pixels[i + 3] !== 255 || features.has(y * im.width + x)) continue;
+      const c = hsv(...im.pixels.subarray(i, i + 3));
+      if (!(c.h < 45 || c.h > 340) || c.v < 0.7) continue;
+      const key = im.pixels.subarray(i, i + 3).join(",");
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+  const skin = [...[...counts].sort((a, b) => b[1] - a[1])[0][0].split(",").map(Number), 255];
+  const out = { ...im, pixels: im.pixels.slice() };
+  for (const k of features) out.pixels.set(skin, k * 4);
+  return out;
+}
+
+/**
+ * "기본 몸 + 얼굴" 그림에서 눈과 입만 떼어 낸다. 기본 몸 눈과 입 자리(1픽셀 여유) 안의 눈과 입 색만 남긴다.
+ * 생성 그림마다 머리 위치가 1~2픽셀 달라서, 기본 몸 눈과 가장 많이 겹치는 자리로 옮겨 맞춘다.
+ */
+export function extractFace(dressed, base) {
+  const features = faceFeatures(base), region = grow(features, base.width);
+  const face = (x, y) => opaque(dressed, x, y) && isFaceColor(...dressed.pixels.subarray(pixelIndex(dressed, x, y), pixelIndex(dressed, x, y) + 3));
+  let best = { dx: 0, dy: 0, score: -1 };
+  for (let dy = -3; dy <= 3; dy++)
+    for (let dx = -3; dx <= 3; dx++) {
+      let score = 0;
+      for (const k of features) if (face(k % base.width - dx, Math.floor(k / base.width) - dy)) score++;
+      if (score > best.score || (score === best.score && Math.abs(dx) + Math.abs(dy) < Math.abs(best.dx) + Math.abs(best.dy))) best = { dx, dy, score };
+    }
+  const out = emptyLike(base);
+  for (const k of region) {
+    const x = k % base.width, y = Math.floor(k / base.width), sx = x - best.dx, sy = y - best.dy;
+    if (!face(sx, sy)) continue;
+    const i = pixelIndex(dressed, sx, sy);
+    out.pixels.set(dressed.pixels.subarray(i, i + 4), k * 4);
   }
   return out;
 }

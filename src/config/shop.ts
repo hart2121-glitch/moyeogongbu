@@ -29,10 +29,10 @@ const sheet = (name: string): LayerSource => ({ sheet: `/assets/characters/layer
 
 /** 아이템 id → 그림. 표에 없는 id는 그리지 않는다 (서버에 새 아이템이 먼저 생겨도 화면이 깨지지 않는다). */
 export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
-  // 기본 몸: 머리카락 없는 몸과 얼굴, 회색 바디슈트.
+  // 기본 몸: 머리카락과 눈, 입이 없는 몸, 회색 바디슈트.
   "body-basic": { placeholder: false, layers: { body: sheet("body-basic") } },
-  // 얼굴은 지금 기본 몸에 들어 있다.
-  "face-basic": { placeholder: false, layers: {} },
+  // 기본 얼굴: 승인 시안 N1의 눈과 입 (art-src/characters/src/face/basic).
+  "face-basic": { placeholder: false, layers: { face: sheet("face-basic") } },
   "hair-lavender": { placeholder: false, layers: { hair_back: sheet("hair-lavender-back"), hair_front: sheet("hair-lavender-front") } },
   // 밤색 머리: 라벤더 머리의 색만 바꿨다 (art-src/characters/src/recolor/hair-chestnut.json).
   "hair-chestnut": { placeholder: false, layers: { hair_back: sheet("hair-chestnut-back"), hair_front: sheet("hair-chestnut-front") } },

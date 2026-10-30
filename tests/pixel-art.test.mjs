@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { checkImage, decodePng, encodePng, FRAME, SHEET } from "../tools/art/pixelArt.mjs";
 import { validateArtDir } from "../tools/art/validate.mjs";
+import { eraseFace, faceFeatures } from "../tools/art/characterParts.mjs";
 
 const INK = [40, 35, 50, 255];
 
@@ -87,6 +88,23 @@ test("폴더 검사는 시안과 미리보기를 건너뛰고 정식 시트의 �
   const results = validateArtDir(root);
   assert.equal(results.length, 1);
   assert.match(results[0].problems.join(), /크기 24×32/);
+});
+
+test("얼굴 찾기는 눈과 흰자만 잡고 머리 윤곽선은 빼며, 지운 몸에는 윤곽선이 남는다", () => {
+  const SKIN = [254, 218, 193, 255], WHITE = [255, 249, 255, 255], GREY = [165, 163, 170, 255];
+  const dots = [];
+  // 왼쪽, 오른쪽, 위가 윤곽선인 머리 (아래 줄 밖은 투명)
+  for (let y = 26; y < 44; y++) for (let x = 10; x < 46; x++) dots.push([x, y, x === 10 || x === 45 || y === 26 ? INK : SKIN]);
+  // 눈(진한 선 3×3과 흰자), 윤곽선에서 튀어나온 한 칸과 거기에 대각선으로만 닿은 회색 점
+  dots.push(...block(20, 36), [22, 36, WHITE], [11, 42, INK], [12, 41, GREY]);
+  const head = makeImage(FRAME.width, FRAME.height, dots);
+  const at = (x, y) => y * FRAME.width + x;
+  const features = faceFeatures(head);
+  for (const [x, y] of [[20, 36], [22, 36], [12, 41]]) assert.ok(features.has(at(x, y)), `얼굴 (${x}, ${y})`);
+  for (const [x, y] of [[10, 36], [30, 26], [11, 42]]) assert.ok(!features.has(at(x, y)), `윤곽선 (${x}, ${y})`);
+  const bare = eraseFace(head);
+  assert.deepEqual([...bare.pixels.subarray(at(20, 36) * 4, at(20, 36) * 4 + 4)], SKIN);
+  assert.deepEqual([...bare.pixels.subarray(at(10, 36) * 4, at(10, 36) * 4 + 4)], INK);
 });
 
 test("art-src의 실제 그림이 규칙을 지킨다", (t) => {
