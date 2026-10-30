@@ -16,6 +16,7 @@ import StudySessionBar from "../../session/view/StudySessionBar";
 import { useStudySession } from "../../session/viewmodel/useStudySession";
 import { ROUTES } from "../../shell/model/paths";
 import { useCompanyRoomRoute } from "../viewmodel/useRoomRoutes";
+import { useMyLook } from "../../character/viewmodel/useCharacter";
 
 /**
  * `/rooms/:roomId`: 실시간 회사 스터디룸과 공부 세션. 내 방 목록에 없는 방이면 방 목록으로 돌아간다.
@@ -58,6 +59,7 @@ interface SettledCharacter {
 }
 
 function LiveCompanyRoom({ room, userId, nickname, exit, toRooms }: LiveProps) {
+  const myLook = useMyLook().data;
   const live = useRoomLive(room.id, userId, nickname);
   const session = useStudySession();
   const coins = useCoinSummary().data;
@@ -120,6 +122,7 @@ function LiveCompanyRoom({ room, userId, nickname, exit, toRooms }: LiveProps) {
       <CompanyRoom
         room={room}
         nickname={nickname}
+        look={myLook ?? undefined}
         seatService={live.seatService}
         onExit={() => void onExit()}
         onActivityChange={report}

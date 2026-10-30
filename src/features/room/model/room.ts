@@ -1,3 +1,4 @@
+import { toLook, type Look } from "../../character/model/layers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ROOM_CONFIG } from "./roomConfig";
 
@@ -40,6 +41,8 @@ export interface MemberStatus {
   todaySeconds: number;
   /** 공개한 경우만. */
   currentTask: string | null;
+  /** 저장한 꾸밈 (Story 007). 처음 꾸미기 전이면 null. */
+  look: Look | null;
 }
 
 export interface BannedMember {
@@ -193,6 +196,7 @@ export async function fetchMemberStatus(client: SupabaseClient, roomId: string):
       state: string;
       today_seconds: number;
       current_task: string | null;
+      look?: unknown;
     }[]
   >(client, "room_member_status", { p_room: roomId });
   return rows.map((r) => ({
@@ -202,6 +206,7 @@ export async function fetchMemberStatus(client: SupabaseClient, roomId: string):
     state: r.state,
     todaySeconds: Number(r.today_seconds) || 0,
     currentTask: r.current_task ?? null,
+    look: toLook(r.look),
   }));
 }
 

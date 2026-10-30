@@ -1,51 +1,82 @@
-import { Cat, Coffee, Coin, Flower, Star, type Icon } from "@phosphor-icons/react";
+import { Coin, Scissors, Sparkle, TShirt, type Icon } from "@phosphor-icons/react";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "../../shell/model/paths";
 import PageFrame from "../../shell/view/PageFrame";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
-import { SHOP_ITEMS, type ShopIcon } from "../model/shop";
+import { SHOP_SLOTS, buyBlockReason, sellable, type ItemSlot } from "../model/shop";
+import { useShop } from "../viewmodel/useShop";
 
-const SHOP_ICONS: Record<ShopIcon, Icon> = {
-  cat: Cat,
-  coffee: Coffee,
-  star: Star,
-  flower: Flower,
-};
+const SLOT_ICONS: Partial<Record<ItemSlot, Icon>> = { accessory: Sparkle, outfit: TShirt, hair: Scissors };
 
+/** `/shop`: 캐릭터 아이템 상점. 가격과 보유 여부, 잔액은 서버 값이다. */
 export default function ShopPage() {
-  const { owned, buy } = useAppState().shop;
+  const { toast } = useAppState();
+  const shop = useShop(toast.notify);
+  const navigate = useNavigate();
+  const items = sellable(shop.items);
   return (
     <PageFrame title="상점">
       <div className="page-intro">
         <span className="eyebrow">LITTLE JOYS SHOP</span>
-        <h1>공부하는 일상에 작은 선물</h1>
-        <p>차곡차곡 모은 코인으로 마음에 드는 소품을 골라 보세요.</p>
+        <h1>공부하며 모은 코인으로 나를 꾸며요</h1>
+        <p>
+          지금 가진 코인 <strong className="shop-balance" data-testid="shop-balance">{shop.balance.toLocaleString()}</strong>
+        </p>
       </div>
-      <div className="shop-grid">
-        {SHOP_ITEMS.map(({ name, icon, cost }) => {
-          const ItemIcon = SHOP_ICONS[icon];
+      {shop.loading ? (
+        <p className="muted">상점을 불러오는 중이에요.</p>
+      ) : shop.error ? (
+        <div className="shop-error">
+          <p>상점을 불러오지 못했어요.</p>
+          <button className="primary" onClick={shop.retry}>
+            다시 불러오기
+          </button>
+        </div>
+      ) : (
+        SHOP_SLOTS.map(({ slot, label }) => {
+          const ItemIcon = SLOT_ICONS[slot] ?? Sparkle;
           return (
-            <div className="shop-item" key={name}>
-              <div className="item-art">
-                <ItemIcon weight="duotone" />
+            <section className="shop-section" key={slot} aria-label={label}>
+              <h2>{label}</h2>
+              <div className="shop-grid">
+                {items
+                  .filter((i) => i.slot === slot)
+                  .map((item) => {
+                    const reason = buyBlockReason(item, shop.balance);
+                    const buying = shop.buyingId === item.id;
+                    return (
+                      <div className="shop-item" key={item.id} data-item={item.id}>
+                        <div className="item-art">
+                          <ItemIcon weight="duotone" />
+                        </div>
+                        <h3>{item.name}</h3>
+                        <span className="price">
+                          <Coin />
+                          {item.price.toLocaleString()}
+                        </span>
+                        <button
+                          className="primary"
+                          aria-label={`${item.name} ${item.owned ? "보유 중" : "구매하기"}`}
+                          disabled={!!reason || shop.buyingId !== null}
+                          onClick={() => shop.buy(item)}
+                        >
+                          {item.owned ? "보유 중" : buying ? "사는 중" : "구매하기"}
+                        </button>
+                        {reason && !item.owned && <p className="buy-reason">{reason}</p>}
+                      </div>
+                    );
+                  })}
               </div>
-              <h2>{name}</h2>
-              <span className="price">
-                <Coin />
-                {cost}
-              </span>
-              <button
-                className="primary"
-                disabled={owned.includes(name)}
-                onClick={() => buy(name, cost)}
-              >
-                {owned.includes(name) ? "보관함에 있어요" : "구매하기"}
-              </button>
-            </div>
+            </section>
           );
-        })}
-      </div>
-      <p className="muted">
-        구매는 이번 방문 중에만 유지되는 체험 기능이에요.
+        })
+      )}
+      <p className="muted shop-note">
+        산 아이템은 되팔거나 환불할 수 없어요. 사기 전에 꾸미기에서 입어 볼 수 있어요.
       </p>
+      <button className="secondary-button" onClick={() => navigate(ROUTES.character)}>
+        꾸미기에서 입어 보기
+      </button>
     </PageFrame>
   );
 }

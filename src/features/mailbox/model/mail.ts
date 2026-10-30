@@ -17,6 +17,8 @@ export interface Mail {
   roomName: string | null;
   /** 보상 코인 (reward만). */
   coins: number;
+  /** 보상 종류 (reward만): attendance | welcome. */
+  reward: string | null;
   /** 남은 보관 일수 (올림). */
   daysLeft: number;
   claimed: boolean;
@@ -30,7 +32,7 @@ interface MailRow {
   sender_name: string | null;
   room_id: string | null;
   room_name: string | null;
-  payload: { coins?: number } | null;
+  payload: { coins?: number; reward?: string } | null;
   days_left: number;
   claimed: boolean;
   created_at: string;
@@ -44,6 +46,7 @@ const toMail = (r: MailRow): Mail => ({
   roomId: r.room_id ?? null,
   roomName: r.room_name ?? null,
   coins: Number(r.payload?.coins) || 0,
+  reward: r.payload?.reward ?? null,
   daysLeft: Number(r.days_left) || 0,
   claimed: !!r.claimed,
   createdAt: r.created_at,
@@ -53,10 +56,11 @@ const toMail = (r: MailRow): Mail => ({
  * 우편 제목 문구.
  * @example mailTitle({ kind: "reward", coins: 10 } as Mail) // "출석 보상 10코인"
  */
-export function mailTitle(mail: Pick<Mail, "kind" | "senderName" | "roomName" | "coins">): string {
+export function mailTitle(mail: Pick<Mail, "kind" | "senderName" | "roomName" | "coins"> & { reward?: string | null }): string {
   const who = mail.senderName ?? "누군가";
   if (mail.kind === "friend_request") return `${who}님의 친구 요청`;
   if (mail.kind === "room_invite") return `${who}님이 ${mail.roomName ?? "스터디룸"}에 초대했어요`;
+  if (mail.reward === "welcome") return `환영 선물 ${mail.coins}코인`;
   return `출석 보상 ${mail.coins}코인`;
 }
 

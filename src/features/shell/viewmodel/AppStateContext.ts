@@ -1,8 +1,6 @@
 import { createContext, useContext } from "react";
-import type { useCharacter } from "../../character/viewmodel/useCharacter";
 import type { useTasks } from "../../lobby/viewmodel/useTasks";
 import type { useTip } from "../../lobby/viewmodel/useTip";
-import type { useShop } from "../../shop/viewmodel/useShop";
 import type { useModal } from "./useModal";
 import type { useToast } from "./useToast";
 
@@ -12,15 +10,13 @@ export interface AppState {
   toast: ReturnType<typeof useToast>;
   tasks: ReturnType<typeof useTasks>;
   tip: ReturnType<typeof useTip>;
-  character: ReturnType<typeof useCharacter>;
-  shop: ReturnType<typeof useShop>;
 }
 
 export const AppStateContext = createContext<AppState | null>(null);
 
 /**
  * 앱 상태를 읽는 ViewModel 훅. `AppStateProvider` 안에서만 쓴다.
- * @example const { shop, toast } = useAppState();
+ * @example const { modal, toast } = useAppState();
  */
 export function useAppState(): AppState {
   const state = useContext(AppStateContext);

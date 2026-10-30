@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
-import { useCharacter } from "../../character/viewmodel/useCharacter";
 import { useTasks } from "../../lobby/viewmodel/useTasks";
 import { useTip } from "../../lobby/viewmodel/useTip";
-import { useShop } from "../../shop/viewmodel/useShop";
 import { AppStateContext } from "./AppStateContext";
 import { useModal } from "./useModal";
 import { useToast } from "./useToast";
@@ -20,11 +18,9 @@ export default function AppStateProvider({
   const toast = useToast();
   const tasks = useTasks();
   const tip = useTip();
-  const character = useCharacter(toast.notify);
-  const shop = useShop(toast.notify);
   return (
     <AppStateContext.Provider
-      value={{ modal, toast, tasks, tip, character, shop }}
+      value={{ modal, toast, tasks, tip }}
     >
       {children}
     </AppStateContext.Provider>

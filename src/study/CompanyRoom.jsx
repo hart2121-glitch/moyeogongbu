@@ -17,7 +17,7 @@ import { useSeatOccupancy } from "./useSeatOccupancy";
  * `renderSession`은 툴바 아래에 세션 표시를 그린다. 휴게실 이동은 사용자가 누를 때만 일어난다.
  * Story 004: 좌석은 `seatService`(서버 판정)가 정하고, 목적지를 정할 때마다 `onMove`, 멈출 때마다 `onSettle`이 불린다.
  * `overlay`는 무대 안(다른 사람 캐릭터), `toolbarExtra`(반응, 지금 하는 일, 방장 도구)는 무대 바로 아래, `localReaction`은 내 머리 위에 그린다.
- * @param {{ room: any, nickname: string, seatService: any, onExit: () => void, onActivityChange?: (activity: string) => void, onMove?: (move: { to: any, activity: string, seatId: number | null }) => void, onSettle?: (character: any) => void, overlay?: import("react").ReactNode, toolbarExtra?: import("react").ReactNode, localReaction?: import("react").ReactNode, renderSession?: (actions: { goLounge: () => void, canGoLounge: boolean }) => import("react").ReactNode }} props
+ * @param {{ room: any, nickname: string, seatService: any, onExit: () => void, onActivityChange?: (activity: string) => void, onMove?: (move: { to: any, activity: string, seatId: number | null }) => void, onSettle?: (character: any) => void, overlay?: import("react").ReactNode, toolbarExtra?: import("react").ReactNode, localReaction?: import("react").ReactNode, look?: any, renderSession?: (actions: { goLounge: () => void, canGoLounge: boolean }) => import("react").ReactNode }} props
  */
 export default function CompanyRoom({
   room,
@@ -31,6 +31,7 @@ export default function CompanyRoom({
   toolbarExtra,
   localReaction,
   renderSession,
+  look = undefined,
 }) {
   const { character, moveTo, validateMove, movementError } =
     useCharacterMovement(companyLayout, "entrance", onExit);
@@ -359,7 +360,7 @@ export default function CompanyRoom({
                 aria-hidden="true"
               />
             )}
-            <CharacterSprite character={character} nickname={nickname}>
+            <CharacterSprite character={character} nickname={nickname} look={look}>
               {localReaction}
             </CharacterSprite>
             {overlay}

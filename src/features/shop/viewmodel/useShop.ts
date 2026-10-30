@@ -1,31 +1,56 @@
-import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSession } from "../../account/viewmodel/SessionContext";
+import { coinKey, useCoinSummary } from "../../coins/viewmodel/useCoins";
 import {
-  INITIAL_COINS,
-  INSUFFICIENT_COINS_MESSAGE,
-  purchase,
+  alreadyOwnedMessage,
+  buyErrorMessage,
+  insufficientMessage,
   purchasedMessage,
-  type Wallet,
+  type ShopItem,
 } from "../model/shop";
+import { shopStore } from "../model/shopStore";
+
+export const shopKey = (userId: string | undefined) => ["shop", userId] as const;
 
 /**
- * 코인과 보관함. 값은 메모리에만 유지된다.
+ * 아이템 목록과 보유 여부 (서버 값).
+ * @example const items = useShopItems().data ?? [];
+ */
+export function useShopItems() {
+  const userId = useSession()?.user.id;
+  return useQuery({ queryKey: shopKey(userId), queryFn: shopStore.items, enabled: !!userId });
+}
+
+/**
+ * 상점 화면 상태: 목록, 잔액, 구매. 결과는 토스트로 알리고, 잔액과 보유 목록은 서버에서 다시 읽는다.
  * @param notify 결과를 알리는 토스트 함수
- * @example const { coins, owned, buy } = useShop(notify);
+ * @example const shop = useShop(toast.notify); shop.buy(item);
  */
 export function useShop(notify: (text: string) => void) {
-  const [wallet, setWallet] = useState<Wallet>({
-    coins: INITIAL_COINS,
-    owned: [],
+  const userId = useSession()?.user.id;
+  const queryClient = useQueryClient();
+  const items = useShopItems();
+  const coins = useCoinSummary();
+  const buy = useMutation({
+    mutationFn: (item: ShopItem) => shopStore.buy(item.id),
+    onSuccess: (result, item) => {
+      if (result.status === "bought") notify(purchasedMessage(item.name));
+      else if (result.status === "owned") notify(alreadyOwnedMessage);
+      else notify(insufficientMessage);
+    },
+    onError: () => notify(buyErrorMessage),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: shopKey(userId) });
+      void queryClient.invalidateQueries({ queryKey: coinKey(userId) });
+    },
   });
-  const buy = (item: string, cost: number) => {
-    const result = purchase(wallet, item, cost);
-    if (result.status === "owned") return;
-    if (result.status === "insufficient") {
-      notify(INSUFFICIENT_COINS_MESSAGE);
-      return;
-    }
-    setWallet(result.wallet);
-    notify(purchasedMessage(item));
+  return {
+    items: items.data ?? [],
+    loading: items.isPending || coins.isPending,
+    error: items.isError,
+    retry: () => void items.refetch(),
+    balance: coins.data?.balance ?? 0,
+    buyingId: buy.isPending ? buy.variables?.id ?? null : null,
+    buy: (item: ShopItem) => buy.mutate(item),
   };
-  return { coins: wallet.coins, owned: wallet.owned, buy };
 }

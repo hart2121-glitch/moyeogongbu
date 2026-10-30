@@ -62,6 +62,9 @@ export function createFakeServer() {
     /** topic -> Map(key -> meta) */
     realtimePresence: new Map(),
     broadcasts: [],
+    /** Story 007: userId -> 저장한 꾸밈, userId -> 산 아이템 id 집합. */
+    looks: new Map(),
+    owned: new Map(),
     /** Story 006 친구, 우편, 알림. 판정 규칙은 *_friends_mail.sql과 같다. */
     social: { codes: new Map(), friends: new Set(), requests: new Set(), blocks: new Map(), mail: [], notifications: [], mailSeq: 1, notifSeq: 1 },
     /** 두 사람을 바로 친구로 묶는다 (테스트 준비용). */
@@ -113,6 +116,62 @@ export function createFakeServer() {
 }
 
 class RpcError extends Error {}
+
+// Story 007: 서버 shop_items 시드와 같은 목록 (*_shop.sql).
+export const SHOP_ITEMS = [
+  ["body-basic", "body", "기본 몸", 0, true],
+  ["face-basic", "face", "기본 얼굴", 0, true],
+  ["hair-lavender", "hair", "라벤더 머리", 0, true],
+  ["hair-chestnut", "hair", "밤색 머리", 0, true],
+  ["outfit-lavender", "outfit", "라벤더 옷", 0, true],
+  ["outfit-sage", "outfit", "세이지 옷", 0, true],
+  ["acc-ribbon", "accessory", "보라 리본", 120, false],
+  ["acc-hairpin", "accessory", "별 머리핀", 150, false],
+  ["acc-glasses", "accessory", "동그란 안경", 180, false],
+  ["acc-headphones", "accessory", "헤드폰", 220, false],
+  ["acc-scarf", "accessory", "목도리", 260, false],
+  ["acc-beret", "accessory", "베레모", 300, false],
+  ["outfit-rose", "outfit", "로즈 옷", 600, false],
+  ["outfit-hoodie", "outfit", "포근한 후드티", 900, false],
+  ["outfit-cardigan", "outfit", "니트 가디건", 1200, false],
+  ["outfit-suit", "outfit", "단정한 정장", 1500, false],
+  ["hair-ponytail", "hair", "포니테일", 600, false],
+  ["hair-short", "hair", "짧은 머리", 800, false],
+  ["hair-wave", "hair", "웨이브 머리", 1100, false],
+  ["hair-long", "hair", "긴 생머리", 1500, false],
+].map(([id, slot, name, price, is_default]) => ({ id, slot, name, price, is_default }));
+
+// Story 007 상점과 꾸밈 RPC. 판정 규칙은 *_shop.sql과 같다. balance()는 지금 잔액, debit(n)은 차감.
+function shopRpc(server, me, name, args, balance, debit) {
+  const owned = server.owned.get(me) ?? new Set();
+  server.owned.set(me, owned);
+  const canUse = (id, slot) => SHOP_ITEMS.some((i) => i.id === id && i.slot === slot && (i.is_default || owned.has(id)));
+  switch (name) {
+    case "get_shop":
+      return SHOP_ITEMS.map((i) => ({ ...i, owned: i.is_default || owned.has(i.id) }));
+    case "buy_item": {
+      const item = SHOP_ITEMS.find((i) => i.id === args.p_item);
+      if (!item || item.is_default) fail("no_item");
+      if (owned.has(item.id)) return { status: "owned", balance: balance(), price: item.price };
+      if (balance() < item.price) return { status: "insufficient", balance: balance(), price: item.price };
+      owned.add(item.id);
+      debit(item.price);
+      return { status: "bought", balance: balance(), price: item.price };
+    }
+    case "save_look": {
+      const ok = canUse(args.p_body, "body") && canUse(args.p_face, "face") && canUse(args.p_hair_back, "hair") &&
+        canUse(args.p_hair_front, "hair") && canUse(args.p_outfit, "outfit") && (args.p_accessory == null || canUse(args.p_accessory, "accessory"));
+      if (!ok) fail("not_owned");
+      const look = { body: args.p_body, face: args.p_face, hair_back: args.p_hair_back, hair_front: args.p_hair_front, outfit: args.p_outfit, accessory: args.p_accessory ?? null };
+      server.looks.set(me, look);
+      return look;
+    }
+    case "get_my_look":
+      return server.looks.get(me) ?? null;
+    default:
+      return undefined;
+  }
+}
 
 const SOCIAL = { friendCap: 50, attendanceCoins: 10 };
 
@@ -417,6 +476,7 @@ function roomRpc(server, me, name, args) {
             state: study.state,
             today_seconds: study.seconds,
             current_task: task?.shared ? task.task : null,
+            look: server.looks.get(u) ?? null,
           };
         });
     case "set_current_task": {
@@ -540,11 +600,14 @@ export async function mockSupabase(
     todos = [],
     records = [],
     friendCode = userId === FAKE_USER_ID ? "ABCD2345" : "WXYZ6789",
+    welcomeMail = false,
   } = {},
 ) {
   const session = fakeSession(userId);
   server.names.set(userId, displayName);
   server.social.codes.set(userId, friendCode);
+  // 가입 직후처럼 환영 선물 우편 (서버 profiles_welcome_mail 트리거).
+  if (welcomeMail) server.addMail(userId, { kind: "reward", ref: "welcome", payload: { reward: "welcome", coins: 120 } });
   if (seedRoom && !server.rooms.has(SEED_ROOM.id))
     server.addRoom({ id: SEED_ROOM.id, name: SEED_ROOM.name, code: SEED_ROOM.code, ownerId: userId });
   const state = {
@@ -720,6 +783,16 @@ export async function mockSupabase(
     }
     const coin = path.match(/\/rpc\/(get_coin_summary|settle_study|pending_settlement|dismiss_settlement|claim_pomodoro_bonus)$/);
     if (coin) return json(route, coinRpc(coin[1], request.postDataJSON() ?? {}));
+    const shop = path.match(/\/rpc\/(get_shop|buy_item|save_look|get_my_look)$/);
+    if (shop) {
+      try {
+        const body = shopRpc(server, userId, shop[1], request.postDataJSON() ?? {}, () => daySummary().balance, (n) => (state.coins.balance -= n));
+        return json(route, body);
+      } catch (e) {
+        if (e instanceof RpcError) return json(route, { code: "P0001", message: e.message }, 400);
+        throw e;
+      }
+    }
     const social = path.match(/\/rpc\/(\w+)$/);
     if (social) {
       try {

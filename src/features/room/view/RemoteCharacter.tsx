@@ -68,7 +68,7 @@ export default function RemoteCharacter({ meta, status, reaction, subscribeMoves
   const rect = (seat as { foreground?: { left: number; top: number; right: number; bottom: number } } | undefined)?.foreground;
   return (
     <>
-      <CharacterSprite character={character} nickname={name} testId="remote-character" className={`is-remote ${open ? "is-open" : ""}`}
+      <CharacterSprite character={character} nickname={name} look={status?.look ?? undefined} testId="remote-character" className={`is-remote ${open ? "is-open" : ""}`}
         onClick={() => setOpen((v) => !v)}>
         {reaction && (
           <span className="character-reaction" data-testid="character-reaction">
