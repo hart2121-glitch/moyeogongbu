@@ -1,39 +1,29 @@
-import { useEffect, useRef, useState } from "react";
-import { createSeatService } from "./seatService";
-export function useSeatOccupancy(roomId, nickname) {
-  const owner = useRef(null);
-  if (!owner.current)
-    owner.current =
-      crypto.randomUUID?.() || `player-${Date.now()}-${Math.random()}`;
-  const service = useRef(null);
+import { useEffect, useState } from "react";
+
+/**
+ * 좌석 저장소(`seatService.js`)를 구독한다. 저장소는 방 화면의 ViewModel이 만들어 넘긴다.
+ * @param {ReturnType<typeof import("./seatService").createSeatService>} service
+ */
+export function useSeatOccupancy(service) {
   const [seats, setSeats] = useState({});
   const [error, setError] = useState("");
-  useEffect(() => {
-    const store = createSeatService(roomId, owner.current, nickname);
-    service.current = store;
-    const unsubscribe = store.subscribe((value) => {
-      if (value === null)
-        setError("좌석 저장소 연결이 끊겨 예약을 진행할 수 없어요.");
-      else {
-        setSeats(value);
-        setError("");
-      }
-    });
-    return () => {
-      unsubscribe();
-      store
-        .release()
-        .catch(() => {})
-        .finally(() => store.close());
-      if (service.current === store) service.current = null;
-    };
-  }, [roomId, nickname]);
+  useEffect(
+    () =>
+      service.subscribe((value) => {
+        if (value === null) setError("좌석 정보를 받지 못했어요. 다시 연결하는 중이에요.");
+        else {
+          setSeats(value);
+          setError("");
+        }
+      }),
+    [service],
+  );
   return {
     seats,
     error,
-    ownerId: owner.current,
-    reserve: (id) => service.current?.reserve(id) ?? Promise.resolve(false),
-    occupy: (id) => service.current?.occupy(id) ?? Promise.resolve(false),
-    release: () => service.current?.release() ?? Promise.resolve(),
+    ownerId: service.ownerId,
+    reserve: (id) => service.reserve(id),
+    occupy: (id) => service.occupy(id),
+    release: () => service.release(),
   };
 }

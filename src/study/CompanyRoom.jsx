@@ -15,18 +15,26 @@ import { useSeatOccupancy } from "./useSeatOccupancy";
 /**
  * 회사 스터디룸. `onActivityChange`는 캐릭터 동작이 바뀔 때마다 불리고(공부 세션 입력),
  * `renderSession`은 툴바 아래에 세션 표시를 그린다. 휴게실 이동은 사용자가 누를 때만 일어난다.
- * @param {{ room: any, nickname: string, onExit: () => void, onActivityChange?: (activity: string) => void, renderSession?: (actions: { goLounge: () => void, canGoLounge: boolean }) => import("react").ReactNode }} props
+ * Story 004: 좌석은 `seatService`(서버 판정)가 정하고, 목적지를 정할 때마다 `onMove`, 멈출 때마다 `onSettle`이 불린다.
+ * `overlay`는 무대 안(다른 사람 캐릭터), `toolbarExtra`(반응, 지금 하는 일, 방장 도구)는 무대 바로 아래, `localReaction`은 내 머리 위에 그린다.
+ * @param {{ room: any, nickname: string, seatService: any, onExit: () => void, onActivityChange?: (activity: string) => void, onMove?: (move: { to: any, activity: string, seatId: number | null }) => void, onSettle?: (character: any) => void, overlay?: import("react").ReactNode, toolbarExtra?: import("react").ReactNode, localReaction?: import("react").ReactNode, renderSession?: (actions: { goLounge: () => void, canGoLounge: boolean }) => import("react").ReactNode }} props
  */
 export default function CompanyRoom({
   room,
   nickname,
+  seatService,
   onExit,
   onActivityChange,
+  onMove,
+  onSettle,
+  overlay,
+  toolbarExtra,
+  localReaction,
   renderSession,
 }) {
   const { character, moveTo, validateMove, movementError } =
     useCharacterMovement(companyLayout, "entrance", onExit);
-  const occupancy = useSeatOccupancy(room.id, nickname);
+  const occupancy = useSeatOccupancy(seatService);
   const [pending, setPending] = useState(false);
   const pendingRef = useRef(false);
   const [floorTarget, setFloorTarget] = useState(null);
@@ -52,7 +60,14 @@ export default function CompanyRoom({
   const go = (destination, options) => {
     try {
       setError("");
-      return moveTo(destination, options);
+      const started = moveTo(destination, options);
+      if (started)
+        onMove?.({
+          to: destination,
+          activity: options?.activity ?? "seated",
+          seatId: options?.seatId ?? null,
+        });
+      return started;
     } catch (e) {
       setError(e.message);
       return false;
@@ -154,10 +169,17 @@ export default function CompanyRoom({
       setError("좌석 사용 권한이 변경되어 통로로 이동합니다.");
       const seat = companyLayout.seats.find((s) => s.id === character.seatId);
       go(seat.approach, { activity: "idle" });
+    } else if (!lease) {
+      // 연결이 2분 넘게 끊겨 서버가 자리를 풀었다.
+      setError("연결이 오래 끊겨 자리가 풀렸어요. 다시 자리를 선택해 주세요.");
+      const seat = companyLayout.seats.find((s) => s.id === character.seatId);
+      go(seat.approach, { activity: "idle" });
     }
   }, [occupancy.seats]);
   useEffect(() => {
     onActivityChange?.(character.activity);
+    if (!["walking", "exiting", "standing", "sitting"].includes(character.activity))
+      onSettle?.(character);
   }, [character.activity]);
   const lounge = companyLayout.areas.find((area) => area.id === "lounge");
   const canGoLounge =
@@ -186,8 +208,8 @@ export default function CompanyRoom({
         <div>
           <h1>회사 테마 스터디룸</h1>
           <p>
-            {room.name}, 로컬 데모, 최대 {room.capacity}석, 초대 코드{" "}
-            {room.code}
+            {room.name}, {companyLayout.seats.length}석, 초대 코드{" "}
+            {room.inviteCode}
           </p>
         </div>
         <div className="company-controls">
@@ -337,7 +359,10 @@ export default function CompanyRoom({
                 aria-hidden="true"
               />
             )}
-            <CharacterSprite character={character} nickname={nickname} />
+            <CharacterSprite character={character} nickname={nickname}>
+              {localReaction}
+            </CharacterSprite>
+            {overlay}
             {rect && (
               <img
                 src={COMPANY_BACKGROUND}
@@ -352,6 +377,7 @@ export default function CompanyRoom({
           </>
         )}
       </div>
+      {toolbarExtra}
       {backgroundFailed && (
         <div className="room-error" role="alert">
           회사 원본 이미지를 불러오지 못했어요. 좌석 이동을 중단했습니다.
@@ -373,8 +399,8 @@ export default function CompanyRoom({
           바닥을 클릭하면 이동합니다. 1~3번은 위쪽, 4~6번은 아래쪽 좌석입니다.
         </p>
         <p>
-          같은 브라우저의 탭끼리 좌석 예약과 점유를 공유합니다. 실제 네트워크
-          멀티플레이 서버는 아직 연결되지 않았습니다.
+          좌석은 서버가 정해요. 같은 자리를 동시에 눌러도 한 명만 앉고, 연결이
+          2분 넘게 끊기면 자리가 풀려요.
         </p>
         <details>
           <summary>캐릭터 에셋과 이동 안내</summary>

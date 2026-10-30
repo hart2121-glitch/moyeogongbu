@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { distance } from "./pathfinding";
 import { planMovement, movementSegmentSafe } from "./movementPlan";
-export function useCharacterMovement(graph, initialNode, onExit) {
-  const initial = {
+// initialState: 다른 사람 캐릭터처럼 출입구가 아닌 곳에서 시작할 때 (Story 004).
+export function useCharacterMovement(graph, initialNode, onExit, initialState) {
+  const [initial] = useState(() => ({
     node: initialNode,
     position: graph.nodes[initialNode],
     activity: "idle",
     direction: "down",
     seatId: null,
     edge: null,
-  };
+    ...initialState,
+  }));
   const [character, setCharacter] = useState(initial);
   const [movementError, setMovementError] = useState("");
   const current = useRef(initial),

@@ -1,14 +1,4 @@
-import { DEMO_INVITATION } from "../../../study/rooms";
-
-/** 로컬 스터디룸. 저장 형식은 `src/study/rooms.js`가 정한다. */
-export interface StudyRoom {
-  id: string;
-  name: string;
-  code: string;
-  kind: string;
-  theme: string;
-  capacity: number;
-}
+import type { Room } from "../../room/model/room";
 
 /** 공용 스터디카페에서 고를 수 있는 자리. */
 export const CAFE_ROOM_NAMES = ["창가 자리", "조용한 서재", "초록 정원"] as const;
@@ -35,24 +25,12 @@ export const findThemeRoom = (name: string) =>
   THEME_ROOMS.find((t) => t.name === name);
 
 /**
- * 로비 회사 빠른 입장 대상: 내가 만든 첫 방, 없으면 첫 방, 없으면 기본 초대 방.
- * @example quickEnterRoom(rooms).code
+ * 로비 회사 빠른 입장 대상: 내가 만든 첫 방, 없으면 내 방 목록의 첫 방. 방이 없으면 undefined.
+ * @example quickEnterRoom(rooms)?.id
  */
-export function quickEnterRoom(rooms: readonly StudyRoom[]): StudyRoom {
-  return rooms.find((r) => r.kind === "owned") || rooms[0] || DEMO_INVITATION;
+export function quickEnterRoom(rooms: readonly Room[]): Room | undefined {
+  return rooms.find((r) => r.isOwner) || rooms[0];
 }
 
-/**
- * 주소의 초대 코드로 방을 찾는다. 기본 초대 방 코드는 항상 유효하다.
- * @example findRoomByCode(rooms, "MOYEO6")
- */
-export function findRoomByCode(
-  rooms: readonly StudyRoom[],
-  code: string,
-): StudyRoom | undefined {
-  const upper = code.toUpperCase();
-  return (
-    rooms.find((r) => r.code === upper) ||
-    (DEMO_INVITATION.code === upper ? DEMO_INVITATION : undefined)
-  );
-}
+/** 내 방 목록에서 id로 방을 찾는다. */
+export const findRoomById = (rooms: readonly Room[], id: string) => rooms.find((r) => r.id === id);

@@ -346,3 +346,89 @@
 .study-character.activity-sitting .character-name {
   font-size: 9px;
 }
+
+/* Story 004: 실시간 방 (다른 사람 캐릭터, 반응, 지금 하는 일, 방장 도구) */
+.study-character.is-remote {
+  pointer-events: auto;
+}
+.character-reaction {
+  position: absolute;
+  bottom: calc(100% + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff8e8;
+  border: 1px solid #8c745a;
+  border-radius: 3px;
+  padding: 1px 5px;
+  white-space: nowrap;
+  font-size: 13px;
+  z-index: 4;
+}
+.character-card {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  flex-direction: column;
+  gap: 2px;
+  min-width: 120px;
+  background: #fff8e8;
+  border: 1px solid #8c745a;
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 5;
+}
+.study-character.is-remote:hover .character-card {
+  display: flex;
+}
+.room-live-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin: 6px 0;
+}
+.room-reactions {
+  display: flex;
+  gap: 4px;
+}
+.room-reactions button {
+  padding: 2px 6px;
+}
+.room-task {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.room-task #current-task {
+  width: 220px;
+}
+.room-connection {
+  color: #9b3b2f;
+  margin: 0;
+}
+.room-live-note {
+  margin: 0;
+}
+.room-owner-tools {
+  margin: 6px 0;
+}
+.room-owner-tools form,
+.room-owner-tools li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+}
+.room-owner-tools ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.room-owner-tools h3 {
+  font-size: 13px;
+  margin: 8px 0 2px;
+}

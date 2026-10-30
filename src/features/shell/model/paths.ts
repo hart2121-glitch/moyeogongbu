@@ -19,8 +19,8 @@ export const ROUTES = {
 /** 테마 스터디룸 주소의 앞부분. 예: `/themes/학교` */
 export const THEME_ROOM_BASE = "/themes";
 
-/** 회사 스터디룸 주소. @example roomPath("MOYEO6") // "/rooms/MOYEO6" */
-export const roomPath = (code: string) => `${ROUTES.rooms}/${code}`;
+/** 회사 스터디룸 주소. 초대 코드는 재발급되므로 방 id를 쓴다. @example roomPath(room.id) */
+export const roomPath = (roomId: string) => `${ROUTES.rooms}/${roomId}`;
 
 /** 테마 스터디룸 주소. @example themeRoomPath("학교") // "/themes/%ED%95%99%EA%B5%90" */
 export const themeRoomPath = (theme: string) =>

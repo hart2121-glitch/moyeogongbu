@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
           { path: "/", element: toLobby },
           { path: ROUTES.lobby, element: <LobbyPage /> },
           { path: ROUTES.rooms, element: <RoomListPage /> },
-          { path: `${ROUTES.rooms}/:code`, element: <CompanyRoomPage /> },
+          { path: `${ROUTES.rooms}/:roomId`, element: <CompanyRoomPage /> },
           { path: `${THEME_ROOM_BASE}/:theme`, element: <ThemeRoomPage /> },
           { path: ROUTES.cafe, element: <CafePage /> },
           { path: ROUTES.character, element: <CharacterPage /> },

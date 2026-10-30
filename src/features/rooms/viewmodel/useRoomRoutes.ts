@@ -1,22 +1,27 @@
 import { useNavigate, useParams } from "react-router-dom";
+import { useSession } from "../../account/viewmodel/SessionContext";
 import { useProfile } from "../../account/viewmodel/useAccount";
+import { useMyRooms } from "../../room/viewmodel/useMyRooms";
 import { ROUTES } from "../../shell/model/paths";
-import { useAppState } from "../../shell/viewmodel/AppStateContext";
-import { findRoomByCode, findThemeRoom } from "../model/rooms";
+import { findRoomById, findThemeRoom } from "../model/rooms";
 
 /**
- * `/rooms/:code` 화면용 상태. 코드에 맞는 방이 없으면 room은 undefined.
- * @example const { room, nickname, exit } = useCompanyRoomRoute();
+ * `/rooms/:roomId` 화면용 상태. 내 방 목록에 없으면 room은 undefined (loading이 끝난 뒤).
+ * @example const { room, loading, nickname, userId, exit } = useCompanyRoomRoute();
  */
 export function useCompanyRoomRoute() {
-  const { code = "" } = useParams();
+  const { roomId = "" } = useParams();
   const navigate = useNavigate();
-  const { rooms } = useAppState();
+  const rooms = useMyRooms();
+  const userId = useSession()?.user.id ?? "";
   const displayName = useProfile().data?.displayName ?? "";
   return {
-    room: findRoomByCode(rooms.rooms, code),
+    room: findRoomById(rooms.data ?? [], roomId),
+    loading: rooms.isPending,
     nickname: displayName,
+    userId,
     exit: () => navigate(ROUTES.lobby),
+    toRooms: () => navigate(ROUTES.rooms),
   };
 }
 
