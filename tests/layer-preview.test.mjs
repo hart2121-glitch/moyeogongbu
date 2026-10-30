@@ -94,7 +94,7 @@ test("독립 미리보기: 초기 빈 레이어·6층 합성·실제 가림 순�
     }
     await page
       .getByTestId("layer-count")
-      .filter({ hasText: "파일 6/6 · 표시 6개" })
+      .filter({ hasText: "파일 6/6, 표시 6개" })
       .waitFor();
     const boxes = await page
       .getByTestId("layer-stack")

@@ -114,7 +114,7 @@ function CharacterPreview() {
     <main className="cp-app">
       <header className="cp-header">
         <div>
-          <span className="cp-badge">개발용 · 게임에 적용되지 않음</span>
+          <span className="cp-badge">개발용, 게임에 적용되지 않음</span>
           <h1>캐릭터 레이어 미리보기</h1>
           <p>투명 PNG를 겹쳐 보고, 기존 완성형 캐릭터와 비교해 보세요.</p>
         </div>
@@ -200,7 +200,7 @@ function CharacterPreview() {
                 )}
               </div>
             </div>
-            <p>{DIRECTIONS[pose.direction]} · 원본 그대로 비교</p>
+            <p>{DIRECTIONS[pose.direction]}, 원본 그대로 비교</p>
           </article>
           <article className="cp-card">
             <h2>레이어 합성 결과</h2>
@@ -208,7 +208,7 @@ function CharacterPreview() {
               <LayerStack model={model} pose={pose} />
             </div>
             <p data-testid="layer-count">
-              파일 {loaded.length}/6 · 표시 {visible.length}개
+              파일 {loaded.length}/6, 표시 {visible.length}개
             </p>
             {!loaded.length && (
               <p className="cp-empty">
@@ -261,7 +261,7 @@ function CharacterPreview() {
                   <span>
                     {busy[requestKey]
                       ? "파일 확인 중…"
-                      : asset?.name || "87×110px · 투명 PNG"}
+                      : asset?.name || "87×110px 투명 PNG"}
                   </span>
                   <button
                     type="button"
@@ -285,8 +285,8 @@ function CharacterPreview() {
         {message}
       </p>
       <footer>
-        현재는 대기 자세의 정적 합성만 제공합니다. 애니메이션 재생·색상
-        변경·상점 연결은 아직 적용하지 않았습니다.
+        현재는 대기 자세의 정적 합성만 제공합니다. 애니메이션 재생, 색상
+        변경, 상점 연결은 아직 적용하지 않았습니다.
       </footer>
     </main>
   );

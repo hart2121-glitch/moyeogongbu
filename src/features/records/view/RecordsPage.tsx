@@ -15,7 +15,6 @@ export default function RecordsPage() {
   return (
     <PageFrame title="공부 기록">
       <div className="page-intro">
-        <span className="eyebrow">ONE STEP EVERY DAY</span>
         <h1>작은 하루가 모여 큰 걸음으로</h1>
         <p>이 기록은 나만 볼 수 있어요. 하루는 한국 시간 오전 5시에 바뀌어요.</p>
       </div>

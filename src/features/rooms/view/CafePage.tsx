@@ -9,7 +9,6 @@ export default function CafePage() {
   return (
     <PageFrame title="공용 스터디카페">
       <div className="page-intro">
-        <span className="eyebrow">STUDY TOGETHER</span>
         <h1>함께라서, 조금 더 집중되는 곳</h1>
         <p>오늘의 마음에 맞는 자리를 골라 보세요.</p>
       </div>
@@ -22,7 +21,7 @@ export default function CafePage() {
           >
             <div className={`room-thumbnail room-${i}`} />
             <h2>{name}</h2>
-            <p>자유 공부 · 테마 미리보기</p>
+            <p>자유 공부, 테마 미리보기</p>
             <span>
               자리 둘러보기 <CaretRight />
             </span>
