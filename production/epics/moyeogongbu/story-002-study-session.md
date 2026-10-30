@@ -1,12 +1,12 @@
 # Story 002: 공부 세션
 
 > **Epic**: moyeogongbu
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: (set by /dev-story when implementation begins)
+> **Last Updated**: 2026-10-30
 
 ## Context
 
@@ -26,20 +26,20 @@
 
 ## Acceptance Criteria
 
-- [ ] 좌석에 앉으면 공부 시간 측정이 자동으로 시작되고 위로 센다.
-- [ ] 휴식, 화장실, 퇴근으로 자리를 뜨면 측정이 멈춘다.
-- [ ] 앱 페이지 안에서 60분 동안 마우스와 키보드 입력이 없으면, 안부처럼 부드러운 체크인 문구를 띄운다 (예: "60분째 집중 중이에요. 계속할까요?"). 버튼 하나로 응답한다.
-- [ ] 5분 안에 답이 없으면 휴식 상태로 바뀌고, 그 5분은 공부 시간에서 빠진다.
-- [ ] 뽀모도로를 선택할 수 있다: 25분 공부와 5분 휴식, 50분 공부와 10분 휴식, 직접 설정 (공부 시간 20~60분).
-- [ ] 뽀모도로를 쓰는 중에는 따로 체크인하지 않는다. 뽀모도로 종료 알림에 5분 동안 응답이 없으면 체크인 무응답과 똑같이 휴식으로 바뀐다.
-- [ ] 뽀모도로 휴식 시간에는 자리에 앉아 있어도 공부 시간에서 빠지고, 휴식이 끝나면 다시 자동으로 센다.
-- [ ] 뽀모도로 휴식 시간이 되면 알림과 "휴게실로 가기" 버튼이 뜬다. 캐릭터는 자동으로 움직이지 않는다.
-- [ ] 하루는 한국 시간 오전 5시에 바뀐다. 오전 5시를 넘는 세션은 두 날짜로 나눠 기록한다.
-- [ ] 같은 계정은 세션 하나만 가진다. 새 탭이나 기기에서 들어오면 그쪽이 세션을 넘겨받고, 이전 화면에는 "다른 곳에서 접속했어요"가 뜬다.
-- [ ] 브라우저 알림은 사용자가 허용한 경우에만, 탭이 뒤에 있을 때 뽀모도로 종료와 자리 비움 확인에 보낸다.
-- [ ] 세션 시간은 서버에 저장되어 새로고침이나 재접속 후에도 이어진다.
-- [ ] 시간 계산은 서버 시각 기준이고 탭을 닫았다 열어도 어긋나지 않는다.
-- [ ] 계정을 삭제하면 그 사람의 세션 기록이 모두 지워진다.
+- [x] 좌석에 앉으면 공부 시간 측정이 자동으로 시작되고 위로 센다.
+- [x] 휴식, 화장실, 퇴근으로 자리를 뜨면 측정이 멈춘다.
+- [x] 앱 페이지 안에서 60분 동안 마우스와 키보드 입력이 없으면, 안부처럼 부드러운 체크인 문구를 띄운다 (예: "60분째 집중 중이에요. 계속할까요?"). 버튼 하나로 응답한다.
+- [x] 5분 안에 답이 없으면 휴식 상태로 바뀌고, 그 5분은 공부 시간에서 빠진다.
+- [x] 뽀모도로를 선택할 수 있다: 25분 공부와 5분 휴식, 50분 공부와 10분 휴식, 직접 설정 (공부 시간 20~60분).
+- [x] 뽀모도로를 쓰는 중에는 따로 체크인하지 않는다. 뽀모도로 종료 알림에 5분 동안 응답이 없으면 체크인 무응답과 똑같이 휴식으로 바뀐다.
+- [x] 뽀모도로 휴식 시간에는 자리에 앉아 있어도 공부 시간에서 빠지고, 휴식이 끝나면 다시 자동으로 센다.
+- [x] 뽀모도로 휴식 시간이 되면 알림과 "휴게실로 가기" 버튼이 뜬다. 캐릭터는 자동으로 움직이지 않는다.
+- [x] 하루는 한국 시간 오전 5시에 바뀐다. 오전 5시를 넘는 세션은 두 날짜로 나눠 기록한다.
+- [x] 같은 계정은 세션 하나만 가진다. 새 탭이나 기기에서 들어오면 그쪽이 세션을 넘겨받고, 이전 화면에는 "다른 곳에서 접속했어요"가 뜬다.
+- [x] 브라우저 알림은 사용자가 허용한 경우에만, 탭이 뒤에 있을 때 뽀모도로 종료와 자리 비움 확인에 보낸다.
+- [x] 세션 시간은 서버에 저장되어 새로고침이나 재접속 후에도 이어진다.
+- [x] 시간 계산은 서버 시각 기준이고 탭을 닫았다 열어도 어긋나지 않는다.
+- [x] 계정을 삭제하면 그 사람의 세션 기록이 모두 지워진다.
 
 ---
 
@@ -62,12 +62,18 @@
 
 ## Files
 
-- `src/features/session/model/`
-- `src/features/session/viewmodel/`
-- `src/features/session/view/`
+- `src/features/rooms/view/CompanyRoomPage.tsx`
+- `src/features/session/model/session.ts`
+- `src/features/session/model/sessionConfig.ts`
+- `src/features/session/model/sessionMachine.ts`
+- `src/features/session/model/sessionStore.ts`
+- `src/features/session/view/StudySessionBar.tsx`
+- `src/features/session/viewmodel/useStudySession.ts`
+- `src/study/CharacterSprite.jsx`
+- `src/study/CompanyRoom.jsx`
+- `supabase/migrations/20261029154830_study_sessions.sql`
 - `tests/session.test.mjs`
-
----
+- `tests/supabaseMock.mjs`
 
 ## QA Test Cases
 
@@ -88,3 +94,10 @@
 
 - Depends on: `production/epics/moyeogongbu/story-001-account-foundation.md`
 - Unlocks: `production/epics/moyeogongbu/story-003-coin-settlement.md`
+
+## Completion Notes
+**Completed**: 2026-10-30
+**Criteria**: 14/14 passing (none deferred). 서버 시각 기준 RPC, 오전 5시(한국 시간) 경계 분할, 2분 접속 끊김 유예, 탭 넘겨받기, 계정 삭제 시 삭제를 로컬 Postgres에서 SQL로 점검했다. 실제 브라우저 알림과 실시간 넘겨받기는 원격 개발 프로젝트에서 사용자 확인이 남아 있다.
+**Deviations**: ADVISORY, 뽀모도로 상태는 서버에 두지 않고 클라이언트에만 둔다(새 탭은 항상 자리에서 일어난 상태로 시작). 직접 설정 뽀모도로의 휴식은 5분. 회사 방 화면의 기존 가운뎃점 문구를 쉼표와 조사로 바꿨다(AGENTS.md). 뽀모도로 휴식 중에도 방 상태 줄은 기존 이동 문구("착석, 공부 중")를 그대로 보여 준다.
+**Test Evidence**: `production/qa/evidence/story-002-study-session/` (툴바, 뽀모도로 선택, 체크인, 자리 비움, 휴식 알림), `tests/session.test.mjs` 8개 통과, 전체 35/35 통과.
+**Reviewed by**: self, no independent review

@@ -12,7 +12,18 @@ import { useCharacterMovement } from "./useCharacterMovement";
 import CharacterSprite from "./CharacterSprite";
 import { useSeatOccupancy } from "./useSeatOccupancy";
 
-export default function CompanyRoom({ room, nickname, onExit }) {
+/**
+ * 회사 스터디룸. `onActivityChange`는 캐릭터 동작이 바뀔 때마다 불리고(공부 세션 입력),
+ * `renderSession`은 툴바 아래에 세션 표시를 그린다. 휴게실 이동은 사용자가 누를 때만 일어난다.
+ * @param {{ room: any, nickname: string, onExit: () => void, onActivityChange?: (activity: string) => void, renderSession?: (actions: { goLounge: () => void, canGoLounge: boolean }) => import("react").ReactNode }} props
+ */
+export default function CompanyRoom({
+  room,
+  nickname,
+  onExit,
+  onActivityChange,
+  renderSession,
+}) {
   const { character, moveTo, validateMove, movementError } =
     useCharacterMovement(companyLayout, "entrance", onExit);
   const occupancy = useSeatOccupancy(room.id, nickname);
@@ -145,17 +156,23 @@ export default function CompanyRoom({ room, nickname, onExit }) {
       go(seat.approach, { activity: "idle" });
     }
   }, [occupancy.seats]);
+  useEffect(() => {
+    onActivityChange?.(character.activity);
+  }, [character.activity]);
+  const lounge = companyLayout.areas.find((area) => area.id === "lounge");
+  const canGoLounge =
+    !locked && !backgroundFailed && character.activity !== "lounge";
   const status =
     character.activity === "exiting"
-      ? "출입구로 이동 중 · 도착하면 로비로 돌아갑니다"
+      ? "출입구로 이동 중, 도착하면 로비로 돌아갑니다"
       : ["walking", "standing", "sitting"].includes(character.activity)
         ? "통로를 따라 이동 중"
         : character.activity === "seated"
-          ? `${character.seatId}번 좌석 착석 · 공부 중`
+          ? `${character.seatId}번 좌석 착석, 공부 중`
           : character.activity === "resting"
             ? "소파에서 휴식 중"
             : character.activity === "restroom"
-              ? "화장실 내부 · 나가기 또는 공부 재개하기를 선택해 주세요."
+              ? "화장실 내부예요. 나가기 또는 공부 재개하기를 선택해 주세요."
               : character.activity === "lounge"
                 ? "휴게실에 도착했어요. 소파에서 쉬거나 좌석으로 돌아갈 수 있어요."
                 : character.node === "entrance"
@@ -169,18 +186,14 @@ export default function CompanyRoom({ room, nickname, onExit }) {
         <div>
           <h1>회사 테마 스터디룸</h1>
           <p>
-            {room.name} · 로컬 데모 · 최대 {room.capacity}석 · 초대 코드{" "}
+            {room.name}, 로컬 데모, 최대 {room.capacity}석, 초대 코드{" "}
             {room.code}
           </p>
         </div>
         <div className="company-controls">
           <button
-            onClick={() =>
-              visit(companyLayout.areas.find((area) => area.id === "lounge"))
-            }
-            disabled={
-              locked || backgroundFailed || character.activity === "lounge"
-            }
+            onClick={() => visit(lounge)}
+            disabled={!canGoLounge}
           >
             <DoorOpen /> 휴게실로 이동
           </button>
@@ -226,6 +239,7 @@ export default function CompanyRoom({ room, nickname, onExit }) {
           </button>
         </div>
       </div>
+      {renderSession?.({ goLounge: () => visit(lounge), canGoLounge })}
       <p
         className="movement-status"
         role="status"
@@ -276,7 +290,7 @@ export default function CompanyRoom({ room, nickname, onExit }) {
                   data-reserved={Boolean(seat.occupantId)}
                   title={
                     seat.lease
-                      ? `${seat.lease.name} · ${seat.lease.state === "reserved" ? "이동 중 예약" : "사용 중"}`
+                      ? `${seat.lease.name}, ${seat.lease.state === "reserved" ? "이동 중 예약" : "사용 중"}`
                       : "빈 좌석"
                   }
                 >
@@ -307,7 +321,7 @@ export default function CompanyRoom({ room, nickname, onExit }) {
                   }}
                   onClick={() => visit(area)}
                   disabled={locked || character.activity === area.activity}
-                  aria-label={`${area.label} · 지도`}
+                  aria-label={`${area.label}, 지도`}
                 >
                   {area.marker}
                 </button>
@@ -359,17 +373,17 @@ export default function CompanyRoom({ room, nickname, onExit }) {
           바닥을 클릭하면 이동합니다. 1~3번은 위쪽, 4~6번은 아래쪽 좌석입니다.
         </p>
         <p>
-          같은 브라우저의 탭끼리 좌석 예약·점유를 공유합니다. 실제 네트워크
+          같은 브라우저의 탭끼리 좌석 예약과 점유를 공유합니다. 실제 네트워크
           멀티플레이 서버는 아직 연결되지 않았습니다.
         </p>
         <details>
-          <summary>캐릭터 에셋·이동 안내</summary>
+          <summary>캐릭터 에셋과 이동 안내</summary>
           <p>
             확정 원본의 연보라색 머리 정면 그림을 분리해 사용합니다. 걷기 방향은
-            화살표로 표시하며 실제 옆·뒤 걷기/앉기 프레임은 아직 없습니다. 없는
+            화살표로 표시하며 실제 옆, 뒤 걷기/앉기 프레임은 아직 없습니다. 없는
             동작을 다른 캐릭터로 대체하지 않습니다. 이동 중 전체 캐릭터를 숨기지
-            않고, 착석 때는 원본의 모니터·책상 픽셀을 전경으로 겹쳐 다리를
-            가립니다. 배경 타이머·음악은 기존 정적 이미지 상태입니다.
+            않고, 착석 때는 원본의 모니터와 책상 픽셀을 전경으로 겹쳐 다리를
+            가립니다. 배경 타이머와 음악은 기존 정적 이미지 상태입니다.
           </p>
         </details>
       </div>

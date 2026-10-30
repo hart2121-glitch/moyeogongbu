@@ -31,13 +31,45 @@ function fakeSession() {
  * 페이지에 로그인 상태와 Supabase 가짜 응답을 건다. page.goto 전에 부른다.
  * @param {import("@playwright/test").Page} page
  * @param {{ displayName?: string | null, signedIn?: boolean }} [options]
- * @returns 테스트가 확인할 수 있는 가짜 서버 상태 (profile, calls)
+ * @returns 테스트가 확인할 수 있는 가짜 서버 상태 (profile, study, calls)
  */
 export async function mockSupabase(page, { displayName = "밍구", signedIn = true } = {}) {
   const session = fakeSession();
   const state = {
     profile: { id: FAKE_USER_ID, display_name: displayName, friend_code: "ABCD2345" },
+    // 공부 세션 RPC의 가짜 서버. 시각은 테스트 프로세스의 실제 시각이다.
+    study: { tabId: null, state: null, closedSeconds: 0, openSince: null },
     calls: [],
+  };
+  const studySnapshot = () => ({
+    server_now: new Date().toISOString(),
+    day: new Date(Date.now() + 4 * 3600_000).toISOString().slice(0, 10),
+    closed_seconds: state.study.closedSeconds,
+    open_since: state.study.openSince ? new Date(state.study.openSince).toISOString() : null,
+    state: state.study.state,
+    tab_id: state.study.tabId,
+  });
+  const closeStudy = (at) => {
+    if (state.study.openSince === null) return;
+    const end = Math.min(Date.now(), Math.max(state.study.openSince, at));
+    state.study.closedSeconds += Math.floor((end - state.study.openSince) / 1000);
+    state.study.openSince = null;
+  };
+  const studyRpc = (name, args) => {
+    if (name === "claim_study_session") {
+      closeStudy(Date.now());
+      Object.assign(state.study, { tabId: args.p_tab_id, state: "break" });
+    } else if (args.p_tab_id !== state.study.tabId) {
+      return { status: 400, body: { code: "P0001", message: "session_taken" } };
+    } else if (name === "set_study_state") {
+      if (args.p_state === "studying") state.study.openSince ??= Date.now();
+      else closeStudy(Date.now());
+      state.study.state = args.p_state;
+    } else if (name === "mark_study_away") {
+      closeStudy(Date.parse(args.p_at));
+      state.study.state = "away";
+    }
+    return { status: 200, body: studySnapshot() };
   };
   if (signedIn) {
     await page.addInitScript(
@@ -60,11 +92,18 @@ export async function mockSupabase(page, { displayName = "밍구", signedIn = tr
     if (path.endsWith("/logout")) return route.fulfill({ status: 204, body: "" });
     return json(route, {});
   });
+  // 실시간 연결은 받기만 하고 답하지 않는다 (탭 넘겨받기 알림은 오지 않음).
+  await page.routeWebSocket(/\/realtime\/v1\/websocket/, () => {});
   await page.route(`${SUPABASE_URL}/rest/v1/**`, (route) => {
     const request = route.request();
     const path = new URL(request.url()).pathname;
     state.calls.push(`${request.method()} ${path}`);
     if (path.endsWith("/rpc/delete_account")) return route.fulfill({ status: 204, body: "" });
+    const rpc = path.match(/\/rpc\/(claim_study_session|set_study_state|heartbeat_study_session|mark_study_away)$/);
+    if (rpc) {
+      const { status, body } = studyRpc(rpc[1], request.postDataJSON() ?? {});
+      return json(route, body, status);
+    }
     if (path.endsWith("/profiles")) {
       if (request.method() === "PATCH") Object.assign(state.profile, request.postDataJSON());
       return json(route, state.profile);
