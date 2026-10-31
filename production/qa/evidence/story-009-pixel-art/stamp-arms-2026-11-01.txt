@@ -1,0 +1,5 @@
+Reviewed-Content-Hash: tools/art/build-character.mjs f892783d4baa7b0ad6f589451dac314601d18936
+Reviewed-Content-Hash: public/assets/characters/layers/outfit-uniform.png 1e95ececdded8aa5539fe5aafe7bfb719a0e1e41
+Reviewed-Content-Hash: public/assets/characters/layers/outfit-uniform-boy.png 72fa8ab332c3fd05e2c6bd466f746641abbd2fb5
+Reviewed-Content-Hash: public/assets/characters/layers/outfit-sage.png 9ba32183316485b05932f1d853fe6fa0898a1566
+Reviewed-Content-Hash: public/assets/characters/layers/outfit-rose.png f4c57cb3b10e0636088822c7cee7e802c80750a3
