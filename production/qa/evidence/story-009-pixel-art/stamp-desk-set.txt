@@ -1,0 +1,4 @@
+Reviewed-Content-Hash: tools/art/desk-items.mjs 25bb74daabe079788da1f2b3e5735a706cf01cbc
+Reviewed-Content-Hash: src/study/DeskSet.jsx 5dee7b90270cbf0857a7d550b53ab34d5587dadd
+Reviewed-Content-Hash: src/features/character/view/DeskPreview.tsx c265f45238e7584b0c2ba0c1dd72e4515cae11b0
+Reviewed-Content-Hash: supabase/migrations/20261101100000_desk_set.sql 16c33996df5867e609911764e20bb233d05920e5

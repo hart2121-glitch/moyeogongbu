@@ -1545,3 +1545,45 @@ button:active {
 .shop-note {
   margin: 16px 0 10px;
 }
+
+/* 내 책상 세트 (꾸미기 슬롯 계획 1절). 꾸미기 책상 탭: 회사 방 빈 책상을 2배로 잘라 마루 위에 놓고, 고른 소품을 같은 자리에 얹는다. */
+.preview-stage .desk-preview {
+  position: absolute;
+  left: 16px;
+  bottom: 40px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 8px 0 #0004);
+}
+.desk-preview img {
+  position: absolute;
+  max-width: none;
+  image-rendering: pixelated;
+}
+/* 소품 선택지: 32×44 그림(스티커 32×16)을 2배로, 바닥 가운데에 세운다 */
+.item-options.desk-options button {
+  display: grid;
+  place-items: end center;
+  width: 80px;
+  height: 104px;
+  background: #fbf5e8;
+}
+.item-options.sticker-options button {
+  height: 56px;
+  place-items: center;
+}
+.preview-controls[hidden] {
+  display: none;
+}
+.desk-options .desk-thumb {
+  width: 64px;
+  max-width: none;
+  image-rendering: pixelated;
+}
+.item-art .desk-item-art {
+  width: 96px;
+  max-width: none;
+  image-rendering: pixelated;
+}
+.item-art .desk-item-art.slot-desk_top {
+  width: 64px;
+}

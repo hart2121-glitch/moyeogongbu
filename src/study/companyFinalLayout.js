@@ -87,14 +87,23 @@ export const companyFinalLayout = {
     ["loungeOuter", "loungeThreshold"],
     ["loungeThreshold", "loungeInner"],
   ],
+  // desk: 책상 왼쪽 위 기준점 (Story 009 도트 방 그림 칸). tools/art/company-room.mjs가 같은 빈 책상을 찍는 자리이고,
+  // 앉은 사람의 내 책상 세트가 펼쳐지는 자리다.
   seats: [
-    { id: 1, node: "seat1", label: { x: 0.405, y: 0.574 } },
-    { id: 2, node: "seat2", label: { x: 0.534, y: 0.574 } },
-    { id: 3, node: "seat3", label: { x: 0.668, y: 0.574 } },
-    { id: 4, node: "seat4", label: { x: 0.403, y: 0.747 } },
-    { id: 5, node: "seat5", label: { x: 0.534, y: 0.747 } },
-    { id: 6, node: "seat6", label: { x: 0.67, y: 0.747 } },
+    { id: 1, node: "seat1", label: { x: 0.405, y: 0.574 }, desk: { x: 286, y: 168 } },
+    { id: 2, node: "seat2", label: { x: 0.534, y: 0.574 }, desk: { x: 394, y: 168 } },
+    { id: 3, node: "seat3", label: { x: 0.668, y: 0.574 }, desk: { x: 507, y: 168 } },
+    { id: 4, node: "seat4", label: { x: 0.403, y: 0.747 }, desk: { x: 283, y: 248 } },
+    { id: 5, node: "seat5", label: { x: 0.534, y: 0.747 }, desk: { x: 395, y: 248 } },
+    { id: 6, node: "seat6", label: { x: 0.67, y: 0.747 }, desk: { x: 510, y: 248 } },
   ],
+  // 내 책상 세트 자리 (책상 안 그림 칸, 꾸미기 슬롯 계획 1절). 왼쪽과 오른쪽은 책상 앞 가장자리(y 53)에 선 32×44,
+  // 앞면은 번호 동그라미 왼쪽 판의 32×16. 아이템 그림은 자리 크기의 투명 그림이다.
+  deskSpots: {
+    left: { x: 11, y: 10, width: 32, height: 44 },
+    right: { x: 75, y: 10, width: 32, height: 44 },
+    front: { x: 14, y: 60, width: 32, height: 16 },
+  },
   areas: [
     {
       id: "lounge",

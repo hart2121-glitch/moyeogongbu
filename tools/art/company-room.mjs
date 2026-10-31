@@ -6,7 +6,8 @@
 //   PixelLab image_to_pixelart(faithful, 보존 200, 시드 91)에 넣을 왼쪽(원본 x 0~511), 오른쪽(x 480~1343) 조각을 art-src/rooms/src/에 쓴다.
 //   변환은 PixelLab 한도(한 변 512) 때문에 두 조각으로 했고, 결과를 converted-left.png(256×432), converted-right.png(432×432)로 둔다.
 // 기본: 두 조각을 겹치는 16칸(그림 x 240~255, 휴게실과 사무실 사이 벽) 안에서 줄마다 차이가 가장 적은 이음매로 잇고,
-//   좌석 번호 동그라미를 좌우 대칭 12칸 원으로 다시 찍어 art-src/rooms/company-room.png와 public/assets/rooms/company-room.png에 쓴다.
+//   좌석 번호 동그라미를 좌우 대칭 12칸 원으로 다시 찍고, 책상 여섯 개를 같은 빈 책상으로 맞춰
+//   art-src/rooms/company-room.png와 public/assets/rooms/company-room.png에 쓴다.
 //   글자는 그림에 넣지 않는다. 화면이 빈 표지판과 동그라미 위에 글자로 올린다 (companyFinalLayout.js의 signs, seats).
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -114,8 +115,17 @@ for (const seat of layout.seats) {
   CIRCLE.forEach((row, dy) => [...row].forEach((ch, dx) => { if (PEN[ch]) at(room, left + dx, top + dy).set([...PEN[ch], 255]); }));
 }
 
+// 손 보정: 책상 여섯 개를 같은 빈 책상으로 맞춘다. 책상 위 소품은 앉은 사람의 내 책상 세트로 따로 얹는다 (꾸미기 슬롯 계획 1절,
+// 아이템 그림은 tools/art/desk-items.mjs). desk-empty.png는 1번 책상(그림 x 286, y 168부터 112×84)에서 소품만 걷어 낸 그림이다
+// (PixelLab edit_image_pixen, 시드 11). 책상마다 같은 빈 책상 띠(책상 안 x 9~105, y 8~54: 의자 윗부분, 모니터, 칸막이 책,
+// 책상 윗면)를 찍어 한 세트가 어느 자리에나 같은 모양으로 놓이게 한다. 책상 자리는 companyFinalLayout.js의 seats[].desk다.
+const BAND = { x0: 9, x1: 105, y0: 8, y1: 54 };
+const empty = decodePng(readFileSync(join(SRC, "desk-empty.png")));
+for (const { desk } of layout.seats)
+  for (let y = BAND.y0; y <= BAND.y1; y++) for (let x = BAND.x0; x <= BAND.x1; x++) at(room, desk.x + x, desk.y + y).set(at(empty, x, y));
+
 mkdirSync("public/assets/rooms", { recursive: true });
 const png = encodePng(room);
 writeFileSync("art-src/rooms/company-room.png", png);
 writeFileSync("public/assets/rooms/company-room.png", png);
-console.log(`회사 방 ${W}×${H}, 이음매 x ${Math.min(...seam)}~${Math.max(...seam)}`);
+console.log(`회사 방 ${W}×${H}, 이음매 x ${Math.min(...seam)}~${Math.max(...seam)}, 빈 책상 ${layout.seats.length}개`);

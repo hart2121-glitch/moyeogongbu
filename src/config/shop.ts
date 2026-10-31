@@ -122,6 +122,16 @@ export function faceSheet(faceId: string, gender: Gender): LayerSource | null {
   return gender === "m" ? { sheet: src.sheet.replace(/\.png$/, "-m.png") } : src;
 }
 
+/**
+ * 내 책상 세트 아이템 그림 (꾸미기 슬롯 계획 1절, tools/art/desk-items.mjs). 회사 방 책상 자리 크기의 투명 그림을 1배로 얹는다.
+ * 책상 소품(desk_top)은 32×44로 왼쪽이나 오른쪽 자리에, 스티커(desk_front)는 32×16으로 앞면 자리에 놓인다.
+ */
+export const DESK_ITEM_ART: Readonly<Record<string, string>> = Object.fromEntries(
+  ["desk-lamp", "desk-plant", "desk-books", "desk-mug", "desk-cactus", "desk-cat", "desk-moon", "desk-globe", "sticker-star", "sticker-cat"].map(
+    (id) => [id, `/assets/rooms/desk/${id}.png`],
+  ),
+);
+
 /** 처음 꾸미기에서 남녀를 고르면 입혀 주는 기본 머리 모양과 옷 (서버 기본 아이템 id). */
 export const GENDER_PRESETS: Readonly<Record<Gender, { label: string; hair: string; outfit: string }>> = {
   f: { label: "여자", hair: "hair-basic", outfit: "outfit-lavender" },
@@ -138,4 +148,8 @@ export const DEFAULT_LOOK = {
   outfit: "outfit-lavender",
   accessory: null,
   gender: "f",
+  // 내 책상 세트: 지금 회사 방처럼 왼쪽 스탠드, 오른쪽 화분, 앞면은 비움 (서버 character_looks 기본값과 같다).
+  desk_left: "desk-lamp",
+  desk_right: "desk-plant",
+  desk_front: null,
 } as const;

@@ -1,26 +1,33 @@
-import { CaretLeft, CaretRight, Check, Coin, Eye, PersonSimpleWalk, Scissors, Sparkle, TShirt, type Icon } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, Check, Coin, Desk, Eye, PersonSimpleWalk, Scissors, Sparkle, TShirt, type Icon } from "@phosphor-icons/react";
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { GENDER_PRESETS, ITEM_ASSETS, type Gender } from "../../../config/shop";
+import { DESK_ITEM_ART, GENDER_PRESETS, ITEM_ASSETS, type Gender } from "../../../config/shop";
 import { characterSprites, WALK_FRAME_MS, WALK_FRAMES } from "../../../study/characterSprites";
 import { useProfile } from "../../account/viewmodel/useAccount";
-import type { ItemSlot, ShopItem } from "../../shop/model/shop";
+import { isDeskSlot, type ItemSlot, type ShopItem } from "../../shop/model/shop";
 import { ROUTES } from "../../shell/model/paths";
 import PageFrame from "../../shell/view/PageFrame";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
 import { tryOnNotice } from "../model/look";
-import type { Look } from "../model/layers";
+import type { DeskSpot, Look } from "../model/layers";
 import { isWorn, useCustomize, wearItem } from "../viewmodel/useCharacter";
+import DeskPreview from "./DeskPreview";
 import LayerStack from "./LayerStack";
 
-type TabId = "hair" | "face" | "outfit" | "accessory";
+type TabId = "hair" | "face" | "outfit" | "accessory" | "desk";
 type Direction = "down" | "right" | "up" | "left";
 
 /**
  * 꾸미기 탭. 한 번에 한 탭의 선택지만 보인다. 머리 탭에는 머리 모양과 머리 색이 함께 있다.
- * 칸의 view가 swatch면 색 동그라미로, head면 머리 부분을, body면 몸 부분을 잘라 내 캐릭터에 입혀 본 그림으로 고른다.
+ * 칸의 view가 swatch면 색 동그라미로, head면 머리 부분을, body면 몸 부분을 잘라 내 캐릭터에 입혀 본 그림으로, desk면 소품 그림으로 고른다.
+ * 책상 탭은 내 책상 세트의 자리(spot)마다 한 줄이다. 책상 소품은 왼쪽과 오른쪽 어느 자리에나 놓을 수 있다.
  */
-const TABS: readonly { id: TabId; label: string; icon: Icon; slots: readonly { slot: ItemSlot; label: string; view: "swatch" | "head" | "body" }[] }[] = [
+const TABS: readonly {
+  id: TabId;
+  label: string;
+  icon: Icon;
+  slots: readonly { slot: ItemSlot; label: string; view: "swatch" | "head" | "body" | "desk"; spot?: DeskSpot }[];
+}[] = [
   {
     id: "hair",
     label: "머리",
@@ -33,6 +40,16 @@ const TABS: readonly { id: TabId; label: string; icon: Icon; slots: readonly { s
   { id: "face", label: "눈", icon: Eye, slots: [{ slot: "face", label: "눈 색", view: "swatch" }] },
   { id: "outfit", label: "의상", icon: TShirt, slots: [{ slot: "outfit", label: "의상", view: "body" }] },
   { id: "accessory", label: "액세서리", icon: Sparkle, slots: [{ slot: "accessory", label: "액세서리", view: "head" }] },
+  {
+    id: "desk",
+    label: "책상",
+    icon: Desk,
+    slots: [
+      { slot: "desk_top", spot: "desk_left", label: "왼쪽 소품", view: "desk" },
+      { slot: "desk_top", spot: "desk_right", label: "오른쪽 소품", view: "desk" },
+      { slot: "desk_front", spot: "desk_front", label: "앞면 스티커", view: "desk" },
+    ],
+  },
 ];
 
 const tabOf = (slot: ItemSlot): TabId => TABS.find((t) => t.slots.some((s) => s.slot === slot))?.id ?? "hair";
@@ -45,9 +62,13 @@ const FACING_LABEL: Record<Direction, string> = { down: "앞모습", right: "오
 const previewWith = (look: Look, item: ShopItem): Look =>
   item.slot === "accessory" ? { ...look, accessory: item.id } : wearItem(look, item.slot, item.id);
 
-/** 선택지 상태 글: 기본, 보유 중, 입어 보기 가격. */
+/** 선택지 상태 글: 기본, 보유 중, 입어 보기(책상 아이템은 놓아 보기) 가격. */
 const ownership = (item: ShopItem) =>
-  item.isDefault ? "기본" : item.owned ? "보유 중" : `입어 보기 ${item.price.toLocaleString()}코인`;
+  item.isDefault
+    ? "기본"
+    : item.owned
+      ? "보유 중"
+      : `${isDeskSlot(item.slot) ? "놓아 보기" : "입어 보기"} ${item.price.toLocaleString()}코인`;
 
 const BASE_SPRITE = characterSprites.idle.down[0];
 
@@ -65,7 +86,7 @@ export default function CharacterPage() {
   const c = useCustomize(toast.notify);
   const navigate = useNavigate();
   const displayName = useProfile().data?.displayName;
-  const tabs = c.firstTime ? TABS.filter((t) => t.id !== "accessory") : TABS;
+  const tabs = c.firstTime ? TABS.filter((t) => t.id !== "accessory" && t.id !== "desk") : TABS;
   const shown = c.firstTime ? c.items.filter((i) => i.isDefault) : c.items;
   const trying = c.tryingOn.map((i) => i.name).join(", ");
   const [tab, setTab] = useState<TabId>("hair");
@@ -74,6 +95,12 @@ export default function CharacterPage() {
   const [walking, setWalking] = useState(false);
   const [frame, setFrame] = useState(0);
   const [hovered, setHovered] = useState<ShopItem | null>(null);
+  // 책상 탭은 같은 소품이 왼쪽과 오른쪽 두 줄에 나오므로, 가리킨 줄(spot)까지 기억해 그 줄 제목에만 이름을 보인다.
+  const [hoveredSpot, setHoveredSpot] = useState<DeskSpot | undefined>(undefined);
+  const point = (item: ShopItem, spot?: DeskSpot) => {
+    setHovered(item);
+    setHoveredSpot(spot);
+  };
   const tabRefs = useRef<Partial<Record<TabId, HTMLButtonElement | null>>>({});
   // 상점의 "입어 보기"는 `?try=아이템id`로 들어온다. 목록이 오면 한 번만 입혀 보고 그 탭을 연다.
   const [params] = useSearchParams();
@@ -124,18 +151,24 @@ export default function CharacterPage() {
         <div className="customizer">
           <div className="avatar-preview">
             <div className="preview-stage">
-              <span className="preview-shadow" aria-hidden />
-              <LayerStack
-                look={c.look}
-                baseSrc={BASE_SPRITE}
-                action={walking ? "walk" : "idle"}
-                direction={facing}
-                frame={frame}
-                label={`${displayName ?? "내"} 캐릭터 미리보기, ${FACING_LABEL[facing]}`}
-                className="preview-layers"
-              />
+              {active.id === "desk" ? (
+                <DeskPreview look={c.look} label={`${displayName ?? "내"} 책상 미리보기`} />
+              ) : (
+                <>
+                  <span className="preview-shadow" aria-hidden />
+                  <LayerStack
+                    look={c.look}
+                    baseSrc={BASE_SPRITE}
+                    action={walking ? "walk" : "idle"}
+                    direction={facing}
+                    frame={frame}
+                    label={`${displayName ?? "내"} 캐릭터 미리보기, ${FACING_LABEL[facing]}`}
+                    className="preview-layers"
+                  />
+                </>
+              )}
             </div>
-            <div className="preview-controls">
+            <div className="preview-controls" hidden={active.id === "desk"}>
               <button className="icon-button" aria-label="왼쪽으로 돌리기" title="왼쪽으로 돌리기" onClick={() => turn(-1)}>
                 <CaretLeft weight="bold" />
               </button>
@@ -178,12 +211,13 @@ export default function CharacterPage() {
               ))}
             </div>
             <div className="wardrobe-panel" role="tabpanel" id={`wardrobe-panel-${active.id}`} aria-labelledby={`wardrobe-tab-${active.id}`}>
-              {active.slots.map(({ slot, label, view }) => {
+              {active.slots.map(({ slot, label, view, spot }) => {
                 const options = shown.filter((i) => i.slot === slot);
-                const picked = options.find((i) => isWorn(c.look, i));
-                const pointed = hovered && hovered.slot === slot ? hovered : null;
+                const wornHere = (item: ShopItem) => (spot ? c.look[spot] === item.id : isWorn(c.look, item));
+                const picked = options.find(wornHere);
+                const pointed = hovered && hovered.slot === slot && hoveredSpot === spot ? hovered : null;
                 return (
-                  <section key={slot} className="wardrobe-slot" aria-label={label}>
+                  <section key={spot ?? slot} className="wardrobe-slot" aria-label={label}>
                     <h2>
                       {label}
                       {pointed ? (
@@ -194,9 +228,12 @@ export default function CharacterPage() {
                         picked && <small className="picked-name">{picked.name}</small>
                       )}
                     </h2>
-                    <div className={`item-options ${view === "swatch" ? "swatch-options" : "thumb-options"}`} onMouseLeave={() => setHovered(null)}>
+                    <div
+                      className={`item-options ${view === "swatch" ? "swatch-options" : view === "desk" ? `desk-options${spot === "desk_front" ? " sticker-options" : ""}` : "thumb-options"}`}
+                      onMouseLeave={() => setHovered(null)}
+                    >
                       {options.map((item) => {
-                        const worn = isWorn(c.look, item);
+                        const worn = wornHere(item);
                         const state = ownership(item);
                         const asset = ITEM_ASSETS[item.id];
                         const soon = asset?.placeholder !== false;
@@ -208,13 +245,15 @@ export default function CharacterPage() {
                             aria-label={`${item.name}, ${state}`}
                             title={`${item.name}, ${state}`}
                             className={`${view === "swatch" ? "swatch" : "thumb"} ${worn ? "selected" : ""} ${item.owned ? "" : "not-owned"}`}
-                            onClick={() => c.wear(item)}
-                            onMouseEnter={() => setHovered(item)}
-                            onFocus={() => setHovered(item)}
+                            onClick={() => (spot ? c.placeOnDesk(spot, item) : c.wear(item))}
+                            onMouseEnter={() => point(item, spot)}
+                            onFocus={() => point(item, spot)}
                             onBlur={() => setHovered(null)}
                           >
                             {view === "swatch" ? (
                               <span className="color-swatch" style={{ "--swatch": asset?.swatch ?? "#c0a98d" } as CSSProperties} />
+                            ) : view === "desk" ? (
+                              <img className="desk-thumb" src={DESK_ITEM_ART[item.id]} alt="" draggable={false} />
                             ) : (
                               <span className={`thumb-window thumb-${asset?.thumb ?? view}${soon ? " soon" : ""}`}>
                                 <LayerStack look={previewWith(c.look, item)} label="" decorative className="thumb-stack" />

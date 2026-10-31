@@ -323,12 +323,14 @@
   background: #c9dfa8;
   border-color: #647c45;
 }
+/* "내 자리", "사용 중": 1배 방에서는 아래로 내리면 다음 줄 얼굴이나 나가기 표지를 덮으므로 번호 오른쪽 책상 앞판에 붙인다. */
 .seat-marker span {
   position: absolute;
-  top: 26px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  left: calc(100% + 3px);
+  transform: translateY(-50%);
   font-size: 10px;
+  line-height: 1.2;
   white-space: nowrap;
   background: #f7efd9;
   border: 1px solid #879270;
@@ -629,4 +631,16 @@
   margin-top: 2px;
   font-size: 12px;
   padding: 1px 4px;
+}
+/* 내 책상 세트 (꾸미기 슬롯 계획 1절): 책상 자리 크기의 투명 그림을 방 그림 위에 1배로. 앉은 사람의 세트는 책상 전경보다 앞이다. */
+.desk-item {
+  position: absolute;
+  z-index: 1;
+  max-width: none;
+  image-rendering: pixelated;
+  pointer-events: none;
+  user-select: none;
+}
+.desk-item.is-front {
+  z-index: 3;
 }

@@ -28,7 +28,14 @@ export interface Look {
   accessory: string | null;
   /** 남녀: 눈매를 정한다 (아이템은 누구나 쓴다). */
   gender: Gender;
+  /** 내 책상 세트: 앉은 회사 방 책상의 왼쪽, 오른쪽 소품과 앞면 스티커. null은 그 자리를 비운다. */
+  desk_left: string | null;
+  desk_right: string | null;
+  desk_front: string | null;
 }
+
+/** 내 책상 세트 자리. Look 필드 이름과 같다. */
+export type DeskSpot = "desk_left" | "desk_right" | "desk_front";
 
 export const defaultLook = (): Look => ({ ...DEFAULT_LOOK });
 
@@ -71,5 +78,10 @@ export function toLook(row: unknown): Look | null {
   if (!body || !face || !hairBack || !hairFront || !outfit) return null;
   const hairColor = str("hair_color") ?? DEFAULT_LOOK.hair_color;
   const gender: Gender = str("gender") === "m" ? "m" : "f";
-  return { body, face, hair_back: hairBack, hair_front: hairFront, hair_color: hairColor, outfit, accessory: str("accessory"), gender };
+  // 책상 세트 필드가 없는 예전 꾸밈은 기본 세트로, null은 비운 자리로 읽는다.
+  const desk = (k: DeskSpot) => (k in r ? str(k) : DEFAULT_LOOK[k]);
+  return {
+    body, face, hair_back: hairBack, hair_front: hairFront, hair_color: hairColor, outfit, accessory: str("accessory"), gender,
+    desk_left: desk("desk_left"), desk_right: desk("desk_right"), desk_front: desk("desk_front"),
+  };
 }

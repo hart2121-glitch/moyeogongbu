@@ -3,10 +3,10 @@ import { socialRpc } from "../../friends/model/socialError";
 
 /**
  * 상점 (Story 007). 목록, 가격, 보유 여부, 구매 판정은 모두 서버(`shop_items`, `buy_item`)가 정한다.
- * 첫 출시 상점은 캐릭터 아이템만 판다: 액세서리, 의상, 머리 모양, 머리 색.
+ * 첫 출시 상점은 캐릭터 아이템(액세서리, 의상, 머리 모양, 머리 색)과 내 책상 세트(책상 소품, 책상 스티커)를 판다.
  */
 
-export type ItemSlot = "body" | "face" | "hair" | "hair_color" | "outfit" | "accessory";
+export type ItemSlot = "body" | "face" | "hair" | "hair_color" | "outfit" | "accessory" | "desk_top" | "desk_front";
 
 export interface ShopItem {
   id: string;
@@ -29,6 +29,8 @@ export const SHOP_SLOTS: readonly { slot: ItemSlot; label: string }[] = [
   { slot: "outfit", label: "의상" },
   { slot: "hair", label: "머리 모양" },
   { slot: "hair_color", label: "머리 색" },
+  { slot: "desk_top", label: "책상 소품" },
+  { slot: "desk_front", label: "책상 스티커" },
 ];
 
 interface ItemRow {
@@ -70,7 +72,11 @@ export function buyBlockReason(item: Pick<ShopItem, "owned" | "price">, balance:
   return null;
 }
 
-export const purchasedMessage = (item: string) => `${item}을(를) 샀어요! 꾸미기에서 바로 입어 볼 수 있어요.`;
+export const purchasedMessage = (item: string, slot?: ItemSlot) =>
+  `${item}을(를) 샀어요! 꾸미기에서 바로 ${isDeskSlot(slot) ? "책상에 놓을" : "입어 볼"} 수 있어요.`;
+
+/** 내 책상 세트 아이템(책상 소품, 책상 스티커)인가. 캐릭터가 입는 대신 책상에 놓는다. */
+export const isDeskSlot = (slot: ItemSlot | undefined) => slot === "desk_top" || slot === "desk_front";
 export const insufficientMessage = "코인이 조금 모자라요. 공부하며 코인을 모은 뒤 다시 들러 주세요.";
 export const alreadyOwnedMessage = "이미 가지고 있는 아이템이에요.";
 export const buyErrorMessage = "구매하지 못했어요. 잠시 뒤에 다시 시도해 주세요.";

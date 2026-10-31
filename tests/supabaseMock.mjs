@@ -162,6 +162,17 @@ export const SHOP_ITEMS = [
   ["hair-color-red", "hair_color", "빨강 염색", 300, false],
   ["hair-color-pink", "hair_color", "분홍 염색", 300, false],
   ["hair-color-skyblue", "hair_color", "하늘색 염색", 300, false],
+  // Story 009 내 책상 세트 (*_desk_set.sql): 책상 소품은 왼쪽과 오른쪽 자리, 스티커는 앞면 자리
+  ["desk-lamp", "desk_top", "책상 스탠드", 0, true],
+  ["desk-plant", "desk_top", "작은 화분", 0, true],
+  ["desk-books", "desk_top", "책 더미", 180, false],
+  ["desk-mug", "desk_top", "머그와 쿠키", 180, false],
+  ["desk-cactus", "desk_top", "꽃 핀 선인장", 240, false],
+  ["desk-cat", "desk_top", "고양이 인형", 300, false],
+  ["desk-moon", "desk_top", "달 무드등", 480, false],
+  ["desk-globe", "desk_top", "작은 지구본", 600, false],
+  ["sticker-star", "desk_front", "별 스티커", 180, false],
+  ["sticker-cat", "desk_front", "고양이 스티커", 240, false],
 ].map(([id, slot, name, price, is_default]) => ({ id, slot, name, price, is_default }));
 
 // Story 007 상점과 꾸밈 RPC. 판정 규칙은 *_shop.sql과 같다. balance()는 지금 잔액, debit(n)은 차감.
@@ -184,12 +195,16 @@ function shopRpc(server, me, name, args, balance, debit) {
     case "save_look": {
       const ok = canUse(args.p_body, "body") && canUse(args.p_face, "face") && canUse(args.p_hair_back, "hair") &&
         canUse(args.p_hair_front, "hair") && canUse(args.p_hair_color, "hair_color") && canUse(args.p_outfit, "outfit") &&
-        (args.p_accessory == null || canUse(args.p_accessory, "accessory"));
+        (args.p_accessory == null || canUse(args.p_accessory, "accessory")) &&
+        (args.p_desk_left == null || canUse(args.p_desk_left, "desk_top")) &&
+        (args.p_desk_right == null || canUse(args.p_desk_right, "desk_top")) &&
+        (args.p_desk_front == null || canUse(args.p_desk_front, "desk_front"));
       if (!["f", "m"].includes(args.p_gender)) fail("invalid_gender");
       if (!ok) fail("not_owned");
       const look = {
         body: args.p_body, face: args.p_face, hair_back: args.p_hair_back, hair_front: args.p_hair_front,
         hair_color: args.p_hair_color, outfit: args.p_outfit, accessory: args.p_accessory ?? null, gender: args.p_gender,
+        desk_left: args.p_desk_left ?? null, desk_right: args.p_desk_right ?? null, desk_front: args.p_desk_front ?? null,
       };
       server.looks.set(me, look);
       return look;

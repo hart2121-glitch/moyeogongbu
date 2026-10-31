@@ -10,6 +10,8 @@ import {
 import { COMPANY_ROOM_ART, companyLayout, foregroundClip, roomArtBox } from "./companyLayout";
 import { useCharacterMovement } from "./useCharacterMovement";
 import CharacterSprite from "./CharacterSprite";
+import DeskSet from "./DeskSet";
+import { defaultLook } from "../features/character/model/layers";
 import { useSeatOccupancy } from "./useSeatOccupancy";
 
 /** 바깥 창의 비율: 보이는 범위(view)의 가로세로. view가 없으면 원본 전체. */
@@ -78,6 +80,9 @@ export default function CompanyRoom({
         (character.activity === "seated" ? character.seatId : null)),
   );
   const rect = foregroundSeat?.foreground;
+  // 내 책상 세트는 내가 앉았거나 차지한 자리에, 아무도 없는 자리는 기본 세트다. 다른 사람 자리는 RemoteCharacter가 그린다.
+  const mySeat =
+    foregroundSeat ?? seats.find((seat) => seat.occupantId && seat.occupantId === occupancy.ownerId);
   const go = (destination, options) => {
     try {
       setError("");
@@ -313,6 +318,11 @@ export default function CompanyRoom({
         />
         {!backgroundFailed && (
           <>
+            {seats
+              .filter((seat) => !seat.occupantId && seat.id !== mySeat?.id)
+              .map((seat) => (
+                <DeskSet key={seat.id} seat={seat} look={defaultLook()} />
+              ))}
             {companyLayout.signs.map((sign) => (
               <span
                 key={sign.id}
@@ -409,6 +419,9 @@ export default function CompanyRoom({
                 className="seat-foreground"
                 style={{ ...roomArtBox(companyLayout), clipPath: foregroundClip(rect, companyLayout) }}
               />
+            )}
+            {mySeat && (
+              <DeskSet seat={mySeat} look={look ?? defaultLook()} front={mySeat.id === foregroundSeat?.id} owner="me" />
             )}
           </>
         )}

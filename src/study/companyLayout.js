@@ -26,3 +26,17 @@ export const foregroundClip = (rect, { image, view }) => {
   const y = (v) => `${((v * image.height - view.y) / view.height) * 100}%`;
   return `polygon(${x(rect.left)} ${y(rect.top)},${x(rect.right)} ${y(rect.top)},${x(rect.right)} ${y(rect.bottom)},${x(rect.left)} ${y(rect.bottom)})`;
 };
+
+/**
+ * 책상 자리(왼쪽, 오른쪽, 앞면)를 무대 위 위치와 크기(백분율)로. 자리 좌표는 도트 방 그림 칸이고 그림 1칸은 원본 2px이다.
+ * @example deskSpotBox(companyLayout.seats[0], "left", companyLayout).width // 자리 폭 32칸을 원본 폭에 대한 백분율로
+ */
+export const deskSpotBox = (seat, spot, { image, view, deskSpots }) => {
+  const s = deskSpots[spot];
+  return {
+    left: `${((view.x + 2 * (seat.desk.x + s.x)) / image.width) * 100}%`,
+    top: `${((view.y + 2 * (seat.desk.y + s.y)) / image.height) * 100}%`,
+    width: `${((2 * s.width) / image.width) * 100}%`,
+    height: `${((2 * s.height) / image.height) * 100}%`,
+  };
+};
