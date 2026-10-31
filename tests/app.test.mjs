@@ -86,8 +86,9 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
       .getByRole("navigation")
       .getByRole("button", { name: "캐릭터 꾸미기", exact: true })
       .click();
-    // 처음 꾸미기: 기본 아이템(머리 색, 눈 색, 의상)에서 고른다 (Story 007, Story 009).
+    // 처음 꾸미기: 기본 아이템(머리 색, 눈 색, 의상)에서 고른다 (Story 007, Story 009). 의상은 의상 탭에 있다.
     await page.getByRole("heading", { name: "처음 꾸미기" }).waitFor();
+    await page.getByRole("tab", { name: "의상", exact: true }).click();
     await page.getByRole("button", { name: /^세이지 옷/ }).click();
     await page.getByRole("button", { name: "이 모습으로 시작하기" }).click();
     await page.getByRole("button", { name: "이 모습으로 저장하기" }).waitFor();

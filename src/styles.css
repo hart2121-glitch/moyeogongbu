@@ -484,71 +484,6 @@ button:active {
   color: #57684e;
   font-size: 14px;
 }
-.customizer {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 40px;
-}
-.avatar-preview {
-  background: #e2d1b8;
-  border: 2px solid #ac947d;
-  padding: 20px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  border-radius: 8px;
-}
-.avatar-preview img {
-  width: 100%;
-  image-rendering: pixelated;
-  border: 2px solid #bc9f86;
-}
-.avatar-preview strong {
-  font-size: 23px;
-}
-.avatar-preview span {
-  color: #826a56;
-  font-size: 13px;
-}
-.wardrobe h2 {
-  font-size: 20px;
-  margin-bottom: 20px;
-}
-.outfit-options {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 15px;
-}
-.outfit-options button {
-  position: relative;
-  border: 2px solid #c0a98d;
-  background: #f1dfc6;
-  border-radius: 6px;
-  padding: 8px;
-  width: 100px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-.outfit-options button.selected {
-  border-color: #8b699e;
-  background: #e3d3e5;
-}
-.outfit-options img {
-  width: 74px;
-  height: 74px;
-  image-rendering: pixelated;
-}
-.outfit-options svg {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  color: #68437e;
-  background: #f5e7ef;
-  border-radius: 50%;
-}
 .outfit-세이지 {
   filter: hue-rotate(65deg) saturate(0.75);
 }
@@ -907,7 +842,6 @@ button:active {
     grid-template-columns: repeat(2, 1fr);
   }
   .customizer {
-    grid-template-columns: 220px 1fr;
     gap: 20px;
   }
   .cafe-rooms {
@@ -1316,55 +1250,196 @@ button:active {
   border: 0;
   image-rendering: pixelated;
 }
-.wardrobe-slot h2 {
-  margin-bottom: 10px;
+/* 캐릭터 꾸미기 (Story 009): 왼쪽은 마루 위에 선 큰 미리보기, 오른쪽은 머리, 눈, 의상, 액세서리 탭 */
+.customizer {
+  display: grid;
+  grid-template-columns: 292px 1fr;
+  gap: 32px;
+  align-items: start;
 }
-.item-options {
-  flex-wrap: wrap;
-}
-.item-options button {
-  width: 132px;
-  gap: 4px;
+.avatar-preview {
+  position: sticky;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px 16px;
+  background: #e2d1b8;
+  border: 2px solid #ac947d;
+  border-radius: 8px;
   text-align: center;
 }
-.item-options button small {
+.avatar-preview strong {
+  font-size: 21px;
+}
+.avatar-preview > span {
   color: #826a56;
-  font-size: 12px;
+  font-size: 13px;
 }
-/* 성별 고르기 (Story 009): 몸은 하나, 눈매와 처음 기본 모습만 바뀐다 */
-.gender-toggle {
+/* 내 방 한쪽 벽과 마루. 캐릭터 56×72를 정수 4배(224×288)로 세우고 벽지, 걸레받이, 마루도 같은 4배로 깐다 (한 장면 한 배율). */
+.preview-stage {
+  position: relative;
+  box-sizing: content-box;
+  width: 256px;
+  height: 320px;
+  overflow: hidden;
+  border: 4px solid #2a2320;
+  background: #f1e2c8 url("/assets/home/wallpaper.png") 0 0 / 64px 64px repeat;
+  image-rendering: pixelated;
+}
+.preview-stage::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-sizing: content-box;
+  height: 64px;
+  border-top: 8px solid #7a4d2b;
+  background: url("/assets/home/floor.png") 0 0 / 192px 64px repeat;
+}
+/* 발밑 그림자: 24×6 도트 타원을 4배로, 흐림 없이 계단 모양으로 자른다. */
+.preview-shadow {
+  position: absolute;
+  left: 80px;
+  top: 284px;
+  width: 96px;
+  height: 24px;
+  background: rgb(59 44 34 / 30%);
+  clip-path: polygon(25% 0, 75% 0, 75% 16.667%, 91.667% 16.667%, 91.667% 33.333%, 100% 33.333%, 100% 66.667%, 91.667% 66.667%,
+    91.667% 83.333%, 75% 83.333%, 75% 100%, 25% 100%, 25% 83.333%, 8.333% 83.333%, 8.333% 66.667%, 0 66.667%, 0 33.333%, 8.333% 33.333%,
+    8.333% 16.667%, 25% 16.667%);
+}
+.preview-stage .preview-layers {
+  position: absolute;
+  left: 16px;
+  top: 8px;
+  width: 224px;
+  background: none;
+  border: 0;
+}
+.preview-controls {
   display: flex;
+  align-items: center;
   gap: 8px;
-  margin-bottom: 15px;
 }
+.preview-controls button,
 .gender-toggle button {
-  min-width: 72px;
-  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
   border: 2px solid #b6a084;
   border-radius: 6px;
   background: #fff8e8;
   color: #24231f;
-  font-size: 16px;
+  font-size: 15px;
 }
+.preview-controls .icon-button {
+  width: 36px;
+  padding: 0;
+}
+.preview-controls button.selected,
 .gender-toggle button.selected {
   border-color: #8b699e;
   background: #e3d3e5;
 }
-/* 꾸미기 선택지 (Story 009): 색은 동그라미, 나머지는 내 캐릭터에 입혀 본 2배 작은 그림 */
+.preview-controls button:active,
+.gender-toggle button:active,
+.wardrobe-tabs button:active,
+.item-options button:active {
+  transform: translateY(1px);
+}
+.gender-toggle {
+  display: flex;
+  gap: 6px;
+}
+.gender-toggle button {
+  min-width: 72px;
+}
+/* 탭: 노트 안에 꽂은 색인처럼, 고른 탭은 아래 판과 이어진다. */
+.wardrobe-tabs {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 4px;
+  margin-bottom: -2px;
+  padding-left: 12px;
+}
+.wardrobe-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px 8px;
+  border: 2px solid #c0a98d;
+  border-bottom-color: #ac947d;
+  border-radius: 8px 8px 0 0;
+  background: #ead9bf;
+  color: #6e5a47;
+  font-size: 16px;
+}
+.wardrobe-tabs button[aria-selected="true"] {
+  border-color: #ac947d;
+  border-bottom-color: #fbf5e8;
+  background: #fbf5e8;
+  color: #24231f;
+}
+.wardrobe-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 360px;
+  padding: 18px 20px 22px;
+  background: #fbf5e8;
+  border: 2px solid #ac947d;
+  border-radius: 8px;
+}
 .wardrobe-slot h2 {
   display: flex;
   align-items: baseline;
   gap: 10px;
+  margin-bottom: 10px;
+  font-size: 17px;
 }
 .picked-name {
   color: #86735e;
   font-size: 13px;
   font-weight: 400;
 }
+.picked-name.pointing {
+  color: #6b4f86;
+}
+/* 선택지: 이름 없이 그림만. 이름과 가격은 가리키면 칸 제목 옆에 나온다. */
+.item-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.item-options button {
+  position: relative;
+  padding: 4px;
+  border: 2px solid #c0a98d;
+  border-radius: 6px;
+  background: #f1dfc6;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.item-options button:hover {
+  filter: brightness(1.06);
+}
+.item-options button.selected {
+  border-color: #8b699e;
+  background: #e3d3e5;
+  box-shadow: inset 0 0 0 1px #8b699e;
+}
+.item-options button.not-owned {
+  border-style: dashed;
+}
 .item-options button.swatch {
   width: 46px;
   height: 46px;
-  padding: 4px;
   border-radius: 50%;
 }
 .color-swatch {
@@ -1376,10 +1451,6 @@ button:active {
   background: var(--swatch);
   box-shadow: inset 0 -4px 0 rgb(0 0 0 / 18%), inset 0 3px 0 rgb(255 255 255 / 40%);
 }
-.item-options button.thumb {
-  width: 110px;
-  padding: 6px 6px 8px;
-}
 .thumb-window {
   position: relative;
   display: block;
@@ -1387,7 +1458,7 @@ button:active {
   height: 88px;
   overflow: hidden;
   background: #fbf5e8;
-  border: 1px solid #b6a084;
+  border: 1px solid #c9b497;
 }
 /* 56×72 칸을 정확히 2배(112×144)로 그리고 가운데 48칸 너비에서 머리(4~48줄)나 몸(28~72줄)만 창에 맞춘다. */
 .thumb-window .thumb-stack {
@@ -1417,28 +1488,30 @@ button:active {
   color: #f4e8d5;
   font-size: 12px;
 }
-.item-options .price-mark {
-  position: absolute;
-  z-index: 61;
-  top: -6px;
-  left: -6px;
-  color: #f1b854;
-  background: #3b2c22;
-  border-radius: 50%;
-}
+.item-options .price-mark,
 .item-options .worn-mark {
   position: absolute;
   z-index: 61;
-  top: -6px;
-  right: -6px;
+  top: -7px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+.item-options .price-mark {
+  left: -7px;
+  color: #f1b854;
+  background: #3b2c22;
+}
+.item-options .worn-mark {
+  right: -7px;
+  padding: 3px;
+  color: #fff8e8;
+  background: #8b699e;
 }
 .item-options button.swatch .worn-mark,
 .item-options button.swatch .price-mark {
-  width: 16px;
-  height: 16px;
-}
-.item-options button.not-owned {
-  border-style: dashed;
+  width: 18px;
+  height: 18px;
 }
 .try-on-note,
 .buy-reason {
@@ -1446,11 +1519,18 @@ button:active {
   font-size: 13px;
   line-height: 1.5;
 }
+.buy-reason {
+  margin-top: 12px;
+}
 .customize-actions {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 10px;
   margin-top: 12px;
+}
+.customize-actions .primary,
+.customize-actions .secondary-button {
+  margin-top: 0;
 }
 .shop-section h2 {
   font-size: 20px;

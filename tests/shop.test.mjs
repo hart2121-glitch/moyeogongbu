@@ -50,9 +50,15 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     await page.keyboard.press("Escape");
     await page.goto(`${url}character`);
 
-    // 처음 꾸미기: 기본 아이템만 (머리 모양 2, 머리 색 3, 눈 색 7, 의상 3). 처음 모습은 여자, 단발, 검은 머리, 검은 눈이다.
+    // 처음 꾸미기: 기본 아이템만 (머리 탭에 머리 모양 2와 머리 색 3, 눈 탭에 눈 색 7, 의상 탭에 의상 3). 액세서리 탭은 없다.
+    // 처음 모습은 여자, 단발, 검은 머리, 검은 눈이다.
     await page.getByRole("heading", { name: "처음 꾸미기" }).waitFor();
-    assert.equal(await page.locator(".item-options button").count(), 15);
+    const tab = (name) => page.getByRole("tab", { name, exact: true }).click();
+    const optionCount = async (name) => (await tab(name), page.locator(".item-options button").count());
+    assert.equal(await optionCount("눈"), 7);
+    assert.equal(await optionCount("의상"), 3);
+    assert.equal(await optionCount("머리"), 5);
+    assert.equal(await page.getByRole("tab", { name: "액세서리" }).count(), 0);
     const preview = page.getByTestId("character-layers").first();
     assert.equal(await preview.getAttribute("data-hair-color"), "hair-color-black");
     assert.equal(await preview.getAttribute("data-layer-face"), "face-black");
@@ -65,10 +71,20 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     assert.match(await preview.locator('img[data-layer="face"]').getAttribute("src"), /face-black-m\.png$/);
     await page.getByRole("button", { name: "여자", exact: true }).click();
     assert.equal(await preview.getAttribute("data-layer-hair-front"), "hair-basic");
+    // 미리보기는 돌려 보고 걸려 볼 수 있다
+    await page.getByRole("button", { name: "오른쪽으로 돌리기" }).click();
+    assert.equal(await preview.getAttribute("data-direction"), "right");
+    await page.getByRole("button", { name: "걷기", exact: true }).click();
+    assert.equal(await preview.getAttribute("data-pose"), "walk.right");
+    await page.getByRole("button", { name: "걷기", exact: true }).click();
+    await page.getByRole("button", { name: "왼쪽으로 돌리기" }).click();
+    assert.equal(await preview.getAttribute("data-pose"), "idle.down");
     await page.getByRole("button", { name: /^밤색 염색/ }).click();
     assert.equal(await page.getByTestId("character-layers").first().getAttribute("data-hair-color"), "hair-color-chestnut");
+    await tab("눈");
     await page.getByRole("button", { name: /^초록 눈/ }).click();
     assert.equal(await page.getByTestId("character-layers").first().getAttribute("data-layer-face"), "face-green");
+    await tab("의상");
     await page.getByRole("button", { name: /^세이지 옷/ }).click();
     await shot(page, "customize-first-time-default-pick.png");
     await page.getByRole("button", { name: "이 모습으로 시작하기" }).click();
@@ -102,7 +118,7 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     await shot(page, "shop-purchase-success.png");
     assert.equal(state.coins.balance, 0);
 
-    // 상점 카드의 "입어 보기"는 그 아이템을 입힌 꾸미기 화면으로 간다 (저장은 산 뒤에만)
+    // 상점 카드의 "입어 보기"는 그 아이템을 입힌 꾸미기 화면의 그 탭으로 간다 (저장은 산 뒤에만)
     await page.getByRole("button", { name: "로즈 옷 입어 보기" }).click();
     await page.waitForURL(/\/character\?try=/);
     await page.getByText("입어 보는 중이에요. 사지 않은 아이템은 저장되지 않아요.").waitFor();
@@ -112,7 +128,9 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
 
     // 꾸미기: 산 리본 적용, 사지 않은 로즈 옷은 입어 보기만
     await nav(page, "캐릭터 꾸미기");
+    await tab("액세서리");
     await page.getByRole("button", { name: /^보라 리본/ }).click();
+    await tab("의상");
     await page.getByRole("button", { name: /^로즈 옷/ }).click();
     await page.getByText("입어 보는 중이에요. 사지 않은 아이템은 저장되지 않아요.").waitFor();
     assert.equal(await page.getByTestId("character-layers").getAttribute("data-layer-outfit"), "outfit-rose");
