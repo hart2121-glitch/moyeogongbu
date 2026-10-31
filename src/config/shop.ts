@@ -27,42 +27,44 @@ export interface ItemAsset {
   hairStyle?: string;
   /** 머리 색 아이템: 머리 시트 이름의 색 부분. */
   hairColor?: string;
+  /** 색 견본: 머리 색과 눈 색은 꾸미기에서 이름 대신 이 색 동그라미로 고른다. */
+  swatch?: string;
 }
 
 const sheet = (name: string): LayerSource => ({ sheet: `/assets/characters/layers/${name}.png` });
-/** 눈 색 아이템: 얼굴 레이어 시트 하나. */
-const face = (id: string): ItemAsset => ({ placeholder: false, layers: { face: sheet(id) } });
+/** 눈 색 아이템: 얼굴 레이어 시트 하나. 견본은 눈동자 중간 톤(recolor의 0.65 자리). */
+const face = (id: string, swatch: string): ItemAsset => ({ placeholder: false, layers: { face: sheet(id) }, swatch });
 /** 머리 모양 아이템. 시트는 머리 색과 함께 정해진다 (hairSheet). */
 const hairStyle = (style: string): ItemAsset => ({ placeholder: false, layers: {}, hairStyle: style });
-/** 머리 색 아이템. 모든 머리 모양에 쓴다. */
-const hairColor = (color: string): ItemAsset => ({ placeholder: false, layers: {}, hairColor: color });
+/** 머리 색 아이템. 모든 머리 모양에 쓴다. 견본은 웨이브 머리 시트에서 가장 많이 쓴 밝은 톤. */
+const hairColor = (color: string, swatch: string): ItemAsset => ({ placeholder: false, layers: {}, hairColor: color, swatch });
 
 /** 아이템 id → 그림. 표에 없는 id는 그리지 않는다 (서버에 새 아이템이 먼저 생겨도 화면이 깨지지 않는다). */
 export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   // 기본 몸: 머리카락과 눈, 입이 없는 몸, 회색 바디슈트.
   "body-basic": { placeholder: false, layers: { body: sheet("body-basic") } },
   // 기본 얼굴(보라 눈): 승인 시안 N1의 눈과 입 (art-src/characters/src/face/basic).
-  "face-basic": face("face-basic"),
+  "face-basic": face("face-basic", "#5707a7"),
   // 아래 눈 색은 기본 얼굴의 눈동자 색만 바꿨다 (art-src/characters/src/recolor/<id>.json).
-  "face-black": face("face-black"),
-  "face-brown": face("face-brown"),
-  "face-amber": face("face-amber"),
-  "face-green": face("face-green"),
-  "face-blue": face("face-blue"),
-  "face-gray": face("face-gray"),
+  "face-black": face("face-black", "#322c36"),
+  "face-brown": face("face-brown", "#804620"),
+  "face-amber": face("face-amber", "#c87612"),
+  "face-green": face("face-green", "#228048"),
+  "face-blue": face("face-blue", "#285cc4"),
+  "face-gray": face("face-gray", "#6c727e"),
   // 머리 모양. 웨이브는 처음 승인한 N1 머리카락이다 (art-src/characters/src/hair/wave).
   "hair-wave": hairStyle("wave"),
   // 머리 색 (art-src/characters/src/recolor/hair-color/<색>.json, 라벤더는 원재료 색 그대로).
-  "hair-color-lavender": hairColor("lavender"),
-  "hair-color-chestnut": hairColor("chestnut"),
-  "hair-color-black": hairColor("black"),
-  "hair-color-gray": hairColor("gray"),
-  "hair-color-ashgray": hairColor("ashgray"),
-  "hair-color-white": hairColor("white"),
-  "hair-color-blonde": hairColor("blonde"),
-  "hair-color-red": hairColor("red"),
-  "hair-color-pink": hairColor("pink"),
-  "hair-color-skyblue": hairColor("skyblue"),
+  "hair-color-black": hairColor("black", "#3a3848"),
+  "hair-color-chestnut": hairColor("chestnut", "#a9633d"),
+  "hair-color-lavender": hairColor("lavender", "#d2aef0"),
+  "hair-color-gray": hairColor("gray", "#b1afad"),
+  "hair-color-ashgray": hairColor("ashgray", "#bfc9cb"),
+  "hair-color-white": hairColor("white", "#f2f2f8"),
+  "hair-color-blonde": hairColor("blonde", "#fae28d"),
+  "hair-color-red": hairColor("red", "#e66959"),
+  "hair-color-pink": hairColor("pink", "#fabbd3"),
+  "hair-color-skyblue": hairColor("skyblue", "#b1d8f6"),
   // 교복: 완성 캐릭터에서 임시로 떼어 냈다 (art-src/characters/src/outfit/uniform/FROM-FULL-CHARACTER).
   "outfit-lavender": { placeholder: false, layers: { outfit: sheet("outfit-uniform") } },
   "acc-ribbon": { placeholder: false, layers: { accessory: sheet("acc-ribbon") } },
@@ -72,7 +74,7 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   "outfit-hoodie": { placeholder: true, layers: {}, bodyTint: "outfit-세이지" },
   "outfit-cardigan": { placeholder: true, layers: {}, bodyTint: "outfit-로즈" },
   "outfit-suit": { placeholder: true, layers: {} },
-  // 기본 머리: 단순한 머리 그림을 만들기 전까지 머리카락 없이 보인다.
+  // 단발 머리(기본): 그림을 만들기 전까지 머리카락 없이 보인다.
   "hair-basic": { placeholder: true, layers: {} },
   "hair-ponytail": { placeholder: true, layers: {} },
   "hair-short": { placeholder: true, layers: {} },
@@ -94,13 +96,13 @@ export function hairSheet(styleId: string, colorId: string, which: "front" | "ba
   return style && color ? sheet(`hair-${style}-${color}-${which}`) : null;
 }
 
-/** 아직 저장한 꾸밈이 없을 때 보여 주는 모습 (서버 기본 아이템 id). */
+/** 아직 저장한 꾸밈이 없을 때 보여 주는 모습 (서버 기본 아이템 id): 단발 머리, 검은 머리, 검은 눈. */
 export const DEFAULT_LOOK = {
   body: "body-basic",
-  face: "face-basic",
+  face: "face-black",
   hair_back: "hair-basic",
   hair_front: "hair-basic",
-  hair_color: "hair-color-lavender",
+  hair_color: "hair-color-black",
   outfit: "outfit-lavender",
   accessory: null,
 } as const;

@@ -1,23 +1,37 @@
-import { Check } from "@phosphor-icons/react";
-import { useEffect, useRef } from "react";
+import { Check, Coin } from "@phosphor-icons/react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { ITEM_ASSETS } from "../../../config/shop";
 import { characterSprites } from "../../../study/characterSprites";
 import { useProfile } from "../../account/viewmodel/useAccount";
-import type { ItemSlot } from "../../shop/model/shop";
+import type { ItemSlot, ShopItem } from "../../shop/model/shop";
 import { ROUTES } from "../../shell/model/paths";
 import PageFrame from "../../shell/view/PageFrame";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
 import { tryOnNotice } from "../model/look";
-import { isWorn, useCustomize } from "../viewmodel/useCharacter";
+import type { Look } from "../model/layers";
+import { isWorn, useCustomize, wearItem } from "../viewmodel/useCharacter";
 import LayerStack from "./LayerStack";
 
-const SLOTS: readonly { slot: ItemSlot; label: string }[] = [
-  { slot: "hair", label: "머리 모양" },
-  { slot: "hair_color", label: "머리 색" },
-  { slot: "face", label: "눈" },
-  { slot: "outfit", label: "의상" },
-  { slot: "accessory", label: "액세서리" },
+/**
+ * 꾸미기 칸. 색(머리 색, 눈)은 색 동그라미로, 나머지는 내 캐릭터에 입혀 본 작은 그림으로 고른다.
+ * view가 head면 머리 부분을, body면 몸 부분을 잘라 보여 준다.
+ */
+const SLOTS: readonly { slot: ItemSlot; label: string; view: "swatch" | "head" | "body" }[] = [
+  { slot: "hair", label: "머리 모양", view: "head" },
+  { slot: "hair_color", label: "머리 색", view: "swatch" },
+  { slot: "face", label: "눈", view: "swatch" },
+  { slot: "outfit", label: "의상", view: "body" },
+  { slot: "accessory", label: "액세서리", view: "head" },
 ];
+
+/** 선택지 그림: 지금 모습에 이 아이템만 입힌 모습 (액세서리는 이미 쓰고 있어도 쓴 모습). */
+const previewWith = (look: Look, item: ShopItem): Look =>
+  item.slot === "accessory" ? { ...look, accessory: item.id } : wearItem(look, item.slot, item.id);
+
+/** 선택지 상태 글: 기본, 보유 중, 입어 보기 가격. */
+const ownership = (item: ShopItem) =>
+  item.isDefault ? "기본" : item.owned ? "보유 중" : `입어 보기 ${item.price.toLocaleString()}코인`;
 
 const BASE_SPRITE = characterSprites.idle.down[0];
 
@@ -48,7 +62,7 @@ export default function CharacterPage() {
         <h1>{c.firstTime ? "처음 꾸미기" : "오늘은 어떤 모습으로 공부할까?"}</h1>
         <p>
           {c.firstTime
-            ? "머리 색 2종, 눈 색 7종, 의상 2종을 무료로 드려요. 마음에 드는 모습을 골라 시작해 보세요."
+            ? "머리 색 3종, 눈 색 7종, 의상 2종을 무료로 드려요. 마음에 드는 모습을 골라 시작해 보세요."
             : "산 아이템은 바로 적용하고, 사지 않은 아이템은 입어 볼 수 있어요."}
         </p>
       </div>
@@ -69,31 +83,51 @@ export default function CharacterPage() {
             <span className={c.tryingOn.length ? "try-on-note" : ""}>{c.tryingOn.length ? tryOnNotice : c.changed ? "바꾼 모습이에요. 저장하면 적용돼요." : "지금 적용된 모습"}</span>
           </div>
           <div className="wardrobe">
-            {slots.map(({ slot, label }) => (
-              <section key={slot} className="wardrobe-slot" aria-label={label}>
-                <h2>{label}</h2>
-                <div className="outfit-options item-options">
-                  {shown
-                    .filter((i) => i.slot === slot)
-                    .map((item) => {
+            {slots.map(({ slot, label, view }) => {
+              const options = shown.filter((i) => i.slot === slot);
+              const picked = options.find((i) => isWorn(c.look, i));
+              return (
+                <section key={slot} className="wardrobe-slot" aria-label={label}>
+                  <h2>
+                    {label}
+                    {picked && <small className="picked-name">{picked.name}</small>}
+                  </h2>
+                  <div className={`outfit-options item-options ${view === "swatch" ? "swatch-options" : "thumb-options"}`}>
+                    {options.map((item) => {
                       const worn = isWorn(c.look, item);
+                      const state = ownership(item);
+                      const asset = ITEM_ASSETS[item.id];
+                      const soon = asset?.placeholder !== false;
                       return (
                         <button
                           key={item.id}
                           data-item={item.id}
                           aria-pressed={worn}
-                          className={`${worn ? "selected" : ""} ${item.owned ? "" : "not-owned"}`}
+                          aria-label={`${item.name}, ${state}`}
+                          title={`${item.name}, ${state}`}
+                          className={`${view === "swatch" ? "swatch" : "thumb"} ${worn ? "selected" : ""} ${item.owned ? "" : "not-owned"}`}
                           onClick={() => c.wear(item)}
                         >
-                          <strong>{item.name}</strong>
-                          <small>{item.isDefault ? "기본" : item.owned ? "보유 중" : `입어 보기 ${item.price.toLocaleString()}코인`}</small>
-                          {worn && <Check />}
+                          {view === "swatch" ? (
+                            <span className="color-swatch" style={{ "--swatch": asset?.swatch ?? "#c0a98d" } as CSSProperties} />
+                          ) : (
+                            <>
+                              <span className={`thumb-window thumb-${view}${soon ? " soon" : ""}`}>
+                                <LayerStack look={previewWith(c.look, item)} label="" decorative className="thumb-stack" />
+                                {soon && <span className="thumb-soon">준비 중</span>}
+                              </span>
+                              <small>{item.name}</small>
+                            </>
+                          )}
+                          {!item.owned && <Coin className="price-mark" weight="fill" />}
+                          {worn && <Check className="worn-mark" />}
                         </button>
                       );
                     })}
-                </div>
-              </section>
-            ))}
+                  </div>
+                </section>
+              );
+            })}
             {c.tryingOn.length > 0 && (
               <p className="buy-reason" role="status">
                 입어 본 {trying}은(는) 상점에서 산 뒤 저장할 수 있어요.

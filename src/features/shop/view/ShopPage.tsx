@@ -1,6 +1,7 @@
 import { Coin, PaintBucket, Scissors, Sparkle, TShirt, type Icon } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
+import { ITEM_ASSETS } from "../../../config/shop";
 import { ROUTES } from "../../shell/model/paths";
 import PageFrame from "../../shell/view/PageFrame";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
@@ -51,7 +52,11 @@ export default function ShopPage() {
                     return (
                       <div className="shop-item" key={item.id} data-item={item.id}>
                         <div className="item-art">
-                          <ItemIcon weight="duotone" />
+                          {ITEM_ASSETS[item.id]?.swatch ? (
+                            <span className="color-swatch" style={{ "--swatch": ITEM_ASSETS[item.id]?.swatch } as CSSProperties} />
+                          ) : (
+                            <ItemIcon weight="duotone" />
+                          )}
                         </div>
                         <h3>{item.name}</h3>
                         <span className="price">

@@ -120,18 +120,19 @@ class RpcError extends Error {}
 // Story 007: 서버 shop_items 시드와 같은 목록 (*_shop.sql).
 export const SHOP_ITEMS = [
   ["body-basic", "body", "기본 몸", 0, true],
-  ["face-basic", "face", "보라 눈", 0, true],
-  // Story 009 눈 색 (*_eye_colors.sql)
+  // Story 009 눈 색 (*_eye_colors.sql, sort 순서)
   ["face-black", "face", "검은 눈", 0, true],
   ["face-brown", "face", "갈색 눈", 0, true],
   ["face-amber", "face", "호박색 눈", 0, true],
   ["face-green", "face", "초록 눈", 0, true],
   ["face-blue", "face", "파란 눈", 0, true],
   ["face-gray", "face", "회색 눈", 0, true],
+  ["face-basic", "face", "보라 눈", 0, true],
   // Story 009 머리 모양과 머리 색 (*_hair_style_color.sql)
-  ["hair-basic", "hair", "기본 머리", 0, true],
-  ["hair-color-lavender", "hair_color", "라벤더 염색", 0, true],
+  ["hair-basic", "hair", "단발 머리", 0, true],
+  ["hair-color-black", "hair_color", "검정 머리", 0, true],
   ["hair-color-chestnut", "hair_color", "밤색 염색", 0, true],
+  ["hair-color-lavender", "hair_color", "라벤더 염색", 0, true],
   ["outfit-lavender", "outfit", "라벤더 옷", 0, true],
   ["outfit-sage", "outfit", "세이지 옷", 0, true],
   ["acc-ribbon", "accessory", "보라 리본", 120, false],
@@ -148,7 +149,6 @@ export const SHOP_ITEMS = [
   ["hair-short", "hair", "짧은 머리", 800, false],
   ["hair-wave", "hair", "웨이브 머리", 1100, false],
   ["hair-long", "hair", "긴 생머리", 1500, false],
-  ["hair-color-black", "hair_color", "검정 염색", 300, false],
   ["hair-color-gray", "hair_color", "회색 염색", 300, false],
   ["hair-color-ashgray", "hair_color", "애쉬그레이 염색", 300, false],
   ["hair-color-white", "hair_color", "흰색 염색", 300, false],

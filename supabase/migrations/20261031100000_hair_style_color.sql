@@ -1,7 +1,7 @@
 -- Story 009: 머리 모양과 머리 색을 따로 고른다 (2026-10-31 결정).
 -- 머리 모양(slot hair)은 hair_back과 hair_front를, 머리 색(slot hair_color)은 새 hair_color 열을 정한다.
--- 색 하나를 사면 모든 머리 모양에 쓸 수 있다. 라벤더와 밤색은 무료, 나머지 8색은 300코인.
--- 지금의 긴 웨이브 머리 그림은 상점 '웨이브 머리'가 되고, 무료 '기본 머리'는 그림이 생기기 전까지 머리카락 없이 보인다.
+-- 색 하나를 사면 모든 머리 모양에 쓸 수 있다. 검정, 밤색, 라벤더는 무료, 나머지 7색은 300코인.
+-- 지금의 긴 웨이브 머리 그림은 상점 '웨이브 머리'가 되고, 무료 기본 '단발 머리'는 그림이 생기기 전까지 머리카락 없이 보인다.
 
 alter table public.shop_items drop constraint shop_items_slot_check;
 alter table public.shop_items add constraint shop_items_slot_check
@@ -13,10 +13,10 @@ alter table public.shop_items add constraint shop_items_sellable_slot
 comment on table public.shop_items is '캐릭터 아이템 목록과 가격의 유일한 출처. 액세서리 120~300, 머리 색 300, 의상과 머리 모양 600~1500.';
 
 insert into public.shop_items (id, slot, name, price, is_default, sort) values
-  ('hair-basic', 'hair', '기본 머리', 0, true, 0),
-  ('hair-color-lavender', 'hair_color', '라벤더 염색', 0, true, 0),
+  ('hair-basic', 'hair', '단발 머리', 0, true, 0),
+  ('hair-color-black', 'hair_color', '검정 머리', 0, true, 0),
   ('hair-color-chestnut', 'hair_color', '밤색 염색', 0, true, 1),
-  ('hair-color-black', 'hair_color', '검정 염색', 300, false, 40),
+  ('hair-color-lavender', 'hair_color', '라벤더 염색', 0, true, 2),
   ('hair-color-gray', 'hair_color', '회색 염색', 300, false, 41),
   ('hair-color-ashgray', 'hair_color', '애쉬그레이 염색', 300, false, 42),
   ('hair-color-white', 'hair_color', '흰색 염색', 300, false, 43),

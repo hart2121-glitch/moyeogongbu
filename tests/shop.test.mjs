@@ -21,7 +21,7 @@ const shot = async (page, name) => {
 const nav = (page, label) => page.getByRole("navigation").getByRole("button", { name: label, exact: true }).click();
 const COMEMBER = "00000000-0000-4000-8000-000000000021";
 const defaultLook = () => ({
-  body: "body-basic", face: "face-basic", hair_back: "hair-basic", hair_front: "hair-basic", hair_color: "hair-color-lavender",
+  body: "body-basic", face: "face-black", hair_back: "hair-basic", hair_front: "hair-basic", hair_color: "hair-color-black",
   outfit: "outfit-lavender", accessory: null,
 });
 
@@ -50,9 +50,12 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     await page.keyboard.press("Escape");
     await page.goto(`${url}character`);
 
-    // 처음 꾸미기: 기본 아이템만 (머리 모양 1, 머리 색 2, 눈 색 7, 의상 2)
+    // 처음 꾸미기: 기본 아이템만 (머리 모양 1, 머리 색 3, 눈 색 7, 의상 2). 처음 모습은 검은 머리, 검은 눈이다.
     await page.getByRole("heading", { name: "처음 꾸미기" }).waitFor();
-    assert.equal(await page.locator(".item-options button").count(), 12);
+    assert.equal(await page.locator(".item-options button").count(), 13);
+    const preview = page.getByTestId("character-layers").first();
+    assert.equal(await preview.getAttribute("data-hair-color"), "hair-color-black");
+    assert.equal(await preview.getAttribute("data-layer-face"), "face-black");
     await page.getByRole("button", { name: /^밤색 염색/ }).click();
     assert.equal(await page.getByTestId("character-layers").first().getAttribute("data-hair-color"), "hair-color-chestnut");
     await page.getByRole("button", { name: /^초록 눈/ }).click();
@@ -68,8 +71,8 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     // 상점: 120코인으로 리본은 살 수 있고, 나머지는 부드러운 이유와 함께 막힌다
     await nav(page, "상점");
     await page.getByRole("button", { name: "보라 리본 구매하기" }).waitFor();
-    // 액세서리 6, 의상 4, 머리 모양 4, 머리 색 8
-    assert.equal(await page.locator(".shop-item").count(), 22);
+    // 액세서리 6, 의상 4, 머리 모양 4, 머리 색 7
+    assert.equal(await page.locator(".shop-item").count(), 21);
     assert.equal(await page.getByRole("button", { name: "별 머리핀 구매하기" }).isDisabled(), true);
     await page.locator('[data-item="acc-hairpin"]').getByText("30코인이 더 모이면 살 수 있어요.").waitFor();
     await shot(page, "shop-prices-insufficient.png");
