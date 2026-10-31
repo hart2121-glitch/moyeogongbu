@@ -46,7 +46,7 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   // 기본 얼굴(보라 눈): 승인 시안 N1의 눈과 입 (art-src/characters/src/face/basic).
   "face-basic": face("face-basic", "#5707a7"),
   // 아래 눈 색은 기본 얼굴의 눈동자 색만 바꿨다 (art-src/characters/src/recolor/<id>.json).
-  "face-black": face("face-black", "#322c36"),
+  "face-black": face("face-black", "#462c2a"),
   "face-brown": face("face-brown", "#804620"),
   "face-amber": face("face-amber", "#c87612"),
   "face-green": face("face-green", "#228048"),
