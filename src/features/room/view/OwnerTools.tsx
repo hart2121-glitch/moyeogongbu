@@ -46,7 +46,7 @@ export default function OwnerTools({ room, members, onChanged }: Props) {
           초대 코드 재발급
         </button>
       </p>
-      <h3>멤버</h3>
+      <h2>멤버</h2>
       <ul>
         {members.map((m) => (
           <li key={m.userId}>
@@ -65,7 +65,7 @@ export default function OwnerTools({ room, members, onChanged }: Props) {
           </li>
         ))}
       </ul>
-      <h3>강퇴한 사람</h3>
+      <h2>강퇴한 사람</h2>
       {tools.bans.length === 0 ? (
         <p className="muted">강퇴한 사람이 없어요.</p>
       ) : (

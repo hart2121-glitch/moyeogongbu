@@ -21,7 +21,7 @@ test("실제 브라우저 1·3·4·6번 각각 좌우 이동·퇴석·재착석 
     page.on("pageerror", (e) => results.errors.push(e.message));
     await page.goto(process.env.APP_URL || "http://127.0.0.1:4173/");
     await page
-      .getByRole("button", { name: "회사 테마로 가기", exact: true })
+      .getByRole("button", { name: / 방으로 출근$/ }).first()
       .click();
     await page.getByTestId("study-character").waitFor();
     await page
@@ -59,11 +59,10 @@ test("실제 브라우저 1·3·4·6번 각각 좌우 이동·퇴석·재착석 
         .getByTestId("movement-status")
         .filter({ hasText: `${id}번 좌석 착석` })
         .waitFor({ timeout: 20000 });
-      assert.match(
-        await page
-          .locator(".study-character img[data-active=true]")
-          .getAttribute("src"),
-        /idle-down/,
+      // Story 009: 의자 앉기는 레이어 시트의 정면 앉기 칸이다.
+      assert.equal(
+        await page.getByTestId("study-character").getAttribute("data-pose"),
+        "sit.down",
       );
       assert.equal(await page.locator(".seat-foreground").count(), 1);
     };
@@ -92,9 +91,9 @@ test("실제 브라우저 1·3·4·6번 각각 좌우 이동·퇴석·재착석 
           x: Number(e.dataset.x),
           y: Number(e.dataset.y),
         }));
-        assert.ok(
-          Math.hypot((end.x - x) * 1705, (end.y - anchor.y) * 922) < 1.5,
-        );
+        // 클릭은 화면 1px 단위다. 방을 1배로 그리면 화면 1px이 원본 2px이므로 허용 오차는 화면 1.5px로 잰다.
+        const miss = Math.hypot((end.x - x) * 1705, (end.y - anchor.y) * 922);
+        assert.ok(miss < (1.5 * 1705) / r.width, `${id}번 ${side}: 원본 ${miss.toFixed(2)}px, 무대 ${r.width}`);
         if (side === "right" && (id === 1 || id === 6))
           await page.screenshot({
             path: `${folder}/seat-${id}-right-floor.png`,

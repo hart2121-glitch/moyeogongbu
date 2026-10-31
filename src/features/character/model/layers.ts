@@ -1,12 +1,13 @@
-import { DEFAULT_LOOK, ITEM_ASSETS, type ItemAsset, type LayerId } from "../../../config/shop";
+import { DEFAULT_LOOK, faceSheet, hairSheet, ITEM_ASSETS, type Gender, type ItemAsset, type LayerId } from "../../../config/shop";
+import { SHEET_FRAME } from "../../../study/characterSprites";
 
 /**
- * 캐릭터 레이어 합성 규칙 (Story 007). `src/character-preview/model.js`의 구조를 게임 안으로 옮긴 것이다.
- * 모든 레이어는 같은 캔버스(87×110)의 (0,0)에 겹치고, 같은 자세 키(동작.방향.프레임)로 그림을 고른다.
+ * 캐릭터 레이어 합성 규칙 (Story 007, Story 009).
+ * 모든 레이어는 같은 23칸 시트(칸 56×72)이고, 같은 칸 번호로 잘라 (0,0)에 겹친다.
  */
-export const CANVAS = { width: 87, height: 110 } as const;
+export const CANVAS = { width: SHEET_FRAME.width, height: SHEET_FRAME.height } as const;
 
-/** 뒤 → 앞 순서. */
+/** 뒤 → 앞 순서. 목 아래로 내려온 머리카락(뒷머리)은 몸 뒤에 그린다. */
 export const LAYERS: readonly { id: LayerId; label: string; order: number }[] = [
   { id: "hair_back", label: "뒷머리", order: 0 },
   { id: "body", label: "몸", order: 10 },
@@ -16,46 +17,52 @@ export const LAYERS: readonly { id: LayerId; label: string; order: number }[] = 
   { id: "accessory", label: "액세서리", order: 50 },
 ];
 
-/** 저장되는 꾸밈. 값은 서버 `shop_items` id. */
+/** 저장되는 꾸밈. 값은 서버 `shop_items` id. 머리는 모양(hair_back, hair_front)과 색(hair_color)을 따로 고른다. */
 export interface Look {
   body: string;
   face: string;
   hair_back: string;
   hair_front: string;
+  hair_color: string;
   outfit: string;
   accessory: string | null;
+  /** 남녀: 눈매를 정한다 (아이템은 누구나 쓴다). */
+  gender: Gender;
+  /** 내 책상 세트: 앉은 회사 방 책상의 왼쪽, 오른쪽 소품과 앞면 스티커. null은 그 자리를 비운다. */
+  desk_left: string | null;
+  desk_right: string | null;
+  desk_front: string | null;
 }
 
-export const defaultLook = (): Look => ({ ...DEFAULT_LOOK });
+/** 내 책상 세트 자리. Look 필드 이름과 같다. */
+export type DeskSpot = "desk_left" | "desk_right" | "desk_front";
 
-/** @example poseKey("idle", "down", 0) // "idle.down.0" */
-export const poseKey = (action: string, direction: string, frame: number) => `${action}.${direction}.${frame}`;
+export const defaultLook = (): Look => ({ ...DEFAULT_LOOK });
 
 export interface ComposedLayer {
   id: LayerId;
   order: number;
   itemId: string | null;
-  /** 이 자세에 그릴 그림. 없으면 null. */
-  src: string | null;
+  /** 이 레이어의 시트. 그림이 없으면 null. */
+  sheet: string | null;
   className: string;
 }
 
 /**
- * 꾸밈과 자세로 레이어 목록을 만든다. baseSrc는 "base-sprite" 레이어가 쓸 지금 프레임의 완성형 그림이다.
- * @example composeLayers(look, "idle.down.0", "/assets/characters/idle-down.png.png")
+ * 꾸밈으로 레이어 목록을 만든다. 칸 번호는 그리는 쪽이 고른다(characterSprites.js frameIndex).
+ * @example composeLayers(defaultLook())[1].sheet // "/assets/characters/layers/body-basic.png"
  */
-export function composeLayers(
-  look: Look,
-  key: string,
-  baseSrc: string,
-  assets: Readonly<Record<string, ItemAsset>> = ITEM_ASSETS,
-): ComposedLayer[] {
+export function composeLayers(look: Look, assets: Readonly<Record<string, ItemAsset>> = ITEM_ASSETS): ComposedLayer[] {
   const tint = assets[look.outfit]?.bodyTint ?? "";
   return LAYERS.map(({ id, order }) => {
     const itemId = look[id];
-    const source = itemId ? assets[itemId]?.layers[id] : undefined;
-    const src = !source ? null : source === "base-sprite" ? baseSrc : source[key] ?? null;
-    return { id, order, itemId, src, className: id === "body" ? tint : "" };
+    const source =
+      id === "hair_back" || id === "hair_front"
+        ? hairSheet(itemId ?? "", look.hair_color, id === "hair_front" ? "front" : "back")
+        : id === "face"
+          ? faceSheet(itemId ?? "", look.gender)
+          : itemId ? assets[itemId]?.layers[id] : undefined;
+    return { id, order, itemId, sheet: source?.sheet ?? null, className: id === "body" ? tint : "" };
   });
 }
 
@@ -69,5 +76,12 @@ export function toLook(row: unknown): Look | null {
   const str = (k: string) => (typeof r[k] === "string" ? (r[k] as string) : null);
   const body = str("body"), face = str("face"), hairBack = str("hair_back"), hairFront = str("hair_front"), outfit = str("outfit");
   if (!body || !face || !hairBack || !hairFront || !outfit) return null;
-  return { body, face, hair_back: hairBack, hair_front: hairFront, outfit, accessory: str("accessory") };
+  const hairColor = str("hair_color") ?? DEFAULT_LOOK.hair_color;
+  const gender: Gender = str("gender") === "m" ? "m" : "f";
+  // 책상 세트 필드가 없는 예전 꾸밈은 기본 세트로, null은 비운 자리로 읽는다.
+  const desk = (k: DeskSpot) => (k in r ? str(k) : DEFAULT_LOOK[k]);
+  return {
+    body, face, hair_back: hairBack, hair_front: hairFront, hair_color: hairColor, outfit, accessory: str("accessory"), gender,
+    desk_left: desk("desk_left"), desk_right: desk("desk_right"), desk_front: desk("desk_front"),
+  };
 }

@@ -120,10 +120,22 @@ class RpcError extends Error {}
 // Story 007: 서버 shop_items 시드와 같은 목록 (*_shop.sql).
 export const SHOP_ITEMS = [
   ["body-basic", "body", "기본 몸", 0, true],
-  ["face-basic", "face", "기본 얼굴", 0, true],
-  ["hair-lavender", "hair", "라벤더 머리", 0, true],
-  ["hair-chestnut", "hair", "밤색 머리", 0, true],
-  ["outfit-lavender", "outfit", "라벤더 옷", 0, true],
+  // Story 009 눈 색 (*_eye_colors.sql, sort 순서)
+  ["face-black", "face", "검은 눈", 0, true],
+  ["face-brown", "face", "갈색 눈", 0, true],
+  ["face-amber", "face", "호박색 눈", 0, true],
+  ["face-green", "face", "초록 눈", 0, true],
+  ["face-blue", "face", "파란 눈", 0, true],
+  ["face-gray", "face", "회색 눈", 0, true],
+  ["face-basic", "face", "보라 눈", 0, true],
+  // Story 009 머리 모양과 머리 색 (*_hair_style_color.sql)
+  ["hair-basic", "hair", "단발 머리", 0, true],
+  ["hair-short", "hair", "짧은 머리", 0, true],
+  ["hair-color-black", "hair_color", "검정 머리", 0, true],
+  ["hair-color-chestnut", "hair_color", "밤색 염색", 0, true],
+  ["hair-color-lavender", "hair_color", "라벤더 염색", 0, true],
+  ["outfit-lavender", "outfit", "교복 치마", 0, true],
+  ["outfit-boy", "outfit", "교복 바지", 0, true],
   ["outfit-sage", "outfit", "세이지 옷", 0, true],
   ["acc-ribbon", "accessory", "보라 리본", 120, false],
   ["acc-hairpin", "accessory", "별 머리핀", 150, false],
@@ -136,9 +148,31 @@ export const SHOP_ITEMS = [
   ["outfit-cardigan", "outfit", "니트 가디건", 1200, false],
   ["outfit-suit", "outfit", "단정한 정장", 1500, false],
   ["hair-ponytail", "hair", "포니테일", 600, false],
-  ["hair-short", "hair", "짧은 머리", 800, false],
   ["hair-wave", "hair", "웨이브 머리", 1100, false],
   ["hair-long", "hair", "긴 생머리", 1500, false],
+  ["hair-bun", "hair", "똥머리", 800, false],
+  ["hair-bowl", "hair", "바가지 머리", 600, false],
+  ["hair-dandy", "hair", "댄디 머리", 700, false],
+  ["hair-comma", "hair", "쉼표 머리", 900, false],
+  ["hair-perm", "hair", "웨이브 펌", 1000, false],
+  ["hair-color-gray", "hair_color", "회색 염색", 300, false],
+  ["hair-color-ashgray", "hair_color", "애쉬그레이 염색", 300, false],
+  ["hair-color-white", "hair_color", "흰색 염색", 300, false],
+  ["hair-color-blonde", "hair_color", "금발 염색", 300, false],
+  ["hair-color-red", "hair_color", "빨강 염색", 300, false],
+  ["hair-color-pink", "hair_color", "분홍 염색", 300, false],
+  ["hair-color-skyblue", "hair_color", "하늘색 염색", 300, false],
+  // Story 009 내 책상 세트 (*_desk_set.sql): 책상 소품은 왼쪽과 오른쪽 자리, 스티커는 앞면 자리
+  ["desk-lamp", "desk_top", "책상 스탠드", 0, true],
+  ["desk-plant", "desk_top", "작은 화분", 0, true],
+  ["desk-books", "desk_top", "책 더미", 180, false],
+  ["desk-mug", "desk_top", "머그와 쿠키", 180, false],
+  ["desk-cactus", "desk_top", "꽃 핀 선인장", 240, false],
+  ["desk-cat", "desk_top", "고양이 인형", 300, false],
+  ["desk-moon", "desk_top", "달 무드등", 480, false],
+  ["desk-globe", "desk_top", "작은 지구본", 600, false],
+  ["sticker-star", "desk_front", "별 스티커", 180, false],
+  ["sticker-cat", "desk_front", "고양이 스티커", 240, false],
 ].map(([id, slot, name, price, is_default]) => ({ id, slot, name, price, is_default }));
 
 // Story 007 상점과 꾸밈 RPC. 판정 규칙은 *_shop.sql과 같다. balance()는 지금 잔액, debit(n)은 차감.
@@ -160,9 +194,18 @@ function shopRpc(server, me, name, args, balance, debit) {
     }
     case "save_look": {
       const ok = canUse(args.p_body, "body") && canUse(args.p_face, "face") && canUse(args.p_hair_back, "hair") &&
-        canUse(args.p_hair_front, "hair") && canUse(args.p_outfit, "outfit") && (args.p_accessory == null || canUse(args.p_accessory, "accessory"));
+        canUse(args.p_hair_front, "hair") && canUse(args.p_hair_color, "hair_color") && canUse(args.p_outfit, "outfit") &&
+        (args.p_accessory == null || canUse(args.p_accessory, "accessory")) &&
+        (args.p_desk_left == null || canUse(args.p_desk_left, "desk_top")) &&
+        (args.p_desk_right == null || canUse(args.p_desk_right, "desk_top")) &&
+        (args.p_desk_front == null || canUse(args.p_desk_front, "desk_front"));
+      if (!["f", "m"].includes(args.p_gender)) fail("invalid_gender");
       if (!ok) fail("not_owned");
-      const look = { body: args.p_body, face: args.p_face, hair_back: args.p_hair_back, hair_front: args.p_hair_front, outfit: args.p_outfit, accessory: args.p_accessory ?? null };
+      const look = {
+        body: args.p_body, face: args.p_face, hair_back: args.p_hair_back, hair_front: args.p_hair_front,
+        hair_color: args.p_hair_color, outfit: args.p_outfit, accessory: args.p_accessory ?? null, gender: args.p_gender,
+        desk_left: args.p_desk_left ?? null, desk_right: args.p_desk_right ?? null, desk_front: args.p_desk_front ?? null,
+      };
       server.looks.set(me, look);
       return look;
     }

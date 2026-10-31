@@ -1,0 +1,92 @@
+/* 공통 페이지 틀: 집, 내 책상 위에 펼친 스프링 노트 (2026-10-31). 도트 타일은 art-src/home.
+   스프링 고리를 2배로 그리므로 책상 나무도 정수 2배로 깐다 (한 장면 한 배율).
+   노트 위 가장자리에 고리가 늘어서고, 페이지 이름은 스티커, 로비로 가는 길은 포스트잇이다. 가로줄은 넣지 않는다. */
+.scene:has(> .page-area) {
+  background: #c8925a url("/assets/home/desk.png") 0 0 / 96px 32px repeat;
+  image-rendering: pixelated;
+}
+.scene:has(> .page-area) > .scene-shade {
+  display: none;
+}
+.page-area {
+  position: relative;
+  padding-top: 40px;
+}
+
+/* 로비로 돌아가기: 노트 오른쪽 위에 붙인 노란 포스트잇 */
+.page-area > .back-button {
+  position: absolute;
+  top: 18px;
+  right: calc(4% + 18px);
+  z-index: 2;
+  margin: 0;
+  padding: 10px 14px 12px;
+  background: #f6e39c;
+  border: 0;
+  border-radius: 0;
+  color: #3a2f22;
+  box-shadow: 0 4px 0 0 #0004;
+  transform: rotate(2deg);
+}
+.page-area > .back-button:hover {
+  filter: none;
+  background: #fbeeb8;
+}
+
+/* 노트 종이 */
+.page-area > .content-panel {
+  position: relative;
+  overflow: visible;
+  background: #fbf5e8;
+  border: 0;
+  border-radius: 0;
+  box-shadow: 0 8px 0 0 #0004;
+}
+/* 위 가장자리 스프링 고리 (spiral-ring.png 16×16을 정수 2배로). 고리 하나가 32px 칸의 가운데 12px만 차지해
+   고리 사이가 벌어지고, 아래 끝의 구멍이 종이에 뚫려 박음질이 아니라 스프링 제본으로 읽힌다. */
+.page-area > .content-panel::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: -16px;
+  height: 32px;
+  background: url("/assets/home/spiral-ring.png") 0 0 / 32px 32px repeat-x;
+  image-rendering: pixelated;
+}
+/* 왼쪽 빨간 여백선 하나 */
+.page-area > .content-panel::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  bottom: 0;
+  left: 40px;
+  width: 2px;
+  background: #e8a79c;
+  pointer-events: none;
+}
+
+/* 페이지 이름: 노트 위 가장자리(고리 줄)에 걸쳐 붙인 스티커. 오른쪽 포스트잇과 대칭이고, 본문 단 밖에 있어
+   본문 제목 위의 작은 머리말이 되지 않는다. */
+.page-area > .content-panel > .panel-heading {
+  position: absolute;
+  top: -20px;
+  left: 56px;
+  z-index: 1;
+  display: inline-flex;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 6px 14px;
+  background: #fffaf0;
+  border: 0;
+  border-radius: 0;
+  box-shadow:
+    0 0 0 1px #e1d3bb,
+    0 3px 0 0 #0002;
+  font-size: 22px;
+  transform: rotate(-1.5deg);
+}
+.page-area > .content-panel > .panel-body {
+  padding: 44px 30px 34px 64px;
+}

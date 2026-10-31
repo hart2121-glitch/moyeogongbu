@@ -1,0 +1,715 @@
+/* 로비: 내 책상 자리 (2026-10-30 재설계). 장면 속 물건이 기능 입구다.
+   물건 틀은 tools/art/lobby-props.mjs로 찍은 도트 9조각(모서리 16px)을 1배로만 건다.
+   그림자는 위에서 오는 빛에 맞춰 바로 아래로 떨어지고, 그림의 투명 칸을 따라가도록 drop-shadow로 준다. */
+.scene:has(> .desk-lobby) {
+  background: #2b201c;
+}
+.desk-lobby {
+  --wall: #2b201c;
+  --wall-ink: #f3e7d3;
+  --frame: #140e0c;
+  --plate: #f3e5cc;
+  --plate-ink: #3b2c22;
+  --go: #7d55a0;
+  --cast: drop-shadow(0 6px 0 #0007);
+  position: relative;
+  z-index: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 22px;
+  padding: 18px 16px 28px;
+  min-height: calc(100vh - 72px);
+  background: var(--wall);
+  color: var(--wall-ink);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.desk-lobby ::selection {
+  background: #b892d866;
+}
+.desk-lobby a {
+  color: inherit;
+  text-decoration: none;
+}
+.desk-lobby a:focus-visible {
+  outline: 3px solid #b892d8;
+  outline-offset: 3px;
+}
+
+/* 9조각 틀 공통: 모서리 16px를 1배로 */
+.desk-monitor,
+.desk-memo,
+.desk-phone,
+.desk-board,
+.desk-owner,
+.desk-speech {
+  border-style: solid;
+  border-color: transparent;
+  border-image-slice: 16 fill;
+  border-image-width: 16px;
+  border-image-repeat: stretch;
+  background-clip: padding-box;
+  image-rendering: pixelated;
+  filter: var(--cast);
+}
+/* 틀 그림을 못 불러와도 글자가 어두운 벽 위에 남지 않도록 그림의 가운데 색을 바탕으로 깔아 둔다 */
+.desk-monitor {
+  background-color: #2b2830;
+}
+.desk-memo {
+  background-color: #f6e39c;
+}
+.desk-phone {
+  background-color: #2a2530;
+}
+.desk-speech {
+  background-color: #f3e5cc;
+}
+
+/* 장면 */
+.desk-main {
+  flex: none;
+  width: 778px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.desk-scene {
+  padding: 4px;
+  background: var(--frame);
+  filter: var(--cast);
+}
+.desk-scene-art {
+  position: relative;
+  image-rendering: pixelated;
+  overflow: hidden;
+}
+/* 내 방: 빈 방 위에 갈아 끼울 수 있는 부품을 얹는다 (tools/art/home-room.mjs). 방과 캐릭터는 같은 정수 배율(--scale)이다. */
+.home-room-part {
+  position: absolute;
+  max-width: none;
+  image-rendering: pixelated;
+  pointer-events: none;
+  user-select: none;
+}
+.desk-character {
+  position: absolute;
+  width: 56px;
+  animation: desk-breathe 2.4s steps(1) infinite;
+}
+.desk-character-layers.layer-stack {
+  background: none;
+  border: 0;
+}
+@keyframes desk-breathe {
+  0%,
+  70% {
+    transform: translateY(0);
+  }
+  85% {
+    transform: translateY(calc(-1px * var(--scale, 1)));
+  }
+}
+
+/* 말풍선: 테두리 8px 안쪽에 그림 16px을 반씩 걸친다 (모서리는 1배 그대로) */
+.desk-speech {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 14px);
+  width: max-content;
+  max-width: 240px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-width: 8px;
+  border-image-source: url("/assets/lobby/bubble-frame.png");
+  border-image-outset: 8px;
+  padding: 0 0 0 6px;
+  color: var(--plate-ink);
+  font-size: 14px;
+  animation: desk-speech-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+/* 말풍선 꼬리: 틀의 아래 외곽선을 덮고 내려오는 크림 계단 (12칸, 8칸, 끝 4줄은 외곽선색) */
+.desk-speech::before,
+.desk-speech::after {
+  content: "";
+  position: absolute;
+  box-shadow:
+    inset 2px 0 0 var(--frame),
+    inset -2px 0 0 var(--frame);
+}
+.desk-speech::before {
+  right: 26px;
+  top: calc(100% + 13px);
+  width: 12px;
+  height: 6px;
+  background: #d9c3a0;
+}
+.desk-speech::after {
+  right: 28px;
+  top: calc(100% + 19px);
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(#d9c3a0 0 4px, var(--frame) 4px 8px);
+}
+.desk-speech button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: #50483f;
+}
+.desk-speech button:hover {
+  background: #e4d2b4;
+}
+@keyframes desk-speech-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* 명패: 장면 왼쪽 위 벽에 건 나무 문패(home/nameplate.png 9조각, 1배). 환영 화면에서 현관 문 위 문패(home/entrance/sign.png)에 새긴 이름이 여기에 걸린다.
+   날짜와 꾸미기 링크는 문패 아래 벽지 위에 둔다. */
+.desk-nameplate {
+  position: absolute;
+  left: 24px;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.desk-owner {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border-width: 12px;
+  border-image-source: url("/assets/home/nameplate.png");
+  border-image-outset: 4px;
+  background-color: #d0a067;
+  padding: 0 4px;
+  color: #3b2416;
+  font-size: 16px;
+}
+.desk-owner h1 {
+  font-family: "Gowun Batang", serif;
+  font-size: 22px;
+  letter-spacing: 0.5px;
+}
+.desk-owner button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-left: 4px;
+}
+.desk-owner button:hover {
+  background: #e2b47c;
+}
+.desk-owner svg {
+  width: 19px;
+  height: 19px;
+}
+/* 날짜와 꾸미기 링크: 문패 바로 아래 벽에 붙인 노란 메모지 (lobby/memo-frame.png 9조각, 1배) */
+.desk-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 12px solid transparent;
+  border-image: url("/assets/lobby/memo-frame.png") 16 fill / 16px / 4px stretch;
+  background: #f6e39c;
+  background-clip: padding-box;
+  padding: 0 4px;
+  color: #3a2f22;
+  filter: var(--cast);
+  image-rendering: pixelated;
+}
+.desk-date {
+  font-size: 14px;
+  color: #3a2f22;
+}
+.desk-dress {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 14px;
+  color: #5c3d78 !important;
+}
+.desk-dress:hover {
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+}
+.desk-dress svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* 물건 공통 */
+.desk-surface {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 22px;
+  align-items: start;
+}
+.desk-side {
+  flex: 1 1 300px;
+  min-width: 280px;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+}
+.desk-object {
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.desk-object:hover,
+.desk-object:focus-within {
+  transform: translateY(-2px);
+}
+.desk-object-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.desk-object-head h2 {
+  font-size: 16px;
+  letter-spacing: 0.3px;
+}
+.desk-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 6px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.desk-more svg {
+  width: 14px;
+  height: 14px;
+}
+.desk-empty {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* 모니터: 출근. 베젤 그림 16px, 이름은 화면 안 창 제목줄, 아래에 받침대 그림 */
+.desk-monitor {
+  margin-bottom: 30px;
+  border-width: 16px;
+  border-image-source: url("/assets/lobby/monitor-frame.png");
+}
+.desk-monitor::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 16px);
+  width: 64px;
+  height: 32px;
+  margin-left: -32px;
+  background: url("/assets/lobby/monitor-stand.png") no-repeat;
+  image-rendering: pixelated;
+  z-index: -1;
+}
+.desk-monitor .desk-object-head {
+  padding: 4px 6px 4px 10px;
+  background: #3a4a55;
+  color: #eef3ef;
+}
+.desk-monitor .desk-object-head h2 {
+  font-size: 16px;
+}
+.desk-monitor .desk-more:hover {
+  background: #2f3d47;
+}
+.desk-monitor .desk-object-body {
+  padding: 8px;
+  background: #253038;
+  color: #eef3ef;
+}
+.monitor-rooms {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.monitor-rooms button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  text-align: left;
+  background: #2f3d47;
+}
+.monitor-rooms button:hover {
+  background: #3a4a55;
+  filter: none;
+}
+.monitor-rooms button > svg {
+  grid-row: span 2;
+  width: 30px;
+  height: 30px;
+  color: #f1c27d;
+}
+.monitor-rooms strong {
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.monitor-rooms span {
+  grid-column: 2;
+  font-size: 13px;
+  color: #c9d6d2;
+}
+.monitor-rooms em {
+  font-style: normal;
+  margin-left: 8px;
+  color: #f1c27d;
+}
+.monitor-go {
+  grid-column: 3 !important;
+  grid-row: 1 / span 2;
+  padding: 7px 14px;
+  background: var(--go);
+  box-shadow: inset -3px -3px 0 0 #5c3d78;
+  color: #fff8e8 !important;
+  font-size: 16px !important;
+}
+.monitor-group {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: #c9d6d2;
+}
+/* 회사 말고 다른 목적지: 한 줄로 작게 */
+.monitor-places {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 8px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  border-top: 1px solid #3a4a55;
+}
+.monitor-places li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.monitor-places button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  background: #2f3d47;
+  color: #eef3ef;
+  font-size: 14px;
+}
+.monitor-places button:hover:not(:disabled) {
+  background: #3a4a55;
+  filter: none;
+}
+.monitor-places button:disabled {
+  opacity: 1;
+  color: #c9d6d2;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px #3a4a55;
+}
+.monitor-places svg {
+  width: 20px;
+  height: 20px;
+  color: #f1c27d;
+}
+.monitor-places span {
+  font-size: 13px;
+  color: #c9d6d2;
+}
+.monitor-create {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--go);
+  box-shadow: inset -3px -3px 0 0 #5c3d78;
+  color: #fff8e8 !important;
+  font-size: 14px;
+}
+
+/* 메모지: 할 일. 종이 그림 16px(오른쪽 아래 접힘), 위에 테이프, 마지막 줄이 "할 일 추가" */
+.desk-memo {
+  border-width: 16px;
+  border-image-source: url("/assets/lobby/memo-frame.png");
+  padding: 0 0 4px;
+  color: #3a2f22;
+}
+.desk-memo::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -24px;
+  width: 48px;
+  height: 16px;
+  margin-left: -24px;
+  background: url("/assets/lobby/memo-tape.png") no-repeat;
+  image-rendering: pixelated;
+}
+.desk-memo .desk-object-head {
+  padding-bottom: 6px;
+  border-bottom: 2px solid #3a2f22;
+}
+.desk-memo .desk-object-body {
+  max-height: 210px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #c9ad5a transparent;
+}
+.desk-memo .desk-empty {
+  padding-top: 8px;
+}
+.desk-memo .task-list label {
+  min-height: 36px;
+  gap: 12px;
+  font-size: 16px;
+}
+.desk-memo .task-list li {
+  border-bottom: 1px dashed #86735e;
+}
+.desk-memo .task-list input {
+  width: 22px;
+  height: 22px;
+  border-radius: 0;
+  background: #fffbe9;
+}
+.memo-add {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0;
+  color: #50483f;
+  font-size: 16px;
+}
+.memo-add svg {
+  width: 22px;
+  height: 22px;
+}
+.memo-add:hover {
+  color: #3a2f22;
+}
+
+/* 코르크판: 공지. 나무 틀 그림 16px(가운데는 비움) 안에 코르크 타일, 압정 그림으로 꽂은 쪽지 */
+.desk-board {
+  align-self: stretch;
+  border-width: 16px;
+  border-image-source: url("/assets/lobby/board-frame.png");
+  border-image-slice: 16;
+  border-image-repeat: repeat;
+  padding: 2px 0 4px;
+  background: url("/assets/lobby/board-cork.png") repeat;
+  background-clip: padding-box;
+}
+.desk-board .desk-object-head {
+  align-items: flex-start;
+}
+.desk-board .desk-object-head h2,
+.desk-board .notices button,
+.desk-board .desk-more {
+  position: relative;
+  background: var(--plate);
+  color: var(--plate-ink);
+  box-shadow: 0 3px 0 0 #0004;
+}
+.desk-board .desk-object-head h2 {
+  padding: 5px 12px;
+  transform: rotate(-1.5deg);
+}
+.desk-board .desk-object-head h2::before,
+.desk-board .notices button::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  background: url("/assets/lobby/board-pin.png") no-repeat;
+  image-rendering: pixelated;
+}
+.desk-board .notices {
+  margin-top: 14px;
+  gap: 14px;
+}
+.desk-board .notices button {
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 12px 9px 10px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.desk-board .notices button:nth-child(even) {
+  transform: rotate(0.6deg);
+}
+.desk-board .notices button > span:nth-child(2) {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.desk-board .tag {
+  flex: none;
+  min-width: 52px;
+  border-radius: 0;
+  font-size: 12px;
+  background: #ead9bb;
+  color: #5a3b28;
+  border-color: #b6a084;
+}
+.desk-board .desk-object-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+.desk-board .desk-more {
+  padding: 5px 10px;
+  transform: rotate(1deg);
+}
+.desk-board .desk-more:hover {
+  background: #fff3dd;
+}
+
+/* 휴대폰: 친구. 본체 그림 16px(계단 모서리), 세로 비율, 이름은 상태바, 전체 보기는 홈 바 위 */
+.desk-phone {
+  width: 240px;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  border-width: 16px;
+  border-image-source: url("/assets/lobby/phone-frame.png");
+  padding: 8px 0 10px;
+}
+.desk-phone::before,
+.desk-phone::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  background: #4a4252;
+}
+.desk-phone::before {
+  top: -6px;
+  width: 44px;
+  height: 4px;
+  margin-left: -22px;
+}
+.desk-phone::after {
+  bottom: -8px;
+  width: 64px;
+  height: 4px;
+  margin-left: -32px;
+}
+.desk-phone .desk-object-head {
+  padding: 4px 10px;
+  background: #e8d4be;
+  color: var(--plate-ink);
+}
+.desk-phone .desk-object-head h2 {
+  font-size: 13px;
+}
+.desk-phone .desk-object-body {
+  flex: 1;
+  padding: 4px 12px;
+  background: var(--paper);
+  color: var(--ink);
+}
+.desk-phone .desk-object-foot {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 0;
+  background: var(--paper);
+}
+.desk-phone .desk-more {
+  color: var(--plate-ink);
+}
+.desk-phone .desk-more:hover {
+  background: #e8d4be;
+}
+.desk-phone .muted {
+  color: #50483f;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 10px 0;
+}
+.desk-phone .friend {
+  font-size: 13px;
+}
+.phone-empty {
+  height: 100%;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  color: #50483f;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.phone-empty > svg {
+  width: 44px;
+  height: 44px;
+  color: #86735e;
+}
+.phone-empty a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--go);
+  box-shadow: inset -3px -3px 0 0 #5c3d78;
+  color: #fff8e8 !important;
+}
+.phone-empty a svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 1240px) {
+  .desk-lobby {
+    flex-wrap: wrap;
+  }
+  .desk-side {
+    flex: none;
+    width: 778px;
+    max-width: none;
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .desk-board {
+    flex: 1;
+    min-width: 0;
+    align-self: flex-start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .desk-character,
+  .desk-speech {
+    animation: none;
+  }
+  .desk-object {
+    transition: none;
+  }
+}

@@ -111,8 +111,7 @@ button:active {
   gap: 9px;
   font-size: 21px;
 }
-.wallet svg,
-.profile-coins svg {
+.wallet svg {
   color: #b77828;
   fill: #f1b854;
   width: 30px;
@@ -198,9 +197,9 @@ button:active {
 }
 .sidebar-footer {
   padding: 12px 6px;
-  font-size: 11px;
+  font-size: 12px;
   text-align: center;
-  color: #736651;
+  color: #53412e;
   border-top: 1px dashed #aa9478;
   display: flex;
   gap: 4px;
@@ -220,16 +219,6 @@ button:active {
   inset: 0;
   background: #30293815;
   z-index: -1;
-}
-.lobby {
-  display: grid;
-  grid-template-columns: minmax(340px, 1.21fr) minmax(100px, 1.08fr) minmax(
-      300px,
-      0.96fr
-    );
-  gap: 20px;
-  padding: 27px 13px 24px 18px;
-  min-height: calc(100vh - 72px);
 }
 .panel {
   background: #f5e9d7;
@@ -272,61 +261,6 @@ button:active {
 .panel-body {
   padding: 13px 16px;
 }
-.left-column {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  align-items: flex-start;
-}
-.profile-panel {
-  width: 87%;
-  min-width: 340px;
-}
-.profile-panel .panel-body {
-  padding: 10px 16px;
-}
-.profile-main {
-  display: flex;
-  gap: 18px;
-  align-items: center;
-}
-.profile-avatar {
-  width: 119px;
-  height: 115px;
-  object-fit: cover;
-  border: 2px solid #ac8d76;
-  background: #dfbfad;
-  border-radius: 4px;
-  image-rendering: pixelated;
-}
-.profile-info {
-  flex: 1;
-  min-width: 0;
-}
-.profile-name {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.profile-name h1 {
-  font-size: 27px;
-  font-weight: 900;
-}
-.profile-name button {
-  padding: 0;
-}
-.profile-name svg {
-  color: #8e6547;
-  width: 24px;
-  height: 24px;
-}
-.profile-coins {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 8px 0 12px;
-  font-size: 24px;
-}
 .level {
   display: flex;
   gap: 7px;
@@ -334,226 +268,8 @@ button:active {
   font-size: 14px;
   white-space: nowrap;
 }
-.level-track {
-  height: 17px;
-  background: #756e61;
-  border: 2px solid #b89f85;
-  flex: 1;
-  border-radius: 6px;
-  box-shadow: inset 0 2px #484c48;
-}
-.level-track div {
-  height: 100%;
-  width: 80%;
-  background: #ac83cf;
-  border-right: 4px solid #cbb3e0;
-  border-radius: 4px;
-}
-.status-message {
-  border: 2px solid #c9ad94;
-  border-radius: 7px;
-  margin-top: 10px;
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 16px;
-  background: #fff6e780;
-}
-.status-message svg {
-  color: #cf8070;
-  width: 31px;
-  height: 31px;
-}
-.quick-panel {
-  width: 100%;
-}
-.theme-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-.theme-card {
-  padding: 0;
-  border: 2px solid #8e7965;
-  border-radius: 6px;
-  overflow: hidden;
-  background: #f2e1cb;
-  box-shadow: 0 3px #bca38c;
-  text-align: center;
-}
-.theme-image {
-  height: 114px;
-  background: #e4d5bf;
-  border-bottom: 2px solid #786a57;
-  image-rendering: pixelated;
-}
 .school {
   filter: sepia(0.28) hue-rotate(325deg);
-}
-.theme-image img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.theme-placeholder {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 9px;
-  color: #76634f;
-  padding: 8px;
-}
-.theme-placeholder span {
-  font-size: 14px;
-}
-.theme-placeholder small {
-  font-size: 10px;
-  font-weight: 400;
-}
-.theme-card > span {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  padding: 9px 3px;
-  font-size: 15px;
-  white-space: nowrap;
-}
-.theme-card svg {
-  width: 24px;
-  height: 24px;
-  fill: #d2aa80;
-}
-.cafe-button {
-  margin-top: 15px;
-  width: 100%;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  background: #62745b;
-  color: #fff9ec;
-  border: 2px solid #3a493b;
-  box-shadow:
-    inset 3px 3px #93a087,
-    inset -3px -3px #4d5d47;
-  border-radius: 6px;
-  font-size: 20px;
-  letter-spacing: 1px;
-}
-.cafe-button svg:first-child {
-  width: 32px;
-  height: 32px;
-  fill: #efe6cf;
-  color: #473b32;
-}
-.cafe-button svg:last-child {
-  margin-left: auto;
-  margin-right: 10px;
-}
-.cafe-button svg:first-child {
-  margin-left: auto;
-}
-.daily-note {
-  margin: 20px 0 0 100px;
-  width: 210px;
-  min-height: 165px;
-  background: #f3ddbc;
-  border: 3px solid #8e674d;
-  box-shadow:
-    6px 6px #483b3e55,
-    inset 0 0 18px #b8936d77;
-  transform: rotate(-5deg);
-  padding: 22px 20px 15px;
-  text-align: center;
-  position: relative;
-  font-family: "Gowun Batang", serif;
-}
-.daily-note p {
-  font-size: 20px;
-  margin-bottom: 12px;
-}
-.daily-note strong {
-  font-size: 19px;
-  line-height: 1.8;
-}
-.daily-note > svg {
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
-  color: #bb795f;
-  width: 34px;
-  height: 34px;
-}
-.note-pin {
-  position: absolute;
-  top: -12px;
-  left: 28px;
-  width: 12px;
-  height: 26px;
-  background: #cfb397;
-  border: 2px solid #7e634b;
-  box-shadow: 2px 2px #886c55;
-}
-.center-column {
-  position: relative;
-}
-.date-card {
-  position: absolute;
-  right: 4px;
-  top: 65px;
-  background: #e7cfb2;
-  border: 6px ridge #95745b;
-  box-shadow: 3px 3px #443a39;
-  padding: 13px 16px;
-  text-align: center;
-  font-size: 26px;
-  line-height: 1.2;
-  transform: rotate(1deg);
-}
-.date-card strong {
-  font-weight: 500;
-}
-.date-card span {
-  display: block;
-  font-size: 21px;
-}
-.speech {
-  position: absolute;
-  top: 39%;
-  left: 10%;
-  padding: 17px 19px;
-  background: #fff4e0;
-  border: 3px solid #5f493b;
-  border-radius: 27px;
-  box-shadow: 3px 4px #3e353844;
-  white-space: nowrap;
-  font-size: 17px;
-}
-.speech span {
-  color: #cf7f75;
-}
-.right-column {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.tasks-panel {
-  position: relative;
-  min-height: 270px;
-}
-.tasks-panel .panel-body {
-  padding: 0 20px 15px;
-}
-.add-task {
-  border: 2px solid #6a5642 !important;
-  border-radius: 50%;
-  background: #fff4e3;
-  padding: 3px !important;
 }
 .task-list {
   list-style: none;
@@ -601,26 +317,6 @@ button:active {
   border-bottom: 3px solid #26372c;
   transform: rotate(-45deg) translateY(-2px);
 }
-.task-mascot {
-  position: absolute;
-  right: 13px;
-  bottom: 12px;
-  width: 43px;
-  height: 43px;
-  color: #d58a7b;
-  opacity: 0.8;
-  pointer-events: none;
-}
-.more {
-  font-size: 12px;
-  white-space: nowrap;
-  gap: 2px;
-  letter-spacing: 0;
-}
-.more svg {
-  width: 15px !important;
-  height: 15px !important;
-}
 .notices {
   display: flex;
   flex-direction: column;
@@ -655,15 +351,6 @@ button:active {
   padding: 4px 5px;
   border-radius: 4px;
   display: inline-block;
-}
-.tag-1 {
-  background: #87a7bc;
-  border-color: #a3bccc;
-}
-.tag-2 {
-  background: #d7bba0;
-  color: #3e3326;
-  border-color: #ba987e;
 }
 .friend-list {
   display: flex;
@@ -717,45 +404,6 @@ button:active {
 .friend > svg {
   color: #5c5c4b;
 }
-.encouragement {
-  position: absolute;
-  bottom: 30px;
-  left: -139px;
-  width: 175px;
-  background: #efdec6ee;
-  border: 2px solid #7c6b58;
-  border-radius: 5px;
-  box-shadow: 3px 3px #302b3844;
-  display: flex;
-  align-items: center;
-  padding: 16px 8px 8px;
-  z-index: 4;
-  gap: 4px;
-}
-.encouragement > button {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  padding: 0;
-  color: #8a7763;
-}
-.encouragement > svg:first-of-type {
-  width: 66px;
-  height: 66px;
-  color: #bf8970;
-  fill: #fff0d8;
-}
-.encouragement p {
-  font-size: 13px;
-  line-height: 1.9;
-}
-.encouragement > svg:last-of-type {
-  position: absolute;
-  bottom: 6px;
-  right: 6px;
-  width: 20px;
-  color: #78876b;
-}
 .page-area {
   padding: 25px 4%;
   max-width: 1150px;
@@ -784,11 +432,6 @@ button:active {
 .page-intro {
   margin-bottom: 30px;
 }
-.eyebrow {
-  font-size: 11px;
-  letter-spacing: 2.8px;
-  color: #8b725e;
-}
 .page-intro h1,
 .room-content h1 {
   font-family: "Gowun Batang", serif;
@@ -797,7 +440,7 @@ button:active {
 }
 .page-intro p,
 .muted {
-  color: #86735e;
+  color: #75624e;
   font-size: 14px;
   line-height: 1.9;
 }
@@ -841,71 +484,6 @@ button:active {
   color: #57684e;
   font-size: 14px;
 }
-.customizer {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 40px;
-}
-.avatar-preview {
-  background: #e2d1b8;
-  border: 2px solid #ac947d;
-  padding: 20px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  border-radius: 8px;
-}
-.avatar-preview img {
-  width: 100%;
-  image-rendering: pixelated;
-  border: 2px solid #bc9f86;
-}
-.avatar-preview strong {
-  font-size: 23px;
-}
-.avatar-preview span {
-  color: #826a56;
-  font-size: 13px;
-}
-.wardrobe h2 {
-  font-size: 20px;
-  margin-bottom: 20px;
-}
-.outfit-options {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 15px;
-}
-.outfit-options button {
-  position: relative;
-  border: 2px solid #c0a98d;
-  background: #f1dfc6;
-  border-radius: 6px;
-  padding: 8px;
-  width: 100px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-.outfit-options button.selected {
-  border-color: #8b699e;
-  background: #e3d3e5;
-}
-.outfit-options img {
-  width: 74px;
-  height: 74px;
-  image-rendering: pixelated;
-}
-.outfit-options svg {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  color: #68437e;
-  background: #f5e7ef;
-  border-radius: 50%;
-}
 .outfit-세이지 {
   filter: hue-rotate(65deg) saturate(0.75);
 }
@@ -913,7 +491,7 @@ button:active {
   filter: hue-rotate(325deg);
 }
 .primary {
-  background: #6c7b61;
+  background: #5d6c52;
   border: 2px solid #49533f;
   color: #fff5e4;
   box-shadow:
@@ -946,6 +524,10 @@ button:active {
   border: 1px solid #c4ac8d;
   border-radius: 4px;
 }
+.item-art .color-swatch {
+  width: 64px;
+  height: 64px;
+}
 .item-art svg {
   width: 78px;
   height: 78px;
@@ -973,7 +555,42 @@ button:active {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  color: #98713c;
+  color: #50483f;
+}
+.price svg {
+  color: #b77828;
+  fill: #f1b854;
+}
+/* 구매 확인: 카드 안에서 바로, 줄어드는 코인과 환불 불가를 보여 준다 */
+.buy-confirm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+.buy-confirm p {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #50483f;
+}
+.buy-confirm {
+  word-break: keep-all;
+}
+.buy-confirm .primary,
+.buy-confirm .secondary-button {
+  margin: 0;
+  width: 100%;
+  padding-inline: 4px;
+  white-space: nowrap;
+}
+.try-on-link {
+  margin-top: 6px;
+  padding: 6px;
+  font-size: 13px;
+  color: #50483f;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .record-grid {
   display: grid;
@@ -1000,7 +617,7 @@ button:active {
 }
 .record-grid span {
   font-size: 13px;
-  color: #806c54;
+  color: #53412e;
 }
 .empty-state {
   text-align: center;
@@ -1166,25 +783,8 @@ button:active {
   margin-bottom: 15px;
 }
 @media (min-width: 1450px) {
-  .lobby {
-    gap: 24px;
-    padding-top: 28px;
-  }
-  .profile-panel {
-    width: 84%;
-  }
-  .profile-avatar {
-    width: 132px;
-    height: 122px;
-  }
-  .tasks-panel {
-    min-height: 295px;
-  }
   .task-list label {
     min-height: 47px;
-  }
-  .theme-image {
-    height: 125px;
   }
   .notices {
     gap: 13px;
@@ -1194,11 +794,6 @@ button:active {
   }
   .friend {
     min-height: 52px;
-  }
-  .daily-note {
-    margin-top: 26px;
-    width: 225px;
-    min-height: 180px;
   }
   .panel-heading {
     height: 44px;
@@ -1222,50 +817,11 @@ button:active {
     width: 41px;
     height: 41px;
   }
-  .lobby {
-    grid-template-columns: minmax(310px, 1fr) minmax(20px, 0.3fr) minmax(
-        280px,
-        0.9fr
-      );
-    gap: 12px;
-    padding-left: 12px;
-  }
-  .profile-panel {
-    min-width: 310px;
-    width: 100%;
-  }
-  .profile-main {
-    gap: 10px;
-  }
-  .profile-avatar {
-    width: 100px;
-    height: 100px;
-  }
   .panel-body {
     padding: 12px;
   }
   .panel-heading {
     font-size: 16px;
-  }
-  .theme-grid {
-    gap: 10px;
-  }
-  .theme-card > span {
-    font-size: 12px;
-  }
-  .speech {
-    left: -50%;
-    font-size: 13px;
-    top: 50%;
-  }
-  .date-card {
-    right: -5px;
-    top: 30px;
-    font-size: 21px;
-    padding: 10px;
-  }
-  .daily-note {
-    margin-left: 55px;
   }
   .notices button {
     gap: 7px;
@@ -1285,15 +841,7 @@ button:active {
   .shop-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .encouragement {
-    left: -123px;
-    width: 150px;
-  }
-  .encouragement > svg:first-of-type {
-    width: 47px;
-  }
   .customizer {
-    grid-template-columns: 220px 1fr;
     gap: 20px;
   }
   .cafe-rooms {
@@ -1332,16 +880,7 @@ button:active {
   fill: currentColor;
   color: #655645;
 }
-.theme-card svg {
-  fill: currentColor;
-  color: #8d7152;
-}
-.cafe-button svg:first-child {
-  fill: currentColor;
-  color: #f5e5cd;
-}
-.wallet svg,
-.profile-coins svg {
+.wallet svg {
   fill: currentColor;
   color: #c68a36;
 }
@@ -1350,18 +889,6 @@ button:active {
 }
 .scene-shade {
   display: none;
-}
-.encouragement {
-  position: fixed;
-  left: 8px;
-  bottom: 45px;
-  z-index: 5;
-  width: 175px;
-}
-
-.encouragement > svg:first-of-type {
-  fill: currentColor;
-  color: #b2846e;
 }
 
 /* 로그인 전후 단계(로그인, 첫 화면 이름 설정): 기존 패널을 가운데에 놓기만 한다. */
@@ -1481,7 +1008,7 @@ button:active {
 }
 .week-bar-value {
   font-size: 12px;
-  color: #806c54;
+  color: #75624e;
   white-space: nowrap;
 }
 .week-bar-track {
@@ -1525,9 +1052,9 @@ button:active {
 }
 .year-month,
 .year-weekday {
-  font-size: 10px;
+  font-size: 12px;
   line-height: 12px;
-  color: #806c54;
+  color: #75624e;
   white-space: nowrap;
   width: 12px;
 }
@@ -1576,7 +1103,7 @@ button:active {
   padding: 0;
   margin: 14px 0 0;
   font-size: 12px;
-  color: #806c54;
+  color: #75624e;
 }
 .heat-legend li {
   display: flex;
@@ -1717,47 +1244,293 @@ button:active {
 .avatar-preview .layer-stack img,
 .layer-stack img {
   position: absolute;
-  inset: 0;
-  width: 100%;
+  top: 0;
+  left: 0;
   height: 100%;
   border: 0;
   image-rendering: pixelated;
 }
-.study-character img.character-layer {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
+/* 캐릭터 꾸미기 (Story 009): 왼쪽은 마루 위에 선 큰 미리보기, 오른쪽은 머리, 눈, 의상, 액세서리 탭 */
+.customizer {
+  display: grid;
+  grid-template-columns: 292px 1fr;
+  gap: 32px;
+  align-items: start;
 }
-.wardrobe-slot h2 {
-  margin-bottom: 10px;
-}
-.item-options {
-  flex-wrap: wrap;
-}
-.item-options button {
-  width: 132px;
-  gap: 4px;
+.avatar-preview {
+  position: sticky;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px 16px;
+  background: #e2d1b8;
+  border: 2px solid #ac947d;
+  border-radius: 8px;
   text-align: center;
 }
-.item-options button small {
+.avatar-preview strong {
+  font-size: 21px;
+}
+.avatar-preview > span {
   color: #826a56;
-  font-size: 12px;
+  font-size: 13px;
+}
+/* 내 방 한쪽 벽과 마루. 캐릭터 56×72를 정수 4배(224×288)로 세우고 벽지, 걸레받이, 마루도 같은 4배로 깐다 (한 장면 한 배율). */
+.preview-stage {
+  position: relative;
+  box-sizing: content-box;
+  width: 256px;
+  height: 320px;
+  overflow: hidden;
+  border: 4px solid #2a2320;
+  background: #f1e2c8 url("/assets/home/wallpaper.png") 0 0 / 64px 64px repeat;
+  image-rendering: pixelated;
+}
+.preview-stage::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-sizing: content-box;
+  height: 64px;
+  border-top: 8px solid #7a4d2b;
+  background: url("/assets/home/floor.png") 0 0 / 192px 64px repeat;
+}
+/* 발밑 그림자: 24×6 도트 타원을 4배로, 흐림 없이 계단 모양으로 자른다. */
+.preview-shadow {
+  position: absolute;
+  left: 80px;
+  top: 284px;
+  width: 96px;
+  height: 24px;
+  background: rgb(59 44 34 / 30%);
+  clip-path: polygon(25% 0, 75% 0, 75% 16.667%, 91.667% 16.667%, 91.667% 33.333%, 100% 33.333%, 100% 66.667%, 91.667% 66.667%,
+    91.667% 83.333%, 75% 83.333%, 75% 100%, 25% 100%, 25% 83.333%, 8.333% 83.333%, 8.333% 66.667%, 0 66.667%, 0 33.333%, 8.333% 33.333%,
+    8.333% 16.667%, 25% 16.667%);
+}
+.preview-stage .preview-layers {
+  position: absolute;
+  left: 16px;
+  top: 8px;
+  width: 224px;
+  background: none;
+  border: 0;
+}
+.preview-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.preview-controls button,
+.gender-toggle button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border: 2px solid #b6a084;
+  border-radius: 6px;
+  background: #fff8e8;
+  color: #24231f;
+  font-size: 15px;
+}
+.preview-controls .icon-button {
+  width: 36px;
+  padding: 0;
+}
+.preview-controls button.selected,
+.gender-toggle button.selected {
+  border-color: #8b699e;
+  background: #e3d3e5;
+}
+.preview-controls button:active,
+.gender-toggle button:active,
+.wardrobe-tabs button:active,
+.item-options button:active {
+  transform: translateY(1px);
+}
+.gender-toggle {
+  display: flex;
+  gap: 6px;
+}
+.gender-toggle button {
+  min-width: 72px;
+}
+/* 탭: 노트 안에 꽂은 색인처럼, 고른 탭은 아래 판과 이어진다. */
+.wardrobe-tabs {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 4px;
+  margin-bottom: -2px;
+  padding-left: 12px;
+}
+.wardrobe-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px 8px;
+  border: 2px solid #c0a98d;
+  border-bottom-color: #ac947d;
+  border-radius: 8px 8px 0 0;
+  background: #ead9bf;
+  color: #6e5a47;
+  font-size: 16px;
+}
+.wardrobe-tabs button[aria-selected="true"] {
+  border-color: #ac947d;
+  border-bottom-color: #fbf5e8;
+  background: #fbf5e8;
+  color: #24231f;
+}
+.wardrobe-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 360px;
+  padding: 18px 20px 22px;
+  background: #fbf5e8;
+  border: 2px solid #ac947d;
+  border-radius: 8px;
+}
+.wardrobe-slot h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 17px;
+}
+.picked-name {
+  color: #86735e;
+  font-size: 13px;
+  font-weight: 400;
+}
+.picked-name.pointing {
+  color: #6b4f86;
+}
+/* 선택지: 이름 없이 그림만. 이름과 가격은 가리키면 칸 제목 옆에 나온다. */
+.item-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.item-options button {
+  position: relative;
+  padding: 4px;
+  border: 2px solid #c0a98d;
+  border-radius: 6px;
+  background: #f1dfc6;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.item-options button:hover {
+  filter: brightness(1.06);
+}
+.item-options button.selected {
+  border-color: #8b699e;
+  background: #e3d3e5;
+  box-shadow: inset 0 0 0 1px #8b699e;
 }
 .item-options button.not-owned {
   border-style: dashed;
 }
+.item-options button.swatch {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+}
+.color-swatch {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 2px solid #50483f;
+  border-radius: 50%;
+  background: var(--swatch);
+  box-shadow: inset 0 -4px 0 rgb(0 0 0 / 18%), inset 0 3px 0 rgb(255 255 255 / 40%);
+}
+.thumb-window {
+  position: relative;
+  display: block;
+  width: 96px;
+  height: 88px;
+  overflow: hidden;
+  background: #fbf5e8;
+  border: 1px solid #c9b497;
+}
+/* 56×72 칸을 정확히 2배(112×144)로 그리고 가운데 48칸 너비에서 머리(4~48줄)나 몸(28~72줄)만 창에 맞춘다. */
+.thumb-window .thumb-stack {
+  position: absolute;
+  left: -8px;
+  width: 112px;
+  border: 0;
+  background: none;
+}
+.thumb-head .thumb-stack {
+  top: -8px;
+}
+.thumb-body .thumb-stack {
+  top: -56px;
+}
+/* 전용 그림이 아직 없는 아이템: 흐리게 두고 위쪽에 작은 표를 붙인다. */
+.thumb-window.soon .thumb-stack {
+  opacity: 0.45;
+}
+.thumb-soon {
+  position: absolute;
+  z-index: 60;
+  top: 0;
+  right: 0;
+  padding: 1px 6px;
+  background: #3b2c22;
+  color: #f4e8d5;
+  font-size: 12px;
+}
+.item-options .price-mark,
+.item-options .worn-mark {
+  position: absolute;
+  z-index: 61;
+  top: -7px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+.item-options .price-mark {
+  left: -7px;
+  color: #f1b854;
+  background: #3b2c22;
+}
+.item-options .worn-mark {
+  right: -7px;
+  padding: 3px;
+  color: #fff8e8;
+  background: #8b699e;
+}
+.item-options button.swatch .worn-mark,
+.item-options button.swatch .price-mark {
+  width: 18px;
+  height: 18px;
+}
 .try-on-note,
 .buy-reason {
-  color: #8b5a3c;
+  color: #53412e;
   font-size: 13px;
   line-height: 1.5;
 }
+.buy-reason {
+  margin-top: 12px;
+}
 .customize-actions {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 10px;
   margin-top: 12px;
+}
+.customize-actions .primary,
+.customize-actions .secondary-button {
+  margin-top: 0;
 }
 .shop-section h2 {
   font-size: 20px;
@@ -1771,4 +1544,46 @@ button:active {
 }
 .shop-note {
   margin: 16px 0 10px;
+}
+
+/* 내 책상 세트 (꾸미기 슬롯 계획 1절). 꾸미기 책상 탭: 회사 방 빈 책상을 2배로 잘라 마루 위에 놓고, 고른 소품을 같은 자리에 얹는다. */
+.preview-stage .desk-preview {
+  position: absolute;
+  left: 16px;
+  bottom: 40px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 8px 0 #0004);
+}
+.desk-preview img {
+  position: absolute;
+  max-width: none;
+  image-rendering: pixelated;
+}
+/* 소품 선택지: 32×44 그림(스티커 32×16)을 2배로, 바닥 가운데에 세운다 */
+.item-options.desk-options button {
+  display: grid;
+  place-items: end center;
+  width: 80px;
+  height: 104px;
+  background: #fbf5e8;
+}
+.item-options.sticker-options button {
+  height: 56px;
+  place-items: center;
+}
+.preview-controls[hidden] {
+  display: none;
+}
+.desk-options .desk-thumb {
+  width: 64px;
+  max-width: none;
+  image-rendering: pixelated;
+}
+.item-art .desk-item-art {
+  width: 96px;
+  max-width: none;
+  image-rendering: pixelated;
+}
+.item-art .desk-item-art.slot-desk_top {
+  width: 64px;
 }

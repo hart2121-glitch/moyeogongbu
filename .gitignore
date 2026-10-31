@@ -18,3 +18,15 @@ production/session-state/
 .claude/worktrees/
 docs/consistency-failures.md
 .omc/
+
+# Story 009: 버린 도트 시안과 생성 원본 (게임 빌드와 시트 만들기에 쓰지 않음)
+art-src/drafts/
+
+# Impeccable 작업 산출물 (평가 캡처, 훅 캐시, 라이브 모드, 결정 페이지 기록). 디자인 기록(design.json, surfaces, critique)은 커밋한다.
+.impeccable/review/
+.impeccable/hook.cache.json
+.impeccable/live/
+.impeccable/questions/
+
+# tools/art/company-room.mjs --prep 이 만드는 변환용 조각 (원본에서 다시 만든다)
+art-src/rooms/src/ref-*.png

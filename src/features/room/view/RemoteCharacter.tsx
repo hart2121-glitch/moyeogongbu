@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import FriendRequestAction from "../../friends/view/FriendRequestAction";
 import CharacterSprite from "../../../study/CharacterSprite";
-import { COMPANY_BACKGROUND, companyLayout } from "../../../study/companyLayout";
+import DeskSet from "../../../study/DeskSet";
+import { defaultLook } from "../../character/model/layers";
+import { COMPANY_ROOM_ART, companyLayout, foregroundClip, roomArtBox } from "../../../study/companyLayout";
 import { useCharacterMovement } from "../../../study/useCharacterMovement";
 import type { MemberStatus } from "../model/room";
 import type { PresenceMeta } from "../model/roomRealtime";
@@ -66,6 +68,8 @@ export default function RemoteCharacter({ meta, status, reaction, subscribeMoves
     (s) => s.id === (character.occlusionSeatId || (character.activity === "seated" ? character.seatId : null)),
   );
   const rect = (seat as { foreground?: { left: number; top: number; right: number; bottom: number } } | undefined)?.foreground;
+  // 이 사람의 책상 세트는 앉았거나 가고 있는 자리에 펼친다.
+  const deskSeat = seat ?? companyLayout.seats.find((s) => s.id === (character.seatId ?? meta.seatId));
   return (
     <>
       <CharacterSprite character={character} nickname={name} look={status?.look ?? undefined} testId="remote-character" className={`is-remote ${open ? "is-open" : ""}`}
@@ -85,15 +89,14 @@ export default function RemoteCharacter({ meta, status, reaction, subscribeMoves
       </CharacterSprite>
       {rect && (
         <img
-          src={COMPANY_BACKGROUND}
+          src={COMPANY_ROOM_ART}
           alt=""
           aria-hidden="true"
           className="seat-foreground"
-          style={{
-            clipPath: `polygon(${rect.left * 100}% ${rect.top * 100}%,${rect.right * 100}% ${rect.top * 100}%,${rect.right * 100}% ${rect.bottom * 100}%,${rect.left * 100}% ${rect.bottom * 100}%)`,
-          }}
+          style={{ ...roomArtBox(companyLayout), clipPath: foregroundClip(rect, companyLayout) }}
         />
       )}
+      {deskSeat && <DeskSet seat={deskSeat} look={status?.look ?? defaultLook()} front={!!rect} owner={meta.userId} />}
     </>
   );
 }

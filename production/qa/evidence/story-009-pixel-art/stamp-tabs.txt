@@ -1,0 +1,4 @@
+Reviewed-Content-Hash: src/features/character/view/CharacterPage.tsx e57462892111923e844c92d31a4c7dbcf3654e2d
+Reviewed-Content-Hash: src/styles.css 2770af564edce399632b013a015430c8b8684aad
+Reviewed-Content-Hash: tests/shop.test.mjs 399c85a84dc93bb634c531f1cfc9d557deb63dae
+Reviewed-Content-Hash: tests/app.test.mjs c40eee1a7c7bb261aaadfcaef463e880d8349517

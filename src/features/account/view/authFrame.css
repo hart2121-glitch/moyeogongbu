@@ -1,0 +1,123 @@
+/* 로그인과 환영: 집 현관 (2026-10-31). 벽지 타일 위에 현관 장면(home/entrance, 240×144)을 액자로 걸고 패널을 옆에 둔다.
+   장면 안 그림, 문패, 캐릭터는 모두 같은 정수 배율 --s로 그린다 (한 장면 한 배율): 넓은 화면 3배, 그 밖에는 2배.
+   2배 장면(480px)이 화면보다 넓으면 문과 캐릭터가 있는 가운데만 보이게 양옆을 자른다. */
+.auth-page {
+  position: relative;
+  padding-block: 12px;
+  background: #f1e2c8 url("/assets/home/wallpaper.png") 0 0 / 32px 32px repeat;
+  image-rendering: pixelated;
+  isolation: isolate;
+}
+.auth-page::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 18vh;
+  z-index: -1;
+  border-top: 12px solid #7a4d2b;
+  background: url("/assets/home/floor.png") 0 0 / 96px 32px repeat;
+}
+.auth-stack {
+  --s: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: min(488px, 100%);
+}
+.auth-stack > .panel {
+  width: 100%;
+  image-rendering: auto;
+}
+
+/* 현관 장면 액자: 로비 내 방과 같은 짙은 테두리와 그림자 */
+.entrance-scene {
+  display: flex;
+  justify-content: center;
+  max-width: 100%;
+  padding: 4px;
+  overflow: hidden;
+  background: #140e0c;
+  filter: drop-shadow(3px 4px 0 #342c3540);
+}
+.entrance-art {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+}
+.entrance-art > img {
+  display: block;
+  max-width: none;
+  user-select: none;
+  pointer-events: none;
+}
+/* 문패: 9조각 sign.png(양 끝 4칸, 가운데 1칸)를 배율만큼 키운다. 줄은 문 가운데(x 118)를 중심으로 글자 폭만큼 늘어난다. */
+.entrance-sign-row {
+  position: absolute;
+  left: 0;
+  display: flex;
+  justify-content: center;
+}
+.entrance-sign {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 0 calc(4px * var(--s));
+  border-image-slice: 0 4 fill;
+  border-image-width: 0 calc(4px * var(--s));
+  border-image-repeat: stretch;
+  padding: 0 calc(3px * var(--s)) calc(1px * var(--s));
+  color: #3b2416;
+  font-family: "Gowun Batang", serif;
+  font-size: calc(7px * var(--s));
+  line-height: 1;
+  white-space: nowrap;
+}
+.entrance-sign span {
+  margin-left: calc(1px * var(--s));
+  font-size: calc(5px * var(--s));
+}
+.entrance-sign.is-empty {
+  color: #4a2f1d;
+  font-size: calc(6px * var(--s));
+}
+.entrance-character {
+  position: absolute;
+  animation: entrance-breathe 2.4s steps(1) infinite;
+}
+.entrance-character .layer-stack {
+  background: none;
+  border: 0;
+}
+@keyframes entrance-breathe {
+  0%,
+  70% {
+    transform: translateY(0);
+  }
+  85% {
+    transform: translateY(calc(-1px * var(--s)));
+  }
+}
+
+/* 넓고 높은 화면: 3배 장면(720×432) 옆에 패널 */
+@media (min-width: 1200px) and (min-height: 640px) {
+  .auth-stack {
+    --s: 3;
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+    width: auto;
+  }
+  .auth-stack > .panel {
+    width: 400px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entrance-character {
+    animation: none;
+  }
+}

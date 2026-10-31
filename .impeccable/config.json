@@ -1,0 +1,33 @@
+{
+  "buildPath": "code",
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-color",
+        "value": "#d9c3a0",
+        "createdAt": "2026-10-30T07:07:32.331Z",
+        "reason": "Claude: bubble tail must match the bubble-frame.png pixel art's shade band (#d9c3a0, authored in tools/art/lobby-props.mjs); a documented neighbour would leave a visible seam"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#f6e39c",
+        "createdAt": "2026-10-30T07:21:11.753Z",
+        "reason": "Claude: fallback fill must equal the memo-frame.png pixel art's paper face (#f6e39c, authored in tools/art/lobby-props.mjs) so a failed image load shows the same paper"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#9b3b2f",
+        "createdAt": "2026-10-30T07:26:57.832Z",
+        "reason": "Claude: semantic error text for the room disconnection notice (about 7:1 on cream); DESIGN.md has no error ink, and the documented coral #d88777 fails text contrast"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#e2b47c",
+        "createdAt": "2026-10-30T18:30:50.667Z",
+        "reason": "Claude: hover tint on the lobby wooden nameplate's edit button equals the light band of home/nameplate.png (#e2b47c, authored in tools/art/home-props.mjs)"
+      }
+    ]
+  }
+}

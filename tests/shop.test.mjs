@@ -20,7 +20,10 @@ const shot = async (page, name) => {
 };
 const nav = (page, label) => page.getByRole("navigation").getByRole("button", { name: label, exact: true }).click();
 const COMEMBER = "00000000-0000-4000-8000-000000000021";
-const defaultLook = () => ({ body: "body-basic", face: "face-basic", hair_back: "hair-lavender", hair_front: "hair-lavender", outfit: "outfit-lavender", accessory: null });
+const defaultLook = () => ({
+  body: "body-basic", face: "face-black", hair_back: "hair-basic", hair_front: "hair-basic", hair_color: "hair-color-black",
+  outfit: "outfit-lavender", accessory: null, gender: "f",
+});
 
 test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로비와 방의 꾸민 캐릭터", async () => {
   const browser = await launch();
@@ -47,32 +50,87 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     await page.keyboard.press("Escape");
     await page.goto(`${url}character`);
 
-    // 처음 꾸미기: 기본 아이템만
+    // 처음 꾸미기: 기본 아이템만 (머리 탭에 머리 모양 2와 머리 색 3, 눈 탭에 눈 색 7, 의상 탭에 의상 3). 액세서리 탭은 없다.
+    // 처음 모습은 여자, 단발, 검은 머리, 검은 눈이다.
     await page.getByRole("heading", { name: "처음 꾸미기" }).waitFor();
-    assert.equal(await page.locator(".item-options button").count(), 4);
-    await page.getByRole("button", { name: /^밤색 머리/ }).click();
+    const tab = (name) => page.getByRole("tab", { name, exact: true }).click();
+    const optionCount = async (name) => (await tab(name), page.locator(".item-options button").count());
+    assert.equal(await optionCount("눈"), 7);
+    assert.equal(await optionCount("의상"), 3);
+    assert.equal(await optionCount("머리"), 5);
+    assert.equal(await page.getByRole("tab", { name: "액세서리" }).count(), 0);
+    const preview = page.getByTestId("character-layers").first();
+    assert.equal(await preview.getAttribute("data-hair-color"), "hair-color-black");
+    assert.equal(await preview.getAttribute("data-layer-face"), "face-black");
+    assert.equal(await preview.getAttribute("data-gender"), "f");
+    // 남자를 고르면 눈매와 기본 머리 모양, 옷이 바뀌고, 여자로 돌아가면 되돌아온다
+    await page.getByRole("button", { name: "남자", exact: true }).click();
+    assert.equal(await preview.getAttribute("data-gender"), "m");
+    assert.equal(await preview.getAttribute("data-layer-hair-front"), "hair-short");
+    assert.equal(await preview.getAttribute("data-layer-outfit"), "outfit-boy");
+    assert.match(await preview.locator('img[data-layer="face"]').getAttribute("src"), /face-black-m\.png$/);
+    await page.getByRole("button", { name: "여자", exact: true }).click();
+    assert.equal(await preview.getAttribute("data-layer-hair-front"), "hair-basic");
+    // 미리보기는 돌려 보고 걸려 볼 수 있다
+    await page.getByRole("button", { name: "오른쪽으로 돌리기" }).click();
+    assert.equal(await preview.getAttribute("data-direction"), "right");
+    await page.getByRole("button", { name: "걷기", exact: true }).click();
+    assert.equal(await preview.getAttribute("data-pose"), "walk.right");
+    await page.getByRole("button", { name: "걷기", exact: true }).click();
+    await page.getByRole("button", { name: "왼쪽으로 돌리기" }).click();
+    assert.equal(await preview.getAttribute("data-pose"), "idle.down");
+    await page.getByRole("button", { name: /^밤색 염색/ }).click();
+    assert.equal(await page.getByTestId("character-layers").first().getAttribute("data-hair-color"), "hair-color-chestnut");
+    await tab("눈");
+    await page.getByRole("button", { name: /^초록 눈/ }).click();
+    assert.equal(await page.getByTestId("character-layers").first().getAttribute("data-layer-face"), "face-green");
+    await tab("의상");
     await page.getByRole("button", { name: /^세이지 옷/ }).click();
     await shot(page, "customize-first-time-default-pick.png");
     await page.getByRole("button", { name: "이 모습으로 시작하기" }).click();
     await page.getByRole("button", { name: "이 모습으로 저장하기" }).waitFor();
     assert.equal(server.looks.get(FAKE_USER_ID).outfit, "outfit-sage");
+    assert.equal(server.looks.get(FAKE_USER_ID).face, "face-green");
+    assert.equal(server.looks.get(FAKE_USER_ID).hair_color, "hair-color-chestnut");
 
     // 상점: 120코인으로 리본은 살 수 있고, 나머지는 부드러운 이유와 함께 막힌다
     await nav(page, "상점");
     await page.getByRole("button", { name: "보라 리본 구매하기" }).waitFor();
-    assert.equal(await page.locator(".shop-item").count(), 14);
+    // 액세서리 6, 의상 4, 머리 모양 8, 머리 색 7, 책상 소품 6, 책상 스티커 2
+    assert.equal(await page.locator(".shop-item").count(), 33);
     assert.equal(await page.getByRole("button", { name: "별 머리핀 구매하기" }).isDisabled(), true);
     await page.locator('[data-item="acc-hairpin"]').getByText("30코인이 더 모이면 살 수 있어요.").waitFor();
     await shot(page, "shop-prices-insufficient.png");
+    // 구매 확인: 줄어들 코인을 보여 주고, 그만두면 사지 않는다
     await page.getByRole("button", { name: "보라 리본 구매하기" }).click();
+    const confirm = page.getByRole("group", { name: "보라 리본 구매 확인" });
+    await confirm.getByText("환불할 수 없어요.").waitFor();
+    assert.match(await confirm.innerText(), /코인 120에서 0으로 줄어요/);
+    await shot(page, "shop-buy-confirm.png");
+    await confirm.getByRole("button", { name: "그만두기" }).click();
+    await page.getByRole("button", { name: "보라 리본 구매하기" }).waitFor();
+    assert.equal(state.coins.balance, 120);
+    // 되팔기와 환불이 없어서 카드 안에서 한 번 더 확인한 뒤에 산다.
+    await page.getByRole("button", { name: "보라 리본 구매하기" }).click();
+    await page.getByRole("button", { name: "보라 리본 사기", exact: true }).click();
     await page.getByRole("button", { name: "보라 리본 보유 중" }).waitFor();
     await page.getByTestId("shop-balance").filter({ hasText: /^0$/ }).waitFor();
     await shot(page, "shop-purchase-success.png");
     assert.equal(state.coins.balance, 0);
 
+    // 상점 카드의 "입어 보기"는 그 아이템을 입힌 꾸미기 화면의 그 탭으로 간다 (저장은 산 뒤에만)
+    await page.getByRole("button", { name: "로즈 옷 입어 보기" }).click();
+    await page.waitForURL(/\/character\?try=/);
+    await page.getByText("입어 보는 중이에요. 사지 않은 아이템은 저장되지 않아요.").waitFor();
+    assert.equal(await page.getByRole("button", { name: /^로즈 옷/ }).getAttribute("aria-pressed"), "true");
+    await nav(page, "상점");
+    await page.getByRole("button", { name: "보라 리본 보유 중" }).waitFor();
+
     // 꾸미기: 산 리본 적용, 사지 않은 로즈 옷은 입어 보기만
     await nav(page, "캐릭터 꾸미기");
+    await tab("액세서리");
     await page.getByRole("button", { name: /^보라 리본/ }).click();
+    await tab("의상");
     await page.getByRole("button", { name: /^로즈 옷/ }).click();
     await page.getByText("입어 보는 중이에요. 사지 않은 아이템은 저장되지 않아요.").waitFor();
     assert.equal(await page.getByTestId("character-layers").getAttribute("data-layer-outfit"), "outfit-rose");
@@ -88,12 +146,13 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     const stack = page.getByTestId("character-layers");
     await stack.waitFor();
     assert.equal(await stack.getAttribute("data-layer-accessory"), "acc-ribbon");
-    assert.equal(await stack.getAttribute("data-layer-hair-front"), "hair-chestnut");
+    assert.equal(await stack.getAttribute("data-layer-hair-front"), "hair-basic");
+    assert.equal(await stack.getAttribute("data-hair-color"), "hair-color-chestnut");
 
-    // 로비 아바타
+    // 로비 캐릭터 (꾸미기와 같은 레이어로 그린다)
     await page.goto(`${url}lobby`);
-    await page.locator('.profile-avatar[data-look-outfit="outfit-sage"]').waitFor();
-    assert.match(await page.locator(".profile-avatar").getAttribute("class"), /세이지/);
+    await page.locator('.desk-character [data-layer-outfit="outfit-sage"]').waitFor();
+    assert.match(await page.locator('.desk-character img[data-layer="outfit"]').getAttribute("src"), /outfit-sage\.png$/);
     await shot(page, "lobby-avatar-saved-look.png");
 
     // 같은 방 멤버의 꾸민 캐릭터
@@ -109,7 +168,7 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     const remote = page.locator('[data-testid="remote-character"][data-layer-outfit="outfit-rose"]');
     await remote.waitFor({ timeout: 20000 });
     assert.equal(await remote.getAttribute("data-layer-accessory"), "acc-beret");
-    assert.match(await remote.locator('img[data-active="true"]').getAttribute("class"), /로즈/);
+    assert.match(await remote.locator('img[data-layer="outfit"]').getAttribute("src"), /outfit-rose\.png$/);
     assert.equal(await page.getByTestId("study-character").getAttribute("data-layer-outfit"), "outfit-sage");
     await shot(page, "room-comember-customized.png");
     assert.ok(!(await page.locator("body").innerText()).includes("·"));

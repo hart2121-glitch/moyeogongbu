@@ -61,7 +61,6 @@ export default function FriendsPage() {
   return (
     <PageFrame title="친구 목록">
       <div className="page-intro">
-        <span className="eyebrow">TOGETHER IS BETTER</span>
         <h1>같이 공부하는 우리</h1>
         <p>친구의 공부 공간을 살펴보세요.</p>
       </div>

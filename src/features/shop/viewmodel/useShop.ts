@@ -34,7 +34,7 @@ export function useShop(notify: (text: string) => void) {
   const buy = useMutation({
     mutationFn: (item: ShopItem) => shopStore.buy(item.id),
     onSuccess: (result, item) => {
-      if (result.status === "bought") notify(purchasedMessage(item.name));
+      if (result.status === "bought") notify(purchasedMessage(item.name, item.slot));
       else if (result.status === "owned") notify(alreadyOwnedMessage);
       else notify(insufficientMessage);
     },

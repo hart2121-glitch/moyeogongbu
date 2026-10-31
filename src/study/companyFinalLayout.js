@@ -1,12 +1,25 @@
 // 최종 1705×922 원본용 상대 좌표(발 기준). 고정 인물을 제거한 화면용 사본과 함께 사용합니다.
 export const companyFinalLayout = {
   image: { width: 1705, height: 922 },
+  // 화면에 보이는 범위(원본 px). 그림에 그려진 앱 제목줄과 오른쪽 가짜 UI 열(x 1360~)은 잘라 낸다.
+  // 좌표는 계속 원본 전체 기준이고, 무대를 원본 크기 비율로 두고 바깥 창이 이 범위만 보여 준다.
+  // Story 009: 이 범위를 정확히 절반으로 다시 그린 도트 방(672×432, tools/art/company-room.mjs)을 화면에 1배로 그린다.
+  view: { x: 0, y: 58, width: 1344, height: 864 },
+  // 캐릭터 칸 56×72를 방과 같은 1배로: 원본 px로는 2배(112×144)다.
   character: {
-    width: 0.042 * 1.2 * 1.1 * 1.1,
-    height: (0.042 * 1.2 * 1.1 * 1.1 * 1705 * 110) / (922 * 87),
+    width: 112 / 1705,
+    height: 144 / 922,
   },
   seatedMode: "sprite",
+  // 좌석 번호 동그라미는 그림에 비어 있고, 번호는 화면 글자로 올린다.
   seatMarkersBaked: true,
+  // 그림 속 빈 표지판과 화이트보드에 올리는 글자 (가운데 좌표, 원본 기준 상대 좌표)
+  signs: [
+    { id: "lounge", text: "휴게실", x: 166 / 1705, y: 151 / 922 },
+    { id: "restroom", text: "화장실", x: 129 / 1705, y: 537 / 922 },
+    { id: "exit", text: "나가기", x: 884 / 1705, y: 743 / 922 },
+    { id: "board", text: "오늘도\n수고했어요!", x: 1053 / 1705, y: 236 / 922 },
+  ],
   nodes: {
     entrance: { x: 0.52, y: 0.95 },
     lowerDoor: { x: 0.52, y: 0.795 },
@@ -74,14 +87,23 @@ export const companyFinalLayout = {
     ["loungeOuter", "loungeThreshold"],
     ["loungeThreshold", "loungeInner"],
   ],
+  // desk: 책상 왼쪽 위 기준점 (Story 009 도트 방 그림 칸). tools/art/company-room.mjs가 같은 빈 책상을 찍는 자리이고,
+  // 앉은 사람의 내 책상 세트가 펼쳐지는 자리다.
   seats: [
-    { id: 1, node: "seat1", label: { x: 0.405, y: 0.574 } },
-    { id: 2, node: "seat2", label: { x: 0.534, y: 0.574 } },
-    { id: 3, node: "seat3", label: { x: 0.668, y: 0.574 } },
-    { id: 4, node: "seat4", label: { x: 0.403, y: 0.747 } },
-    { id: 5, node: "seat5", label: { x: 0.534, y: 0.747 } },
-    { id: 6, node: "seat6", label: { x: 0.67, y: 0.747 } },
+    { id: 1, node: "seat1", label: { x: 0.405, y: 0.574 }, desk: { x: 286, y: 168 } },
+    { id: 2, node: "seat2", label: { x: 0.534, y: 0.574 }, desk: { x: 394, y: 168 } },
+    { id: 3, node: "seat3", label: { x: 0.668, y: 0.574 }, desk: { x: 507, y: 168 } },
+    { id: 4, node: "seat4", label: { x: 0.403, y: 0.747 }, desk: { x: 283, y: 248 } },
+    { id: 5, node: "seat5", label: { x: 0.534, y: 0.747 }, desk: { x: 395, y: 248 } },
+    { id: 6, node: "seat6", label: { x: 0.67, y: 0.747 }, desk: { x: 510, y: 248 } },
   ],
+  // 내 책상 세트 자리 (책상 안 그림 칸, 꾸미기 슬롯 계획 1절). 왼쪽과 오른쪽은 책상 앞 가장자리(y 53)에 선 32×44,
+  // 앞면은 번호 동그라미 왼쪽 판의 32×16. 아이템 그림은 자리 크기의 투명 그림이다.
+  deskSpots: {
+    left: { x: 11, y: 10, width: 32, height: 44 },
+    right: { x: 75, y: 10, width: 32, height: 44 },
+    front: { x: 14, y: 60, width: 32, height: 16 },
+  },
   areas: [
     {
       id: "lounge",

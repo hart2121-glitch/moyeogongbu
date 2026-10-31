@@ -46,7 +46,6 @@ export default function MyRoomList({ onEnter }: { onEnter: (room: Room) => void 
   return (
     <div className="study-room-list">
       <div className="page-intro">
-        <span className="eyebrow">OUR STUDY ROOMS</span>
         <h1>함께 집중할 나만의 공간</h1>
         <p>방마다 {ROOM_CONFIG.seatCount}자리가 있어요. 초대 코드로 친구를 불러 함께 공부해요.</p>
       </div>

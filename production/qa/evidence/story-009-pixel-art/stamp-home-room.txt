@@ -1,0 +1,4 @@
+Reviewed-Content-Hash: tools/art/home-room.mjs 70108c33c2048fa59c06f64daa7114fdc812a58c
+Reviewed-Content-Hash: src/features/lobby/model/lobbyScene.ts 633119d055d238fb49568a84ae124eb64acaae48
+Reviewed-Content-Hash: src/features/lobby/view/DeskScene.tsx 45ded8d9576be7308f15dc1fca2b6b71ad13084e
+Reviewed-Content-Hash: src/features/lobby/view/lobby.css 5de14cbbc47795e90f0cf5b90c67bc2d47c936ef

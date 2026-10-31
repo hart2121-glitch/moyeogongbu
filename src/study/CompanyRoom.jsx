@@ -7,17 +7,38 @@ import {
   Toilet,
   ArrowLeft,
 } from "@phosphor-icons/react";
-import { COMPANY_BACKGROUND, companyLayout } from "./companyLayout";
+import { COMPANY_ROOM_ART, companyLayout, foregroundClip, roomArtBox } from "./companyLayout";
 import { useCharacterMovement } from "./useCharacterMovement";
 import CharacterSprite from "./CharacterSprite";
+import DeskSet from "./DeskSet";
+import { defaultLook } from "../features/character/model/layers";
 import { useSeatOccupancy } from "./useSeatOccupancy";
+
+/** 바깥 창의 비율: 보이는 범위(view)의 가로세로. view가 없으면 원본 전체. */
+const viewportStyle = ({ image, view = image }) => ({
+  aspectRatio: `${view.width} / ${view.height}`,
+});
+
+/**
+ * 무대를 원본 전체 비율로 키우고 보이는 범위가 창의 왼쪽 위에 오도록 민다.
+ * 여백 백분율은 부모 너비 기준이라 가로세로 모두 view.width로 나눈다.
+ */
+const stageCropStyle = ({ image, view }) =>
+  view
+    ? {
+        width: `${(image.width / view.width) * 100}%`,
+        marginLeft: `${(-view.x / view.width) * 100}%`,
+        marginTop: `${(-view.y / view.width) * 100}%`,
+      }
+    : {};
 
 /**
  * 회사 스터디룸. `onActivityChange`는 캐릭터 동작이 바뀔 때마다 불리고(공부 세션 입력),
  * `renderSession`은 툴바 아래에 세션 표시를 그린다. 휴게실 이동은 사용자가 누를 때만 일어난다.
  * Story 004: 좌석은 `seatService`(서버 판정)가 정하고, 목적지를 정할 때마다 `onMove`, 멈출 때마다 `onSettle`이 불린다.
  * `overlay`는 무대 안(다른 사람 캐릭터), `toolbarExtra`(반응, 지금 하는 일, 방장 도구)는 무대 바로 아래, `localReaction`은 내 머리 위에 그린다.
- * @param {{ room: any, nickname: string, seatService: any, onExit: () => void, onActivityChange?: (activity: string) => void, onMove?: (move: { to: any, activity: string, seatId: number | null }) => void, onSettle?: (character: any) => void, overlay?: import("react").ReactNode, toolbarExtra?: import("react").ReactNode, localReaction?: import("react").ReactNode, look?: any, renderSession?: (actions: { goLounge: () => void, canGoLounge: boolean }) => import("react").ReactNode }} props
+ * `side`는 무대 오른쪽 열(실제 할 일 등)에 그린다. 무대는 `companyLayout.view` 범위만 보이도록 바깥 창이 자른다.
+ * @param {{ room: any, nickname: string, seatService: any, onExit: () => void, onActivityChange?: (activity: string) => void, onMove?: (move: { to: any, activity: string, seatId: number | null }) => void, onSettle?: (character: any) => void, overlay?: import("react").ReactNode, toolbarExtra?: import("react").ReactNode, localReaction?: import("react").ReactNode, look?: any, renderSession?: (actions: { goLounge: () => void, canGoLounge: boolean }) => import("react").ReactNode, side?: import("react").ReactNode }} props
  */
 export default function CompanyRoom({
   room,
@@ -31,6 +52,7 @@ export default function CompanyRoom({
   toolbarExtra,
   localReaction,
   renderSession,
+  side,
   look = undefined,
 }) {
   const { character, moveTo, validateMove, movementError } =
@@ -58,6 +80,9 @@ export default function CompanyRoom({
         (character.activity === "seated" ? character.seatId : null)),
   );
   const rect = foregroundSeat?.foreground;
+  // 내 책상 세트는 내가 앉았거나 차지한 자리에, 아무도 없는 자리는 기본 세트다. 다른 사람 자리는 RemoteCharacter가 그린다.
+  const mySeat =
+    foregroundSeat ?? seats.find((seat) => seat.occupantId && seat.occupantId === occupancy.ownerId);
   const go = (destination, options) => {
     try {
       setError("");
@@ -262,30 +287,52 @@ export default function CompanyRoom({
           </button>
         </div>
       </div>
-      {renderSession?.({ goLounge: () => visit(lounge), canGoLounge })}
-      <p
-        className="movement-status"
-        role="status"
-        data-testid="movement-status"
-      >
-        {status}
-      </p>
+      <div className="room-status">
+        <p
+          className="movement-status"
+          role="status"
+          data-testid="movement-status"
+        >
+          {status}
+        </p>
+        {renderSession?.({ goLounge: () => visit(lounge), canGoLounge })}
+      </div>
+      <div className="company-main">
+      <div className="company-viewport" style={viewportStyle(companyLayout)}>
       <div
         className="company-stage"
         data-testid="company-stage"
         onClick={clickFloor}
         style={{
           aspectRatio: `${companyLayout.image?.width || 1536} / ${companyLayout.image?.height || 1024}`,
+          ...stageCropStyle(companyLayout),
         }}
       >
         <img
-          className="company-original"
-          src={COMPANY_BACKGROUND}
-          alt="최종 확정 회사 스터디룸 원본"
+          className="company-room-art"
+          src={COMPANY_ROOM_ART}
+          alt="회사 스터디룸: 휴게실, 화장실, 책상 여섯 자리가 있는 사무실"
+          style={roomArtBox(companyLayout)}
+          draggable={false}
           onError={() => setBackgroundFailed(true)}
         />
         {!backgroundFailed && (
           <>
+            {seats
+              .filter((seat) => !seat.occupantId && seat.id !== mySeat?.id)
+              .map((seat) => (
+                <DeskSet key={seat.id} seat={seat} look={defaultLook()} />
+              ))}
+            {companyLayout.signs.map((sign) => (
+              <span
+                key={sign.id}
+                className={`room-sign room-sign-${sign.id}`}
+                style={{ left: `${sign.x * 100}%`, top: `${sign.y * 100}%` }}
+                aria-hidden="true"
+              >
+                {sign.text}
+              </span>
+            ))}
             <div
               className="seat-overlay"
               role="group"
@@ -317,7 +364,7 @@ export default function CompanyRoom({
                       : "빈 좌석"
                   }
                 >
-                  {!companyLayout.seatMarkersBaked && seat.id}
+                  {seat.id}
                   {seat.occupantId && (
                     <span>
                       {seat.occupantId === occupancy.ownerId
@@ -366,17 +413,21 @@ export default function CompanyRoom({
             {overlay}
             {rect && (
               <img
-                src={COMPANY_BACKGROUND}
+                src={COMPANY_ROOM_ART}
                 alt=""
                 aria-hidden="true"
                 className="seat-foreground"
-                style={{
-                  clipPath: `polygon(${rect.left * 100}% ${rect.top * 100}%,${rect.right * 100}% ${rect.top * 100}%,${rect.right * 100}% ${rect.bottom * 100}%,${rect.left * 100}% ${rect.bottom * 100}%)`,
-                }}
+                style={{ ...roomArtBox(companyLayout), clipPath: foregroundClip(rect, companyLayout) }}
               />
+            )}
+            {mySeat && (
+              <DeskSet seat={mySeat} look={look ?? defaultLook()} front={mySeat.id === foregroundSeat?.id} owner="me" />
             )}
           </>
         )}
+      </div>
+      </div>
+      {side && <aside className="company-side">{side}</aside>}
       </div>
       {toolbarExtra}
       {backgroundFailed && (
@@ -395,7 +446,8 @@ export default function CompanyRoom({
           {error || movementError}
         </p>
       )}
-      <div className="company-help">
+      <details className="company-help">
+        <summary>이동 도움말</summary>
         <p>
           바닥을 클릭하면 이동합니다. 1~3번은 위쪽, 4~6번은 아래쪽 좌석입니다.
         </p>
@@ -403,17 +455,7 @@ export default function CompanyRoom({
           좌석은 서버가 정해요. 같은 자리를 동시에 눌러도 한 명만 앉고, 연결이
           2분 넘게 끊기면 자리가 풀려요.
         </p>
-        <details>
-          <summary>캐릭터 에셋과 이동 안내</summary>
-          <p>
-            확정 원본의 연보라색 머리 정면 그림을 분리해 사용합니다. 걷기 방향은
-            화살표로 표시하며 실제 옆, 뒤 걷기/앉기 프레임은 아직 없습니다. 없는
-            동작을 다른 캐릭터로 대체하지 않습니다. 이동 중 전체 캐릭터를 숨기지
-            않고, 착석 때는 원본의 모니터와 책상 픽셀을 전경으로 겹쳐 다리를
-            가립니다. 배경 타이머와 음악은 기존 정적 이미지 상태입니다.
-          </p>
-        </details>
-      </div>
+      </details>
     </div>
   );
 }

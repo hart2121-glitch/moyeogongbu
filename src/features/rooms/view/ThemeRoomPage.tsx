@@ -11,7 +11,6 @@ export default function ThemeRoomPage() {
   return (
     <PageFrame title={`${theme.name} 테마 스터디룸`}>
       <div className="room-content">
-        <span className="eyebrow">MY STUDY SPACE</span>
         <h1>{theme.heading}</h1>
         <p>
           {theme.name} 테마 스터디룸에 입장했어요. 편안하게 공부를 시작해

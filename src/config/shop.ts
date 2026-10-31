@@ -1,66 +1,155 @@
 /**
- * 캐릭터 아이템 id별 그림 레이어 표 (Story 007). 이 파일만 바꾸면 새 픽셀아트로 바꿔 끼울 수 있다.
+ * 캐릭터 아이템 id별 그림 레이어 표 (Story 007, Story 009). 이 파일만 바꾸면 새 도트 그림으로 바꿔 끼울 수 있다.
  * 아이템 목록, 이름, 가격은 서버 `shop_items` 표가 정한다. 여기에는 가격을 두지 않는다.
  *
- * 레이어 출처(LayerSource):
- * - "base-sprite": 지금의 완성형 캐릭터 그림(정지, 걷기 프레임 전체)을 그대로 쓴다.
- * - { [poseKey]: 경로 }: 동작.방향.프레임(`idle.down.0`, `walk.down.2`, `portrait.down.0` 등)별 PNG.
- *   모든 레이어는 같은 87×110 캔버스, 같은 프레임 구성이어야 모든 동작에서 맞는다.
- * - 없음: 그 레이어는 그리지 않는다.
+ * 레이어 그림은 `tools/art/build-character.mjs`가 만든 23칸 시트(칸 56×72)다. 모든 레이어가 같은 칸 구성이라
+ * 같은 칸 번호(src/study/characterSprites.js의 frameIndex)로 겹치면 모든 동작에서 맞는다.
  *
- * placeholder: true 인 항목은 전용 픽셀아트가 아직 없어 기존 그림에 임시로 연결한 것이다.
- * 새 그림이 준비되면 layers에 프레임 경로를 넣고 placeholder를 false로 바꾼다. 그림을 새로 만들거나 자동 변환하지 않는다.
+ * placeholder: true 인 항목은 전용 도트 그림이 아직 없어 그리지 않거나 임시 색상만 입힌 것이다.
  */
+
+/** 남녀. 몸은 하나이고, 눈매와 처음 꾸미기의 기본 머리, 기본 옷만 다르다. */
+export type Gender = "f" | "m";
 
 /** 레이어 id. 서버 `character_looks` 열 이름과 같다. */
 export type LayerId = "hair_back" | "body" | "outfit" | "face" | "hair_front" | "accessory";
 
-export type LayerSource = "base-sprite" | Readonly<Record<string, string>>;
+/** 레이어 시트 경로. */
+export interface LayerSource {
+  sheet: string;
+}
 
 export interface ItemAsset {
-  /** 전용 그림이 없어 기존 그림에 임시 연결했는가. */
+  /** 전용 그림이 없어 그리지 않거나 임시로 연결했는가. */
   placeholder: boolean;
-  /** 이 아이템이 그리는 레이어별 그림. 머리 아이템은 hair_back과 hair_front를 함께 가진다. */
+  /** 이 아이템이 그리는 레이어별 시트. 머리 아이템은 hair_back과 hair_front를 함께 가진다. */
   layers: Partial<Record<LayerId, LayerSource>>;
-  /**
-   * 임시 연결: 몸 레이어에 입히는 기존 색상 변형 클래스 (styles.css의 `.outfit-세이지`, `.outfit-로즈`).
-   * 전용 의상 그림이 생기면 지운다.
-   */
+  /** 임시 연결: 전용 그림이 없는 의상의 대체 색상 클래스. 전용 그림이 생기면 지운다. */
   bodyTint?: string;
+  /** 머리 모양 아이템: 머리 시트 이름의 모양 부분. 없으면 머리카락을 그리지 않는다. */
+  hairStyle?: string;
+  /** 머리 색 아이템: 머리 시트 이름의 색 부분. */
+  hairColor?: string;
+  /** 색 견본: 머리 색과 눈 색은 꾸미기에서 이름 대신 이 색 동그라미로 고른다. */
+  swatch?: string;
+  /** 꾸미기 선택지 그림에서 보여 줄 부분. 칸의 기본값(머리 장식은 머리)과 다를 때만 둔다. */
+  thumb?: "head" | "body";
 }
+
+const sheet = (name: string): LayerSource => ({ sheet: `/assets/characters/layers/${name}.png` });
+/** 눈 색 아이템: 얼굴 레이어 시트 하나. 견본은 눈동자 중간 톤(recolor의 0.65 자리). */
+const face = (id: string, swatch: string): ItemAsset => ({ placeholder: false, layers: { face: sheet(id) }, swatch });
+/** 머리 모양 아이템. 시트는 머리 색과 함께 정해진다 (hairSheet). */
+const hairStyle = (style: string): ItemAsset => ({ placeholder: false, layers: {}, hairStyle: style });
+/** 머리 색 아이템. 모든 머리 모양에 쓴다. 견본은 웨이브 머리 시트에서 가장 많이 쓴 밝은 톤. */
+const hairColor = (color: string, swatch: string): ItemAsset => ({ placeholder: false, layers: {}, hairColor: color, swatch });
 
 /** 아이템 id → 그림. 표에 없는 id는 그리지 않는다 (서버에 새 아이템이 먼저 생겨도 화면이 깨지지 않는다). */
 export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
-  // 기본 몸: 지금의 완성형 캐릭터 그림 전체. 몸, 얼굴, 머리, 옷이 한 장에 들어 있다.
-  "body-basic": { placeholder: true, layers: { body: "base-sprite" } },
-  // 아래는 모두 전용 레이어 그림이 아직 없다 (public/assets/characters/ASSETS-NEEDED.md).
-  "face-basic": { placeholder: true, layers: {} },
-  "hair-lavender": { placeholder: true, layers: {} },
-  "hair-chestnut": { placeholder: true, layers: {} },
-  "outfit-lavender": { placeholder: true, layers: {} },
-  "outfit-sage": { placeholder: true, layers: {}, bodyTint: "outfit-세이지" },
-  "outfit-rose": { placeholder: true, layers: {}, bodyTint: "outfit-로즈" },
-  "outfit-hoodie": { placeholder: true, layers: {}, bodyTint: "outfit-세이지" },
-  "outfit-cardigan": { placeholder: true, layers: {}, bodyTint: "outfit-로즈" },
-  "outfit-suit": { placeholder: true, layers: {} },
-  "hair-ponytail": { placeholder: true, layers: {} },
-  "hair-short": { placeholder: true, layers: {} },
-  "hair-wave": { placeholder: true, layers: {} },
-  "hair-long": { placeholder: true, layers: {} },
-  "acc-ribbon": { placeholder: true, layers: {} },
-  "acc-hairpin": { placeholder: true, layers: {} },
-  "acc-glasses": { placeholder: true, layers: {} },
-  "acc-headphones": { placeholder: true, layers: {} },
-  "acc-scarf": { placeholder: true, layers: {} },
-  "acc-beret": { placeholder: true, layers: {} },
+  // 기본 몸: 머리카락과 눈, 입이 없는 몸, 회색 바디슈트.
+  "body-basic": { placeholder: false, layers: { body: sheet("body-basic") } },
+  // 기본 얼굴(보라 눈): 승인 시안 N1의 눈과 입 (art-src/characters/src/face/basic).
+  "face-basic": face("face-basic", "#5707a7"),
+  // 아래 눈 색은 기본 얼굴의 눈동자 색만 바꿨다 (art-src/characters/src/recolor/<id>.json).
+  "face-black": face("face-black", "#462c2a"),
+  "face-brown": face("face-brown", "#804620"),
+  "face-amber": face("face-amber", "#c87612"),
+  "face-green": face("face-green", "#228048"),
+  "face-blue": face("face-blue", "#285cc4"),
+  "face-gray": face("face-gray", "#6c727e"),
+  // 머리 모양. 웨이브는 처음 승인한 N1 머리카락이다 (art-src/characters/src/hair/wave).
+  // 아래 머리 모양은 기본 몸 세 방향을 PixelLab pixen으로 한 장씩 고친 머리 (art-src/characters/src/hair/<모양>).
+  // 단발 머리(여자 기본), 짧은 머리(남자 기본)는 무료. 남자 머리는 남자 눈매를 얹은 기본 몸에서 만들었다.
+  "hair-basic": hairStyle("bob"),
+  "hair-short": hairStyle("short"),
+  "hair-ponytail": hairStyle("ponytail"),
+  "hair-long": hairStyle("long"),
+  "hair-bun": hairStyle("bun"),
+  "hair-bowl": hairStyle("bowl"),
+  "hair-dandy": hairStyle("dandy"),
+  "hair-comma": hairStyle("comma"),
+  "hair-perm": hairStyle("perm"),
+  "hair-wave": hairStyle("wave"),
+  // 머리 색 (art-src/characters/src/recolor/hair-color/<색>.json, 라벤더는 원재료 색 그대로).
+  "hair-color-black": hairColor("black", "#3a3848"),
+  "hair-color-chestnut": hairColor("chestnut", "#a9633d"),
+  "hair-color-lavender": hairColor("lavender", "#d2aef0"),
+  "hair-color-gray": hairColor("gray", "#b1afad"),
+  "hair-color-ashgray": hairColor("ashgray", "#bfc9cb"),
+  "hair-color-white": hairColor("white", "#f2f2f8"),
+  "hair-color-blonde": hairColor("blonde", "#fae28d"),
+  "hair-color-red": hairColor("red", "#e66959"),
+  "hair-color-pink": hairColor("pink", "#fabbd3"),
+  "hair-color-skyblue": hairColor("skyblue", "#b1d8f6"),
+  // 교복 치마: "기본 몸 + 교복"으로 생성한 서기와 같은 뼈대의 걷기 (art-src/characters/src/outfit/uniform).
+  "outfit-lavender": { placeholder: false, layers: { outfit: sheet("outfit-uniform") } },
+  // 세이지 옷과 로즈 옷은 교복 치마의 색만 바꿨다 (art-src/characters/src/recolor/outfit-*.json).
+  "outfit-sage": { placeholder: false, layers: { outfit: sheet("outfit-sage") } },
+  "outfit-rose": { placeholder: false, layers: { outfit: sheet("outfit-rose") } },
+  // 교복 바지: "기본 몸 + 교복"으로 생성한 서기와 같은 뼈대의 걷기 (art-src/characters/src/outfit/uniform-boy).
+  "outfit-boy": { placeholder: false, layers: { outfit: sheet("outfit-uniform-boy") } },
+  // 후드티, 가디건, 정장: "기본 몸 + 옷"으로 생성한 서기와 같은 뼈대의 걷기 (art-src/characters/src/outfit/<id>).
+  "outfit-hoodie": { placeholder: false, layers: { outfit: sheet("outfit-hoodie") } },
+  "outfit-cardigan": { placeholder: false, layers: { outfit: sheet("outfit-cardigan") } },
+  "outfit-suit": { placeholder: false, layers: { outfit: sheet("outfit-suit") } },
+  // 리본은 N1에서, 헤드폰, 목도리, 베레모는 단발 위에 pixen으로 그려 떼어 냈다 (art-src/characters/src/accessory/<id>).
+  "acc-ribbon": { placeholder: false, layers: { accessory: sheet("acc-ribbon") } },
+  "acc-headphones": { placeholder: false, layers: { accessory: sheet("acc-headphones") } },
+  "acc-scarf": { placeholder: false, layers: { accessory: sheet("acc-scarf") }, thumb: "body" },
+  "acc-beret": { placeholder: false, layers: { accessory: sheet("acc-beret") } },
+  // 머리핀과 안경은 손으로 찍었다 (tools/art/hand-accessories.mjs).
+  "acc-hairpin": { placeholder: false, layers: { accessory: sheet("acc-hairpin") } },
+  "acc-glasses": { placeholder: false, layers: { accessory: sheet("acc-glasses") } },
 };
 
-/** 아직 저장한 꾸밈이 없을 때 보여 주는 모습 (서버 기본 아이템 id). */
+/**
+ * 머리 모양과 머리 색으로 고른 뒷머리 또는 앞머리 시트. 둘 중 하나라도 그림이 없으면 null.
+ * 시트는 `tools/art/build-character.mjs`가 모양마다 모든 색으로 만든 hair-<모양>-<색>-<front|back>.png다.
+ * @example hairSheet("hair-wave", "hair-color-pink", "front")?.sheet // "/assets/characters/layers/hair-wave-pink-front.png"
+ */
+export function hairSheet(styleId: string, colorId: string, which: "front" | "back"): LayerSource | null {
+  const style = ITEM_ASSETS[styleId]?.hairStyle, color = ITEM_ASSETS[colorId]?.hairColor;
+  return style && color ? sheet(`hair-${style}-${color}-${which}`) : null;
+}
+
+/**
+ * 눈 색 아이템의 얼굴 시트. 남자 눈매는 정면 속눈썹과 꼬리를 지운 같은 이름의 -m 시트다.
+ * @example faceSheet("face-black", "m")?.sheet // "/assets/characters/layers/face-black-m.png"
+ */
+export function faceSheet(faceId: string, gender: Gender): LayerSource | null {
+  const src = ITEM_ASSETS[faceId]?.layers.face;
+  if (!src) return null;
+  return gender === "m" ? { sheet: src.sheet.replace(/\.png$/, "-m.png") } : src;
+}
+
+/**
+ * 내 책상 세트 아이템 그림 (꾸미기 슬롯 계획 1절, tools/art/desk-items.mjs). 회사 방 책상 자리 크기의 투명 그림을 1배로 얹는다.
+ * 책상 소품(desk_top)은 32×44로 왼쪽이나 오른쪽 자리에, 스티커(desk_front)는 32×16으로 앞면 자리에 놓인다.
+ */
+export const DESK_ITEM_ART: Readonly<Record<string, string>> = Object.fromEntries(
+  ["desk-lamp", "desk-plant", "desk-books", "desk-mug", "desk-cactus", "desk-cat", "desk-moon", "desk-globe", "sticker-star", "sticker-cat"].map(
+    (id) => [id, `/assets/rooms/desk/${id}.png`],
+  ),
+);
+
+/** 처음 꾸미기에서 남녀를 고르면 입혀 주는 기본 머리 모양과 옷 (서버 기본 아이템 id). */
+export const GENDER_PRESETS: Readonly<Record<Gender, { label: string; hair: string; outfit: string }>> = {
+  f: { label: "여자", hair: "hair-basic", outfit: "outfit-lavender" },
+  m: { label: "남자", hair: "hair-short", outfit: "outfit-boy" },
+};
+
+/** 아직 저장한 꾸밈이 없을 때 보여 주는 모습 (서버 기본 아이템 id): 여자, 단발 머리, 검은 머리, 검은 눈. */
 export const DEFAULT_LOOK = {
   body: "body-basic",
-  face: "face-basic",
-  hair_back: "hair-lavender",
-  hair_front: "hair-lavender",
+  face: "face-black",
+  hair_back: "hair-basic",
+  hair_front: "hair-basic",
+  hair_color: "hair-color-black",
   outfit: "outfit-lavender",
   accessory: null,
+  gender: "f",
+  // 내 책상 세트: 지금 회사 방처럼 왼쪽 스탠드, 오른쪽 화분, 앞면은 비움 (서버 character_looks 기본값과 같다).
+  desk_left: "desk-lamp",
+  desk_right: "desk-plant",
+  desk_front: null,
 } as const;

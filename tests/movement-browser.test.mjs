@@ -12,7 +12,7 @@ const url = process.env.APP_URL || "http://127.0.0.1:4173/";
 async function enter(page) {
   await page.goto(url);
   await page
-    .getByRole("button", { name: "회사 테마로 가기", exact: true })
+    .getByRole("button", { name: / 방으로 출근$/ }).first()
     .click();
   await page.getByTestId("study-character").waitFor();
   await page
@@ -88,39 +88,29 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
         await p.getByTestId("study-character").getAttribute("data-direction"),
         direction,
       );
-      const sprite = p.locator(".study-character img[data-active=true]");
-      await sprite.evaluate((img) => img.decode());
-      assert.match(
-        await sprite.getAttribute("src"),
-        new RegExp(`idle-${direction}\\.png\\.png$`),
-      );
-      const geometry = await sprite.evaluate((img) => {
-        const r = img.getBoundingClientRect(),
-          wrapper = img.parentElement.getBoundingClientRect();
+      // Story 009: 레이어 시트의 서기 칸. 칸(56×72)이 캐릭터 상자를 꽉 채우고, 칸 맨 아래 줄이 발이다.
+      const character = p.getByTestId("study-character");
+      assert.equal(await character.getAttribute("data-pose"), `idle.${direction}`);
+      const geometry = await character.evaluate((el) => {
+        const cell = el.querySelector('.sheet-frame[data-layer="body"]').getBoundingClientRect(),
+          box = el.getBoundingClientRect(),
+          img = el.querySelector('.sheet-frame[data-layer="body"] img');
         return {
-          ratio: r.width / r.height,
-          width: r.width,
-          wrapper: wrapper.width,
-          stage: img.closest(".company-stage").getBoundingClientRect().width,
-          footBottom: r.bottom - wrapper.bottom,
-          horizontalOffset: r.left - wrapper.left,
+          ratio: cell.width / cell.height,
+          width: cell.width,
+          box: box.width,
+          stage: el.closest(".company-stage").getBoundingClientRect().width,
+          footBottom: cell.bottom - box.bottom,
+          pixelated: getComputedStyle(img).imageRendering === "pixelated",
         };
       });
-      assert.ok(Math.abs(geometry.ratio - 87 / 110) < 0.001);
-      assert.ok(Math.abs(geometry.width - geometry.wrapper) < 0.1);
-      assert.ok(
-        Math.abs(geometry.width / geometry.stage - 0.042 * 1.2 * 1.1 * 1.1) < 0.0001,
-      );
-      const center = { up: 44, down: 43, left: 37.5, right: 49 }[direction];
-      assert.ok(
-        Math.abs(
-          geometry.horizontalOffset - ((43.5 - center) / 87) * geometry.width,
-        ) < 0.1,
-      );
-      const padding = { up: 6, down: 10, left: 5, right: 6 }[direction];
-      assert.ok(
-        Math.abs(geometry.footBottom - (padding / 87) * geometry.width) < 0.1,
-      );
+      assert.ok(Math.abs(geometry.ratio - 56 / 72) < 0.001);
+      assert.ok(Math.abs(geometry.width - geometry.box) < 0.1);
+      // 도트 방(672×432)과 같은 1배: 칸 56×72가 화면 56px이다 (원본 기준 112 / 1705).
+      assert.ok(Math.abs(geometry.width / geometry.stage - 112 / 1705) < 0.0001);
+      assert.ok(Math.abs(geometry.width - 56) < 0.01, `캐릭터 폭 ${geometry.width}`);
+      assert.ok(Math.abs(geometry.footBottom) < 0.1);
+      assert.ok(geometry.pixelated);
     }
     await floor(p, { x: 0.74, y: 0.8 });
     await p.waitForFunction(
@@ -133,8 +123,10 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
     const final = await p
       .getByTestId("study-character")
       .evaluate((s) => ({ x: Number(s.dataset.x), y: Number(s.dataset.y) }));
+    // 클릭은 화면 1px 단위라 허용 오차는 화면 1.5px (1배 방에서 원본 3px).
+    const stageWidth = (await p.getByTestId("company-stage").boundingBox()).width;
     assert.ok(
-      Math.hypot((final.x - 0.52) * 1705, (final.y - 0.89) * 922) < 1.5,
+      Math.hypot((final.x - 0.52) * 1705, (final.y - 0.89) * 922) < (1.5 * 1705) / stageWidth,
     );
     const before = final;
     await floor(p, { x: 0.4, y: 0.55 });

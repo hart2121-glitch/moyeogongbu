@@ -11,6 +11,7 @@ import RoomInviteButton from "../../mailbox/view/RoomInviteButton";
 import OwnerTools from "../../room/view/OwnerTools";
 import RemoteCharacter from "../../room/view/RemoteCharacter";
 import RoomLiveBar from "../../room/view/RoomLiveBar";
+import RoomTodos from "../../room/view/RoomTodos";
 import { useRoomLive } from "../../room/viewmodel/useRoomLive";
 import StudySessionBar from "../../session/view/StudySessionBar";
 import { useStudySession } from "../../session/viewmodel/useStudySession";
@@ -148,11 +149,14 @@ function LiveCompanyRoom({ room, userId, nickname, exit, toRooms }: LiveProps) {
         ))}
         toolbarExtra={
           <>
-            <RoomInviteButton room={room} />
-            <RoomLiveBar connected={live.connected} sendReaction={live.sendReaction} onTaskSaved={live.notifyMembers} />
+            <div className="room-social">
+              <RoomInviteButton room={room} />
+              <RoomLiveBar connected={live.connected} sendReaction={live.sendReaction} onTaskSaved={live.notifyMembers} />
+            </div>
             {room.isOwner && <OwnerTools room={room} members={live.members} onChanged={live.notifyMembers} />}
           </>
         }
+        side={<RoomTodos />}
         renderSession={({ goLounge, canGoLounge }: { goLounge: () => void; canGoLounge: boolean }) => (
           <StudySessionBar session={session} onGoLounge={goLounge} canGoLounge={canGoLounge} todayCoins={coinsToday} />
         )}

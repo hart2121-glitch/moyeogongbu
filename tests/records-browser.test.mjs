@@ -61,7 +61,7 @@ test("어제 미완료 할 일 제안, 골라서 가져오기, 공부 기록과 
     assert.match(carryText, /영어 단어 30개/);
     assert.ok(!carryText.includes("독서 20분"));
     assert.ok(!carryText.includes("·"));
-    await page.waitForFunction(() => document.querySelector(".profile-avatar")?.naturalWidth > 0);
+    await page.waitForFunction(() => [...document.querySelectorAll(".desk-character img")].some((img) => img.naturalWidth > 0));
     await shot(page, "carry-over-modal.png");
 
     // 골라서 가져오기: 하나만 오늘로, 나머지는 어제에 남는다.

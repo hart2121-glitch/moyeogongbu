@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { GENDER_PRESETS, type Gender } from "../../../config/shop";
 import { useSession } from "../../account/viewmodel/SessionContext";
 import type { ItemSlot, ShopItem } from "../../shop/model/shop";
 import { shopStore } from "../../shop/model/shopStore";
 import { useShopItems } from "../../shop/viewmodel/useShop";
-import { defaultLook, type Look } from "../model/layers";
+import { defaultLook, type DeskSpot, type Look } from "../model/layers";
 import { firstLookSavedMessage, lookSaveErrorMessage, lookSavedMessage } from "../model/look";
 
 export const lookKey = (userId: string | undefined) => ["look", userId] as const;
@@ -18,22 +19,50 @@ export function useMyLook() {
   return useQuery({ queryKey: lookKey(userId), queryFn: shopStore.myLook, enabled: !!userId });
 }
 
-/** 칸에 아이템을 고른 꾸밈. 머리는 뒷머리와 앞머리를 함께 바꾸고, 액세서리는 같은 것을 다시 고르면 벗는다. */
+/** 칸에 아이템을 고른 꾸밈. 머리 모양은 뒷머리와 앞머리를 함께 바꾸고, 액세서리는 같은 것을 다시 고르면 벗는다. */
 export function wearItem(look: Look, slot: ItemSlot, itemId: string): Look {
   if (slot === "hair") return { ...look, hair_back: itemId, hair_front: itemId };
+  if (slot === "hair_color") return { ...look, hair_color: itemId };
   if (slot === "accessory") return { ...look, accessory: look.accessory === itemId ? null : itemId };
+  if (slot === "desk_top") return placeOnDesk(look, "desk_left", itemId);
+  if (slot === "desk_front") return placeOnDesk(look, "desk_front", itemId);
   return { ...look, [slot]: itemId };
+}
+
+/**
+ * 내 책상 세트의 한 자리에 아이템을 놓는다. 같은 것을 다시 고르면 그 자리를 비운다.
+ * @example placeOnDesk(defaultLook(), "desk_right", "desk-cat").desk_right // "desk-cat"
+ */
+export const placeOnDesk = (look: Look, spot: DeskSpot, itemId: string): Look => ({ ...look, [spot]: look[spot] === itemId ? null : itemId });
+
+/**
+ * 남녀를 바꾼 꾸밈. 눈매가 바뀌고, 처음 꾸미기에서는 그 남녀의 기본 머리 모양과 옷도 입힌다.
+ * @example chooseGender(defaultLook(), "m", true).hair_front // "hair-short"
+ */
+export function chooseGender(look: Look, gender: Gender, withPreset: boolean): Look {
+  if (!withPreset) return { ...look, gender };
+  const preset = GENDER_PRESETS[gender];
+  return { ...look, gender, hair_back: preset.hair, hair_front: preset.hair, outfit: preset.outfit };
 }
 
 /** 꾸밈에 들어간 아이템 중 사지 않은 것 (입어 보기 중인 것). */
 export function unownedIn(look: Look, items: readonly ShopItem[]): ShopItem[] {
-  const ids = new Set([look.body, look.face, look.hair_back, look.hair_front, look.outfit, look.accessory]);
+  const ids = new Set([
+    look.body, look.face, look.hair_back, look.hair_front, look.hair_color, look.outfit, look.accessory,
+    look.desk_left, look.desk_right, look.desk_front,
+  ]);
   return items.filter((i) => ids.has(i.id) && !i.owned);
 }
 
 /** 이 아이템을 지금 입고 있는가. */
 export const isWorn = (look: Look, item: Pick<ShopItem, "id" | "slot">) =>
-  item.slot === "hair" ? look.hair_front === item.id : look[item.slot] === item.id;
+  item.slot === "hair"
+    ? look.hair_front === item.id
+    : item.slot === "desk_top"
+      ? look.desk_left === item.id || look.desk_right === item.id
+      : item.slot === "desk_front"
+        ? look.desk_front === item.id
+        : look[item.slot] === item.id;
 
 /**
  * 꾸미기 화면 상태. 상태: 불러오는 중 → (처음 꾸미기 | 꾸미기). draft는 입어 보기용이며 저장 전에는 서버에 가지 않는다.
@@ -74,6 +103,10 @@ export function useCustomize(notify: (text: string) => void) {
     tryingOn,
     saving: save.isPending,
     wear: (item: ShopItem) => setDraft(wearItem(look, item.slot, item.id)),
+    /** 내 책상 세트의 한 자리에 놓거나, 이미 놓인 것이면 치운다. */
+    placeOnDesk: (spot: DeskSpot, item: ShopItem) => setDraft(placeOnDesk(look, spot, item.id)),
+    /** 남녀 고르기. 처음 꾸미기에서는 기본 머리 모양과 옷도 바뀐다. */
+    setGender: (gender: Gender) => setDraft(chooseGender(look, gender, firstTime)),
     reset: () => setDraft(null),
     /** 사지 않은 아이템이 들어 있으면 저장하지 않는다 (서버도 거절한다). */
     save: () => {

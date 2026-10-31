@@ -1,0 +1,4 @@
+Reviewed-Content-Hash: tools/art/home-entrance.mjs db07a01b9c7dd25e7e24a7c3eeb59064d49e5222
+Reviewed-Content-Hash: src/features/account/view/EntranceScene.tsx 8c94da9b3f0b2c95388811e4146b8d70145e6449
+Reviewed-Content-Hash: src/features/account/view/authFrame.css af8090d7bca4d0f60b9ba1511fc7abc1322f4251
+Reviewed-Content-Hash: src/features/account/model/entranceScene.ts eb192bea8f97e3d3af18513fca2223b59211f957

@@ -43,7 +43,15 @@ export default function RoomLiveBar({ connected, sendReaction, onTaskSaved }: Pr
     <div className="room-live-bar" data-testid="room-live-bar">
       <div className="room-reactions" role="group" aria-label="반응 보내기">
         {REACTIONS.map((r) => (
-          <button key={r.key} type="button" onClick={() => react(r.key)} disabled={!connected} aria-label={`반응 ${r.label}`}>
+          <button
+            key={r.key}
+            type="button"
+            className={`reaction-${r.kind}`}
+            onClick={() => react(r.key)}
+            disabled={!connected}
+            aria-label={`반응 ${r.name}`}
+            title={r.name}
+          >
             {r.label}
           </button>
         ))}
