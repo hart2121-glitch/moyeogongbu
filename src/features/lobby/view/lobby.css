@@ -85,22 +85,13 @@
   image-rendering: pixelated;
   overflow: hidden;
 }
-/* 임시 내 방: 벽지 타일 위, 걸레받이 한 줄, 나무 마루 타일 아래 (art-src/home, 1배). 내 방 그림이 오면 교체한다. */
-.home-wall,
-.home-floor {
+/* 내 방: 빈 방 위에 갈아 끼울 수 있는 부품을 얹는다 (tools/art/home-room.mjs). 방과 캐릭터는 같은 정수 배율(--scale)이다. */
+.home-room-part {
   position: absolute;
-  left: 0;
-  right: 0;
+  max-width: none;
   image-rendering: pixelated;
-}
-.home-wall {
-  top: 0;
-  background: url("/assets/home/wallpaper.png") 0 0 / 16px 16px repeat;
-}
-.home-floor {
-  bottom: 0;
-  border-top: 6px solid #7a4d2b;
-  background: url("/assets/home/floor.png") 0 0 / 48px 16px repeat;
+  pointer-events: none;
+  user-select: none;
 }
 .desk-character {
   position: absolute;
@@ -117,7 +108,7 @@
     transform: translateY(0);
   }
   85% {
-    transform: translateY(-1px);
+    transform: translateY(calc(-1px * var(--scale, 1)));
   }
 }
 

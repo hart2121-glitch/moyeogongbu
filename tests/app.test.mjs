@@ -29,22 +29,23 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
     await page.waitForFunction(() =>
       [...document.querySelectorAll(".desk-character img")].some((img) => img.naturalWidth > 0),
     );
-    // 로비는 집, 내 방이다. 벽지와 나무 마루 도트 타일을 1배로 깐다 (회사 사무실 그림은 쓰지 않는다).
+    // 로비는 집, 내 방이다. 256×152 도트 방(빈 방 위에 갈아 끼울 수 있는 부품 18개)과 캐릭터를 같은 3배로 그린다
+    // (회사 사무실 그림은 쓰지 않는다).
+    await page.waitForFunction(() => [...document.querySelectorAll(".home-room-part")].every((img) => img.complete && img.naturalWidth > 0));
     assert.deepEqual(
       await page.locator(".desk-scene-art").evaluate((node) => {
         const box = node.getBoundingClientRect();
-        const bg = (sel) => getComputedStyle(node.querySelector(sel));
+        const base = node.querySelector('img.home-room-part[src$="/assets/home/room/room-base.png"]');
         return {
-          wall: bg(".home-wall").backgroundImage.includes("/assets/home/wallpaper.png"),
-          wallTile: bg(".home-wall").backgroundSize,
-          floor: bg(".home-floor").backgroundImage.includes("/assets/home/floor.png"),
-          floorTile: bg(".home-floor").backgroundSize,
+          base: base?.getBoundingClientRect().width,
+          parts: node.querySelectorAll("img.home-room-part[data-slot]").length,
+          character: node.querySelector(".desk-character").getBoundingClientRect().width,
           office: node.innerHTML.includes("company-study-room"),
           width: box.width,
           height: box.height,
         };
       }),
-      { wall: true, wallTile: "16px 16px", floor: true, floorTile: "48px 16px", office: false, width: 770, height: 455 },
+      { base: 768, parts: 18, character: 168, office: false, width: 768, height: 456 },
     );
     assert.equal(await page.getByRole("heading", { name: "오늘 어디로 갈까" }).count(), 1);
     assert.match(await page.locator(".desk-date").innerText(), /^\d+월 \d+일 [일월화수목금토]요일$/);

@@ -9,4 +9,6 @@
   원재료와 칸 순서는 `characters/src/README.md`.
 - `characters/draft-*.png`, `characters/sheet-n1.png`: 사용자가 고른 N1 시안까지의 정면 시안.
 - `lobby/`: 로비 물건 틀 (`tools/art/lobby-props.mjs`).
+- `home/room/`: 로비 "내 방" 256×152 (화면 3배). `node tools/art/home-room.mjs`가 `home/room/src/`의 생성 원본(가구가 있는 방과
+  빈 방, 영역표)에서 부품을 떼어 내고 손 보정(베개 무늬 지우기, 고양이 다시 찍기)한 뒤 같은 파일을 `public/assets/home/room/`에 쓴다.
 - `archive/pilot-24x32/`: 2026-10-30에 접은 24×32 고정 32색 시범. 기록으로만 둔다.

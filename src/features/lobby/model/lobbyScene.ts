@@ -1,17 +1,18 @@
 import { spriteFootCenterX, spriteFootPadding } from "../../../study/characterSprites";
 import { CANVAS } from "../../character/model/layers";
+import { HOME_ROOM } from "./homeRoomLayers";
 
 /**
- * 로비 "내 방" 장면 설정 (로비는 집이다, 2026-10-31). 캐릭터 도트 세션이 그릴 내 방 그림이 나오기 전까지
- * 벽지와 나무 마루 도트 타일(public/assets/home)을 1배로 깔아 임시 방을 만든다.
+ * 로비 "내 방" 장면 설정 (로비는 집이다, 2026-10-31). 256×152 도트 방(homeRoomLayers)과 캐릭터를
+ * 같은 정수 배율로 키워 그린다 (사용자 결정: 6번 시안 구성, 캐릭터 3배).
  */
 export const LOBBY_SCENE = {
-  /** 장면 액자 안쪽 크기 (px, 1배). */
-  size: { width: 770, height: 455 },
-  /** 벽과 마루의 경계 (위에서부터 px). 위는 벽지, 아래는 마루. */
-  floorTop: 320,
-  /** 캐릭터 발 중심 (장면 안 px). 마루 가운데. */
-  feet: { x: 385, y: 420 },
+  /** 방 그림과 캐릭터를 키우는 정수 배율. */
+  scale: HOME_ROOM.scale,
+  /** 장면 액자 안쪽 크기 (화면 px): 방 그림 × 배율. */
+  size: { width: HOME_ROOM.size.width * HOME_ROOM.scale, height: HOME_ROOM.size.height * HOME_ROOM.scale },
+  /** 캐릭터 발 중심 (방 그림 안 1배 px). 러그 가운데. */
+  feet: { x: 128, y: 147 },
 } as const;
 
 export type Facing = "down" | "up" | "left" | "right";
@@ -31,14 +32,14 @@ export function facingToward(from: { x: number; y: number }, to: { x: number; y:
 }
 
 /**
- * 방향마다 발이 같은 자리에 오도록 한 캐릭터 캔버스의 왼쪽 위 좌표 (구역 안 px).
- * 1배 도트가 반 픽셀에 걸려 흐려지지 않도록 정수 픽셀로 내린다 (발 중심 27.5 → 27).
- * @example characterOffset("down") // { left: 684, top: 358 }
+ * 방향마다 발이 같은 자리에 오도록 한 캐릭터 캔버스의 왼쪽 위 좌표 (장면 안 화면 px).
+ * 도트가 반 칸에 걸려 흐려지지 않도록 1배 좌표에서 정수로 내린 뒤 배율을 곱한다 (발 중심 27.5 → 27).
+ * @example characterOffset("down") // { left: 300, top: 225 }
  */
-export function characterOffset(facing: Facing, feet = LOBBY_SCENE.feet) {
+export function characterOffset(facing: Facing, feet = LOBBY_SCENE.feet, scale = LOBBY_SCENE.scale) {
   const footX = (spriteFootCenterX as Record<Facing, number>)[facing];
   const pad = (spriteFootPadding as Record<Facing, number>)[facing];
-  return { left: Math.floor(feet.x - footX), top: Math.floor(feet.y - (CANVAS.height - pad)) };
+  return { left: Math.floor(feet.x - footX) * scale, top: Math.floor(feet.y - (CANVAS.height - pad)) * scale };
 }
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"] as const;
