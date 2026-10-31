@@ -7,11 +7,12 @@ import {
   Toilet,
   ArrowLeft,
 } from "@phosphor-icons/react";
-import { COMPANY_ROOM_ART, companyLayout, foregroundClip, roomArtBox } from "./companyLayout";
+import { COMPANY_ROOM_ART, artBox, companyLayout, foregroundClip, roomArtBox } from "./companyLayout";
 import { useCharacterMovement } from "./useCharacterMovement";
 import CharacterSprite from "./CharacterSprite";
 import DeskSet from "./DeskSet";
 import { defaultLook } from "../features/character/model/layers";
+import { DECOR_DRAW_ORDER, DECOR_ITEM_ART, DEFAULT_DECOR } from "../config/roomDecor";
 import { useSeatOccupancy } from "./useSeatOccupancy";
 
 /** 바깥 창의 비율: 보이는 범위(view)의 가로세로. view가 없으면 원본 전체. */
@@ -208,6 +209,9 @@ export default function CompanyRoom({
       onSettle?.(character);
   }, [character.activity]);
   const lounge = companyLayout.areas.find((area) => area.id === "lounge");
+  // 방장이 고른 휴게실 꾸밈과 화이트보드 문구 (꾸미기 슬롯 계획 2절). 같은 방 사람 모두 같은 방 정보를 받는다.
+  const decor = { ...DEFAULT_DECOR, ...room.decor };
+  const signText = (sign) => (sign.id === "board" && room.boardText ? room.boardText : sign.text);
   const canGoLounge =
     !locked && !backgroundFailed && character.activity !== "lounge";
   const status =
@@ -318,6 +322,23 @@ export default function CompanyRoom({
         />
         {!backgroundFailed && (
           <>
+            {DECOR_DRAW_ORDER.map((slot) => {
+              const src = DECOR_ITEM_ART[decor[slot]];
+              const box = companyLayout.decorSlots.find((s) => s.id === slot).box;
+              return src ? (
+                <img
+                  key={slot}
+                  className="room-decor"
+                  src={src}
+                  alt=""
+                  aria-hidden="true"
+                  draggable={false}
+                  data-slot={slot}
+                  data-item={decor[slot]}
+                  style={artBox(box, companyLayout)}
+                />
+              ) : null;
+            })}
             {seats
               .filter((seat) => !seat.occupantId && seat.id !== mySeat?.id)
               .map((seat) => (
@@ -329,8 +350,9 @@ export default function CompanyRoom({
                 className={`room-sign room-sign-${sign.id}`}
                 style={{ left: `${sign.x * 100}%`, top: `${sign.y * 100}%` }}
                 aria-hidden="true"
+                data-testid={`room-sign-${sign.id}`}
               >
-                {sign.text}
+                {signText(sign)}
               </span>
             ))}
             <div

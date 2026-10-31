@@ -45,3 +45,9 @@ export const deskBox = (seat, s, { image, view }) => {
     height: `${((2 * s.height) / image.height) * 100}%`,
   };
 };
+
+/**
+ * 방 그림 칸 상자(x, y, width, height)를 무대 위 위치와 크기(백분율)로. 공용 꾸밈 자리(decorSlots)에 쓴다.
+ * @example artBox(companyLayout.decorSlots[0].box, companyLayout)
+ */
+export const artBox = (box, layout) => deskBox({ desk: { x: 0, y: 0 } }, box, layout);

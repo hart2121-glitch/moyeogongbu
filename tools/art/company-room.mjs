@@ -13,6 +13,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { companyFinalLayout as layout } from "../../src/study/companyFinalLayout.js";
 import { decodePng, encodePng } from "./pixelArt.mjs";
+import { hsv } from "./rigImage.mjs";
 
 const SRC = "art-src/rooms/src";
 const VIEW = layout.view;
@@ -137,6 +138,50 @@ for (let y = 0; y < MON.height; y++) for (let x = 0; x < MON.width; x++) {
 mkdirSync("public/assets/rooms/desk", { recursive: true });
 writeFileSync("art-src/rooms/desk/desk-monitor.png", encodePng(monitor));
 writeFileSync("public/assets/rooms/desk/desk-monitor.png", encodePng(monitor));
+
+// 휴게실 공용 꾸밈 자리 (꾸미기 슬롯 계획 2절, 2026-11-01 사용자 결정: 방장이 소파 쿠션, 탁자 위, 출입구 매트를 갈아 끼운다).
+// lounge-empty.png는 휴게실(그림 x 72, y 108부터 128×72)에서 쿠션과 탁자 위 소품만 걷어 낸 그림이다. PixelLab edit_image_pixen
+// (시드 11)은 소파 모양까지 바꿔서 소품이 있던 칸만 가져왔고, 탁자 윗면의 옛 윤곽선, 소파 위 잎 자국, 탁자 가장자리 돌기를 손 보정했다.
+// 찍기 전에 원본의 쿠션, 탁자 소품, 매트를 기본 아이템(무료)으로 떼어 두어, 기본 꾸밈은 지금 그림과 똑같다.
+const LOUNGE = { x: 72, y: 108 };
+const lounge = decodePng(readFileSync(join(SRC, "lounge-empty.png")));
+const slot = (id) => layout.decorSlots.find((s) => s.id === id).box;
+const changed = (x, y) => {
+  const lx = x - LOUNGE.x, ly = y - LOUNGE.y;
+  if (lx < 0 || ly < 0 || lx >= lounge.width || ly >= lounge.height) return false;
+  const a = at(room, x, y), b = at(lounge, lx, ly);
+  return a[0] !== b[0] || a[1] !== b[1] || a[2] !== b[2];
+};
+// 잎은 노랑에서 초록(색상 36~150)이고 130줄 아래까지만 올라온다. 쿠션의 주황 무늬도 색상 36 근처라 그 위는 모두 쿠션이다.
+const leafy = (p) => { const c = hsv(p[0], p[1], p[2]); return c.h >= 36 && c.h <= 150 && c.s > 0.3; };
+// 쿠션 칸: 왼쪽 두 개(x 95~127, y 122~138, 그 아래 세 줄은 짙은 그림자만)와 오른쪽 두 개(x 152~188, y 120~148).
+// 왼쪽 쿠션 사이로 올라온 화분 잎은 탁자 몫이다.
+const dark = (p) => Math.max(p[0], p[1], p[2]) < 80;
+const onCushion = (x, y) =>
+  ((x <= 127 && y >= 122 && (y <= 138 || (y <= 141 && dark(at(room, x, y))))) || (x >= 152 && x <= 188 && y >= 120 && y <= 148)) &&
+  !(y >= 130 && leafy(at(room, x, y)));
+const cut = (box, keep) => {
+  const im = { width: box.width, height: box.height, pixels: new Uint8Array(box.width * box.height * 4) };
+  for (let y = 0; y < box.height; y++) for (let x = 0; x < box.width; x++)
+    if (keep(box.x + x, box.y + y)) im.pixels.set(at(room, box.x + x, box.y + y), (y * box.width + x) * 4);
+  return im;
+};
+const defaults = {
+  "cushions-cat": cut(slot("cushions"), (x, y) => changed(x, y) && onCushion(x, y)),
+  "table-cat": cut(slot("table"), (x, y) => changed(x, y) && !onCushion(x, y)),
+  "mat-cat": cut(slot("mat"), () => true),
+};
+mkdirSync("art-src/rooms/lounge", { recursive: true });
+mkdirSync("public/assets/rooms/lounge", { recursive: true });
+for (const [name, im] of Object.entries(defaults)) {
+  writeFileSync(`art-src/rooms/lounge/${name}.png`, encodePng(im));
+  writeFileSync(`public/assets/rooms/lounge/${name}.png`, encodePng(im));
+}
+for (let y = 0; y < lounge.height; y++) for (let x = 0; x < lounge.width; x++) at(room, LOUNGE.x + x, LOUNGE.y + y).set(at(lounge, x, y));
+// 출입구 매트 자리: 안쪽 고양이 매트(그림자 포함)를 바로 아래 밝은 깔개 9줄로 되풀이해 채운다.
+const MAT = slot("mat"), FILL_FROM = MAT.y + MAT.height, FILL_ROWS = 9;
+for (let y = MAT.y; y < MAT.y + MAT.height; y++) for (let x = MAT.x; x < MAT.x + MAT.width; x++)
+  at(room, x, y).set(at(room, x, FILL_FROM + ((y - MAT.y) % FILL_ROWS)).slice());
 
 mkdirSync("public/assets/rooms", { recursive: true });
 const png = encodePng(room);

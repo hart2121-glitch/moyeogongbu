@@ -14,6 +14,9 @@
 - `rooms/company-room.png`: 회사 스터디룸 672×432 (화면 1배). `node tools/art/company-room.mjs --prep`가 회사 원본 화면용 사본의 방 영역에서 글자를 지운
   두 조각을 만들고, PixelLab image_to_pixelart(faithful, 보존 200)로 바꾼 `rooms/src/converted-left.png`, `converted-right.png`를
   `node tools/art/company-room.mjs`가 최소 오차 이음매로 잇고 좌석 동그라미를 다시 찍어 `public/assets/rooms/`에 쓴다.
+  휴게실 공용 꾸밈 자리(쿠션, 탁자 위, 매트)는 `rooms/src/lounge-empty.png`로 비우고, 원본 소품은 기본 아이템 `rooms/lounge/cushions-cat.png`,
+  `table-cat.png`, `mat-cat.png`로 떼어 둔다. 파는 아이템은 `node tools/art/company-decor.mjs`가 `rooms/lounge/`에 그린다
+  (탁자 위 PixelLab 시안은 `rooms/lounge/src/`, 미리보기 `rooms/lounge/preview-decor.png`).
 - `home/entrance/`: 로그인과 환영 화면의 집 현관 240×144 (넓은 화면 3배, 좁은 화면 2배). `node tools/art/home-entrance.mjs`가
   `home/entrance/src/`의 생성 원본(pixen 시안 2번을 pixflux로 다시 그린 그림)을 손 보정(벽등 빛을 타원으로, 문패 자리에 벽지 채우기)하고,
   이름 길이에 맞춰 늘어나는 문패 9조각 `sign.png`(9×16)를 그려 같은 파일을 `public/assets/home/entrance/`에 쓴다.

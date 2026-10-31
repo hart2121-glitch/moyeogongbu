@@ -81,7 +81,10 @@ export function createFakeServer() {
       server.social.notifications.push({ id: server.social.notifSeq++, user_id: userId, read: false, created_at: new Date().toISOString(), ...n });
     },
     addRoom({ id = `10000000-0000-4000-8000-${String(++roomSeq).padStart(12, "0")}`, name, code, ownerId }) {
-      server.rooms.set(id, { id, name, invite_code: code, owner_id: ownerId, created_at: Date.now() });
+      server.rooms.set(id, {
+        id, name, invite_code: code, owner_id: ownerId, created_at: Date.now(),
+        board_text: null, decor: { cushions: "cushions-cat", table: "table-cat", rug: "rug-beige", mat: "mat-cat" },
+      });
       server.members.set(id, new Map([[ownerId, Date.now()]]));
       server.bans.set(id, new Set());
       server.seats.set(id, Array.from({ length: RULES.seats }, () => ({ userId: null, lastSeen: 0 })));
@@ -173,6 +176,23 @@ export const SHOP_ITEMS = [
   ["desk-globe", "desk_top", "작은 지구본", 600, false],
   ["sticker-star", "desk_front", "별 스티커", 180, false],
   ["sticker-cat", "desk_front", "고양이 스티커", 240, false],
+  // Story 009 회사 방 공용 꾸밈 (*_room_decor.sql): 방장이 휴게실에 놓는다
+  ["cushions-cat", "room_cushions", "고양이 쿠션", 0, true],
+  ["cushions-heart", "room_cushions", "하트 쿠션", 900, false],
+  ["cushions-star", "room_cushions", "별 쿠션", 900, false],
+  ["cushions-check", "room_cushions", "체크 쿠션", 1200, false],
+  ["table-cat", "room_table", "고양이 인형과 간식", 0, true],
+  ["table-tea", "room_table", "찻잔 세트", 1200, false],
+  ["table-cake", "room_table", "딸기 케이크", 1500, false],
+  ["table-flower", "room_table", "튤립 꽃병", 1500, false],
+  ["rug-beige", "room_rug", "베이지 러그", 0, true],
+  ["rug-pink", "room_rug", "분홍 러그", 1800, false],
+  ["rug-mint", "room_rug", "민트 러그", 2000, false],
+  ["rug-sky", "room_rug", "하늘 러그", 2400, false],
+  ["mat-cat", "room_mat", "고양이 매트", 0, true],
+  ["mat-stripe", "room_mat", "줄무늬 매트", 900, false],
+  ["mat-paw", "room_mat", "발바닥 매트", 1200, false],
+  ["mat-heart", "room_mat", "하트 매트", 1200, false],
 ].map(([id, slot, name, price, is_default]) => ({ id, slot, name, price, is_default }));
 
 // Story 007 상점과 꾸밈 RPC. 판정 규칙은 *_shop.sql과 같다. balance()는 지금 잔액, debit(n)은 차감.
@@ -394,6 +414,8 @@ function roomRpc(server, me, name, args) {
     is_owner: r.owner_id === me,
     member_count: server.members.get(r.id).size,
     online_count: new Set([...server.presence.get(r.id).values()].filter((p) => fresh(p.lastSeen)).map((p) => p.userId)).size,
+    board_text: r.board_text,
+    decor: { ...r.decor },
   });
   const sweep = (id) => {
     for (const s of server.seats.get(id)) if (s.userId && !fresh(s.lastSeen)) Object.assign(s, { userId: null, lastSeen: 0 });
@@ -459,6 +481,23 @@ function roomRpc(server, me, name, args) {
       requireOwner();
       room.invite_code = server.nextCode();
       return json(room);
+    // 공용 꾸밈과 화이트보드 (*_room_decor.sql와 같은 판정)
+    case "set_room_decor": {
+      requireOwner();
+      if (!["cushions", "table", "rug", "mat"].includes(args.p_slot)) fail("invalid_slot");
+      const item = SHOP_ITEMS.find((i) => i.id === args.p_item && i.slot === `room_${args.p_slot}`);
+      if (!item || !(item.is_default || server.owned.get(me)?.has(item.id))) fail("not_owned");
+      room.decor[args.p_slot] = item.id;
+      return json(room);
+    }
+    case "set_room_board": {
+      requireOwner();
+      const text = String(args.p_text ?? "").replace(/\r/g, "").replace(/^[ \n]+|[ \n]+$/g, "");
+      const lines = text.split("\n");
+      if (lines.length > 2 || lines.some((l) => l.trim().length > 12)) fail("invalid_board");
+      room.board_text = text || null;
+      return json(room);
+    }
     case "kick_member":
       requireOwner();
       if (args.p_user === me) fail("invalid_member");

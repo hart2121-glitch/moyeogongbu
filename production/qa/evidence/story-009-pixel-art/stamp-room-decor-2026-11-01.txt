@@ -1,0 +1,6 @@
+Reviewed-Content-Hash: supabase/migrations/20261101110000_room_decor.sql 74255087bebce58fe98d43b4717f338b2ebdb205
+Reviewed-Content-Hash: src/config/roomDecor.ts b489516a396802c11c9b048a39c0e0d6ac19134b
+Reviewed-Content-Hash: src/study/CompanyRoom.jsx 5806a1b4e0f0c589b02a05051577bb22c9ceceb9
+Reviewed-Content-Hash: src/features/room/view/OwnerTools.tsx 9e1cf42f7db16be37f9f0c09efdb30de37a956ce
+Reviewed-Content-Hash: tools/art/company-room.mjs c535cede84f58517f77afa5e62f977ce466d6521
+Reviewed-Content-Hash: tools/art/company-decor.mjs c2c5e3db16c76abf51a8542b04332cf1e3ecf25c

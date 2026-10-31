@@ -106,6 +106,15 @@ export const companyFinalLayout = {
   },
   // 책상 안 모니터 상자 (그림 칸). 소품 위에 모니터만 다시 그려 소품이 늘 모니터 뒤에 놓이게 한다.
   deskMonitor: { x: 39, y: 24, width: 41, height: 29 },
+  // 공용 꾸밈 자리 (그림 칸, 꾸미기 슬롯 계획 2절). 방장이 고르고 같은 방 사람 모두에게 같게 보인다.
+  // 쿠션, 탁자 위, 매트는 그림에서 비운 자리에 자리 크기의 투명 아이템을 얹는다 (tools/art/company-room.mjs).
+  // 러그는 가구 밑에 깔려 있어 비우지 않고, 가구에 가려지지 않은 러그 칸만 다른 색으로 덮는다 (tools/art/company-decor.mjs).
+  decorSlots: [
+    { id: "cushions", name: "소파 쿠션", box: { x: 95, y: 120, width: 94, height: 29 } },
+    { id: "table", name: "탁자 위", box: { x: 82, y: 118, width: 65, height: 59 } },
+    { id: "rug", name: "휴게실 러그", box: { x: 33, y: 150, width: 161, height: 61 } },
+    { id: "mat", name: "출입구 매트", box: { x: 399, y: 367, width: 87, height: 40 } },
+  ],
   areas: [
     {
       id: "lounge",

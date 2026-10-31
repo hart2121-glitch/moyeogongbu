@@ -632,6 +632,73 @@
   font-size: 12px;
   padding: 1px 4px;
 }
+/* 휴게실 공용 꾸밈 (꾸미기 슬롯 계획 2절): 방 그림 바로 위, 캐릭터와 표지판보다 뒤에 1배로 */
+.room-decor {
+  position: absolute;
+  max-width: none;
+  image-rendering: pixelated;
+  pointer-events: none;
+  user-select: none;
+}
+.owner-board {
+  flex-wrap: wrap;
+}
+.owner-board label {
+  width: 100%;
+  font-size: 12px;
+}
+.owner-board textarea {
+  width: 14em;
+  resize: none;
+  font: inherit;
+  line-height: 1.4;
+}
+.owner-decor-row {
+  border: 0;
+  padding: 0;
+  margin: 6px 0;
+}
+.owner-decor-row legend {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0;
+  margin-bottom: 4px;
+}
+.owner-decor-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.owner-decor-option {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: 104px;
+  padding: 4px;
+  font-size: 12px;
+  line-height: 1.3;
+  word-break: keep-all;
+}
+.owner-decor-option[aria-pressed="true"] {
+  outline: 2px solid #c06a3c;
+  outline-offset: -2px;
+}
+/* 아이템 그림은 1배 그대로 가운데만 보인다 (큰 러그는 가장자리가 잘린다) */
+.owner-decor-thumb {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 44px;
+  overflow: hidden;
+  background: #3b3330;
+}
+.owner-decor-thumb img {
+  max-width: none;
+  image-rendering: pixelated;
+}
+.owner-decor-thumb-rug:empty {
+  background: #db9872;
+}
 /* 내 책상 세트 (꾸미기 슬롯 계획 1절): 책상 자리 크기의 투명 그림을 방 그림 위에 1배로. 앉은 사람의 세트는 책상 전경보다 앞이다. */
 .desk-item {
   position: absolute;

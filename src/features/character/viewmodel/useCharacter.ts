@@ -54,6 +54,10 @@ export function unownedIn(look: Look, items: readonly ShopItem[]): ShopItem[] {
   return items.filter((i) => ids.has(i.id) && !i.owned);
 }
 
+/** 아이템 칸 이름이 꾸밈(Look)의 같은 이름 칸인 것. 회사 방 공용 꾸밈(room_*)은 꾸밈에 없다. */
+type LookField = "body" | "face" | "hair_color" | "outfit" | "accessory";
+const LOOK_FIELDS: ReadonlySet<string> = new Set<LookField>(["body", "face", "hair_color", "outfit", "accessory"]);
+
 /** 이 아이템을 지금 입고 있는가. */
 export const isWorn = (look: Look, item: Pick<ShopItem, "id" | "slot">) =>
   item.slot === "hair"
@@ -62,7 +66,7 @@ export const isWorn = (look: Look, item: Pick<ShopItem, "id" | "slot">) =>
       ? look.desk_left === item.id || look.desk_right === item.id
       : item.slot === "desk_front"
         ? look.desk_front === item.id
-        : look[item.slot] === item.id;
+        : LOOK_FIELDS.has(item.slot) && look[item.slot as LookField] === item.id;
 
 /**
  * 꾸미기 화면 상태. 상태: 불러오는 중 → (처음 꾸미기 | 꾸미기). draft는 입어 보기용이며 저장 전에는 서버에 가지 않는다.

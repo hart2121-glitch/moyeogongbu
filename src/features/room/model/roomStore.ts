@@ -16,8 +16,11 @@ import {
   releaseSeat,
   renameRoom,
   saveCurrentTask,
+  setRoomBoard,
+  setRoomDecor,
   unbanMember,
 } from "./room";
+import type { DecorSlot } from "../../../config/roomDecor";
 import { openRoomChannel, type RoomChannelHandlers } from "./roomRealtime";
 
 /**
@@ -32,6 +35,8 @@ export const roomStore = {
   leave: (roomId: string) => leaveRoom(supabase, roomId),
   rename: (roomId: string, name: string) => renameRoom(supabase, roomId, name),
   reissue: (roomId: string) => reissueCode(supabase, roomId),
+  setDecor: (roomId: string, slot: DecorSlot, itemId: string) => setRoomDecor(supabase, roomId, slot, itemId),
+  setBoard: (roomId: string, text: string) => setRoomBoard(supabase, roomId, text),
   kick: (roomId: string, userId: string) => kickMember(supabase, roomId, userId),
   unban: (roomId: string, userId: string) => unbanMember(supabase, roomId, userId),
   bans: (roomId: string) => listBans(supabase, roomId),
