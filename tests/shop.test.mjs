@@ -80,8 +80,8 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     // 상점: 120코인으로 리본은 살 수 있고, 나머지는 부드러운 이유와 함께 막힌다
     await nav(page, "상점");
     await page.getByRole("button", { name: "보라 리본 구매하기" }).waitFor();
-    // 액세서리 6, 의상 4, 머리 모양 5, 머리 색 7
-    assert.equal(await page.locator(".shop-item").count(), 22);
+    // 액세서리 6, 의상 4, 머리 모양 8, 머리 색 7
+    assert.equal(await page.locator(".shop-item").count(), 25);
     assert.equal(await page.getByRole("button", { name: "별 머리핀 구매하기" }).isDisabled(), true);
     await page.locator('[data-item="acc-hairpin"]').getByText("30코인이 더 모이면 살 수 있어요.").waitFor();
     await shot(page, "shop-prices-insufficient.png");

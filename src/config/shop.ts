@@ -64,6 +64,9 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   "hair-long": hairStyle("long"),
   "hair-bun": hairStyle("bun"),
   "hair-bowl": hairStyle("bowl"),
+  "hair-dandy": hairStyle("dandy"),
+  "hair-comma": hairStyle("comma"),
+  "hair-perm": hairStyle("perm"),
   "hair-wave": hairStyle("wave"),
   // 머리 색 (art-src/characters/src/recolor/hair-color/<색>.json, 라벤더는 원재료 색 그대로).
   "hair-color-black": hairColor("black", "#3a3848"),
