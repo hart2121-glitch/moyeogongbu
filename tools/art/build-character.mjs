@@ -191,20 +191,69 @@ function buildOutfit(id, base) {
  * 진한 유채색 덩어리(장식 색)와 그 외곽선만 남겨, 앞머리 위에 붙는 시트로 만든다.
  */
 function buildAccessory(id, base) {
+  const handDir = join(SRC, "accessory", id, "hand");
+  if (existsSync(handDir)) return headSheet(handParts(handDir, base), base, "all");
   const hairId = readFileSync(join(SRC, "accessory", id, "OVER-HAIR"), "utf8").trim();
+  // KEEP.json이 있으면 장식 색 범위를 그 값으로 잡는다 (파스텔처럼 채도가 낮은 장식).
+  const keepFile = join(SRC, "accessory", id, "KEEP.json");
+  const keep = existsSync(keepFile) ? JSON.parse(readFileSync(keepFile, "utf8")) : {};
   const parts = {};
   for (const dir of DIRS) {
     const withHair = loadRot(base, dir, "hair", hairId, "rot");
-    const raw = extractPart(loadRot(base, dir, "accessory", id, "rot"), withHair, "head");
-    parts[dir] = keepVivid(raw);
+    // 목도리처럼 목 아래에 걸치는 장식은 kind "body"로 뗀다 (머리 부품은 목 줄 위에서 시작하는 덩어리만 남는다).
+    const raw = extractPart(loadRot(base, dir, "accessory", id, "rot"), withHair, keep.kind ?? "head");
+    parts[dir] = dropSpecks(keepVivid(raw, keep), 6, keep.maxTop);
   }
   return headSheet(parts, base, "all");
 }
 
-/** 채도가 높은 장식 색 픽셀과, 그것에 맞닿은 짙은 외곽선만 남긴다. */
-function keepVivid(part) {
+/**
+ * 손으로 찍은 장식(tools/art/hand-accessories.mjs): 방향별 서기 칸이 이미 기본 몸과 같은 정렬 좌표다.
+ * 동쪽은 서쪽을 뒤집고, 두 방향의 발 맞춤 차이만큼 옮긴다 (기본 몸 동쪽 서기와 같은 자리가 된다).
+ */
+function handParts(handDir, base) {
+  const parts = {};
+  for (const dir of ["south", "west", "north"]) parts[dir] = load(join(handDir, `${dir}.png`));
+  const w = base.west.align, e = base.east.align;
+  parts.east = shift(mirror(parts.west), e.dx + w.dx, e.dy - w.dy);
+  return parts;
+}
+
+/**
+ * 8방향으로 이어진 덩어리 중 min칸보다 작은 것(생성 그림의 잔티)을 지운다.
+ * maxTop이 있으면 그 줄 아래에서 시작하는 덩어리도 지운다 (머리 위 장식에 섞인 머리카락 조각).
+ */
+function dropSpecks(part, min, maxTop = Infinity) {
+  const out = { ...part, pixels: part.pixels.slice() }, W = part.width;
+  const left = new Set();
+  for (let k = 0; k < W * part.height; k++) if (out.pixels[k * 4 + 3]) left.add(k);
+  for (const start of [...left]) {
+    if (!left.has(start)) continue;
+    const stack = [start], comp = [];
+    left.delete(start);
+    while (stack.length) {
+      const k = stack.pop(), x = k % W, y = Math.floor(k / W);
+      comp.push(k);
+      for (let dy = -1; dy <= 1; dy++)
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx, ny = y + dy, n = ny * W + nx;
+          if (nx >= 0 && ny >= 0 && nx < W && ny < part.height && left.has(n)) { left.delete(n); stack.push(n); }
+        }
+    }
+    const top = Math.min(...comp.map((k) => Math.floor(k / W)));
+    if (comp.length < min || top >= maxTop) for (const k of comp) out.pixels.fill(0, k * 4, k * 4 + 4);
+  }
+  return out;
+}
+
+/**
+ * 장식 색 픽셀과, 그것에 맞닿은 짙은 외곽선만 남긴다. 기본은 채도 0.45, 명도 0.4 초과.
+ * @param keep {hue?: [h0, h1] (h0 > h1이면 360을 넘어 이어진다), minS?, minV?}
+ */
+function keepVivid(part, { hue, minS = 0.45, minV = 0.4 } = {}) {
   const out = { ...part, pixels: new Uint8Array(part.pixels.length) };
-  const vivid = (i) => { const c = hsv(part.pixels[i], part.pixels[i + 1], part.pixels[i + 2]); return part.pixels[i + 3] && c.s > 0.45 && c.v > 0.4; };
+  const inHue = (h) => !hue || (hue[0] <= hue[1] ? h >= hue[0] && h <= hue[1] : h >= hue[0] || h <= hue[1]);
+  const vivid = (i) => { const c = hsv(part.pixels[i], part.pixels[i + 1], part.pixels[i + 2]); return part.pixels[i + 3] && c.s > minS && c.v > minV && inHue(c.h); };
   for (let y = 0; y < part.height; y++)
     for (let x = 0; x < part.width; x++) {
       const i = (y * part.width + x) * 4;

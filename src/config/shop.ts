@@ -32,6 +32,8 @@ export interface ItemAsset {
   hairColor?: string;
   /** 색 견본: 머리 색과 눈 색은 꾸미기에서 이름 대신 이 색 동그라미로 고른다. */
   swatch?: string;
+  /** 꾸미기 선택지 그림에서 보여 줄 부분. 칸의 기본값(머리 장식은 머리)과 다를 때만 둔다. */
+  thumb?: "head" | "body";
 }
 
 const sheet = (name: string): LayerSource => ({ sheet: `/assets/characters/layers/${name}.png` });
@@ -86,16 +88,18 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   "outfit-rose": { placeholder: false, layers: { outfit: sheet("outfit-rose") } },
   // 교복 바지: "기본 몸 + 교복"으로 생성한 서기와 같은 뼈대의 걷기 (art-src/characters/src/outfit/uniform-boy).
   "outfit-boy": { placeholder: false, layers: { outfit: sheet("outfit-uniform-boy") } },
+  // 후드티, 가디건, 정장: "기본 몸 + 옷"으로 생성한 서기와 같은 뼈대의 걷기 (art-src/characters/src/outfit/<id>).
+  "outfit-hoodie": { placeholder: false, layers: { outfit: sheet("outfit-hoodie") } },
+  "outfit-cardigan": { placeholder: false, layers: { outfit: sheet("outfit-cardigan") } },
+  "outfit-suit": { placeholder: false, layers: { outfit: sheet("outfit-suit") } },
+  // 리본은 N1에서, 헤드폰, 목도리, 베레모는 단발 위에 pixen으로 그려 떼어 냈다 (art-src/characters/src/accessory/<id>).
   "acc-ribbon": { placeholder: false, layers: { accessory: sheet("acc-ribbon") } },
-  // 아래는 전용 레이어 그림이 아직 없다.
-  "outfit-hoodie": { placeholder: true, layers: {}, bodyTint: "outfit-세이지" },
-  "outfit-cardigan": { placeholder: true, layers: {}, bodyTint: "outfit-로즈" },
-  "outfit-suit": { placeholder: true, layers: {} },
-  "acc-hairpin": { placeholder: true, layers: {} },
-  "acc-glasses": { placeholder: true, layers: {} },
-  "acc-headphones": { placeholder: true, layers: {} },
-  "acc-scarf": { placeholder: true, layers: {} },
-  "acc-beret": { placeholder: true, layers: {} },
+  "acc-headphones": { placeholder: false, layers: { accessory: sheet("acc-headphones") } },
+  "acc-scarf": { placeholder: false, layers: { accessory: sheet("acc-scarf") }, thumb: "body" },
+  "acc-beret": { placeholder: false, layers: { accessory: sheet("acc-beret") } },
+  // 머리핀과 안경은 손으로 찍었다 (tools/art/hand-accessories.mjs).
+  "acc-hairpin": { placeholder: false, layers: { accessory: sheet("acc-hairpin") } },
+  "acc-glasses": { placeholder: false, layers: { accessory: sheet("acc-glasses") } },
 };
 
 /**

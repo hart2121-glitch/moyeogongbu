@@ -127,7 +127,7 @@ export default function CharacterPage() {
                             <span className="color-swatch" style={{ "--swatch": asset?.swatch ?? "#c0a98d" } as CSSProperties} />
                           ) : (
                             <>
-                              <span className={`thumb-window thumb-${view}${soon ? " soon" : ""}`}>
+                              <span className={`thumb-window thumb-${asset?.thumb ?? view}${soon ? " soon" : ""}`}>
                                 <LayerStack look={previewWith(c.look, item)} label="" decorative className="thumb-stack" />
                                 {soon && <span className="thumb-soon">준비 중</span>}
                               </span>

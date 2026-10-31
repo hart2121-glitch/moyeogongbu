@@ -1,0 +1,4 @@
+Reviewed-Content-Hash: src/config/shop.ts eb089aaef8d164bfcbb5bd9a4dd3e2b01a7b5992
+Reviewed-Content-Hash: src/features/character/view/CharacterPage.tsx 2b50f420f1b0f130bbd03a1b7684478441815fa0
+Reviewed-Content-Hash: tools/art/build-character.mjs ab3214f03aeced9129a3891d6193e3bea124518a
+Reviewed-Content-Hash: tools/art/hand-accessories.mjs 1450a34121c6315b608a5c639dc413f7ddc409da
