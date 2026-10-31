@@ -192,7 +192,7 @@ function buildOutfit(id, base) {
  */
 function buildAccessory(id, base) {
   const handDir = join(SRC, "accessory", id, "hand");
-  if (existsSync(handDir)) return headSheet(handParts(handDir, base), base, "all");
+  if (!existsSync(join(SRC, "accessory", id, "rot"))) return headSheet(handParts(handDir, base), base, "all");
   const hairId = readFileSync(join(SRC, "accessory", id, "OVER-HAIR"), "utf8").trim();
   // KEEP.json이 있으면 장식 색 범위를 그 값으로 잡는다 (파스텔처럼 채도가 낮은 장식).
   const keepFile = join(SRC, "accessory", id, "KEEP.json");
@@ -204,18 +204,21 @@ function buildAccessory(id, base) {
     const raw = extractPart(loadRot(base, dir, "accessory", id, "rot"), withHair, keep.kind ?? "head");
     parts[dir] = dropSpecks(keepVivid(raw, keep), 6, keep.maxTop);
   }
+  // 생성 그림이 어색한 방향은 손으로 찍은 칸(hand/<방향>.png)으로 바꾼다.
+  if (existsSync(handDir)) Object.assign(parts, handParts(handDir, base));
   return headSheet(parts, base, "all");
 }
 
 /**
  * 손으로 찍은 장식(tools/art/hand-accessories.mjs): 방향별 서기 칸이 이미 기본 몸과 같은 정렬 좌표다.
  * 동쪽은 서쪽을 뒤집고, 두 방향의 발 맞춤 차이만큼 옮긴다 (기본 몸 동쪽 서기와 같은 자리가 된다).
+ * 파일이 있는 방향만 돌려준다.
  */
 function handParts(handDir, base) {
   const parts = {};
-  for (const dir of ["south", "west", "north"]) parts[dir] = load(join(handDir, `${dir}.png`));
+  for (const dir of ["south", "west", "north"]) if (existsSync(join(handDir, `${dir}.png`))) parts[dir] = load(join(handDir, `${dir}.png`));
   const w = base.west.align, e = base.east.align;
-  parts.east = shift(mirror(parts.west), e.dx + w.dx, e.dy - w.dy);
+  if (parts.west) parts.east = shift(mirror(parts.west), e.dx + w.dx, e.dy - w.dy);
   return parts;
 }
 
