@@ -1,6 +1,7 @@
 import { supabase } from "../../../lib/supabase";
 import { fetchMyLook, saveLook } from "../../character/model/look";
 import type { Look } from "../../character/model/layers";
+import { fetchMyHome, saveHome, type HomeLook } from "../../lobby/model/homeDecor";
 import { buyItem, fetchShop } from "./shop";
 
 /**
@@ -12,6 +13,8 @@ export const shopStore = {
   buy: (itemId: string) => buyItem(supabase, itemId),
   myLook: () => fetchMyLook(supabase),
   saveLook: (look: Look) => saveLook(supabase, look),
+  myHome: () => fetchMyHome(supabase),
+  saveHome: (home: HomeLook) => saveHome(supabase, home),
 };
 
 export type ShopStore = typeof shopStore;

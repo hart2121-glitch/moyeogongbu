@@ -1,0 +1,7 @@
+Reviewed-Content-Hash: supabase/migrations/20261101120000_home_decor.sql 4c00d9374dd7abcd9b2abf8a1f9d64471b95c061
+Reviewed-Content-Hash: tools/art/home-decor.mjs df57a4df5dc0910b3b6a7b8f19d968affc4e2efe
+Reviewed-Content-Hash: src/features/lobby/model/homeDecor.ts 6d7a28ccd02533ef79ea08bac79aa1fbbdf8fdc2
+Reviewed-Content-Hash: src/features/lobby/view/HomeRoomArt.tsx 66ae3abe810fefd9756559b17f2fe9158f043015
+Reviewed-Content-Hash: src/features/lobby/view/HomeThumb.tsx 356f026904b95947434931b4c307b1b301dea8b7
+Reviewed-Content-Hash: src/features/character/view/CharacterPage.tsx ec564ab9f4f1dd825e3c85eac13b1a779f4eb2d0
+Reviewed-Content-Hash: src/features/character/viewmodel/useCharacter.ts 1c04facdf8013ba9e7f94b7994e0878fe7438f5d

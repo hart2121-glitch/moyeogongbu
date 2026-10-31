@@ -17,6 +17,9 @@
   휴게실 공용 꾸밈 자리(쿠션, 탁자 위, 매트)는 `rooms/src/lounge-empty.png`로 비우고, 원본 소품은 기본 아이템 `rooms/lounge/cushions-cat.png`,
   `table-cat.png`, `mat-cat.png`로 떼어 둔다. 파는 아이템은 `node tools/art/company-decor.mjs`가 `rooms/lounge/`에 그린다
   (탁자 위 PixelLab 시안은 `rooms/lounge/src/`, 미리보기 `rooms/lounge/preview-decor.png`).
+- `home/room/decor/`: 내 방 꾸밈 층과 아이템. `node tools/art/home-decor.mjs`가 `home/room/`의 부품을 자리별 층으로 다시 나누고
+  (벽 불빛, 러그, 마루, 이불 조각을 제 자리로), 색과 칠을 바꾼 판매 아이템, 직접 찍은 협탁 위 소품을 같은 폴더와 `public/assets/home/room/decor/`에 쓴다.
+  미리보기는 `home/room/decor/preview-check.png`, `preview-more.png`. `decor/src/`의 PixelLab 협탁 위 시안은 쓰지 않았다(기록용).
 - `home/entrance/`: 로그인과 환영 화면의 집 현관 240×144 (넓은 화면 3배, 좁은 화면 2배). `node tools/art/home-entrance.mjs`가
   `home/entrance/src/`의 생성 원본(pixen 시안 2번을 pixflux로 다시 그린 그림)을 손 보정(벽등 빛을 타원으로, 문패 자리에 벽지 채우기)하고,
   이름 길이에 맞춰 늘어나는 문패 9조각 `sign.png`(9×16)를 그려 같은 파일을 `public/assets/home/entrance/`에 쓴다.

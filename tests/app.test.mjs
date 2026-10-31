@@ -29,13 +29,13 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
     await page.waitForFunction(() =>
       [...document.querySelectorAll(".desk-character img")].some((img) => img.naturalWidth > 0),
     );
-    // 로비는 집, 내 방이다. 256×152 도트 방(빈 방 위에 갈아 끼울 수 있는 부품 18개)과 캐릭터를 같은 3배로 그린다
+    // 로비는 집, 내 방이다. 256×152 도트 방(빈 방 위에 꾸밈 자리별 층 18개, 꾸미기 슬롯 계획 3절)과 캐릭터를 같은 3배로 그린다
     // (회사 사무실 그림은 쓰지 않는다).
     await page.waitForFunction(() => [...document.querySelectorAll(".home-room-part")].every((img) => img.complete && img.naturalWidth > 0));
     assert.deepEqual(
       await page.locator(".desk-scene-art").evaluate((node) => {
         const box = node.getBoundingClientRect();
-        const base = node.querySelector('img.home-room-part[src$="/assets/home/room/room-base.png"]');
+        const base = node.querySelector('img.home-room-part[src$="/assets/home/room/decor/room-base.png"]');
         return {
           base: base?.getBoundingClientRect().width,
           parts: node.querySelectorAll("img.home-room-part[data-slot]").length,
