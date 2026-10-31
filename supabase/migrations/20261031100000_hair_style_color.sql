@@ -12,8 +12,13 @@ alter table public.shop_items add constraint shop_items_sellable_slot
 
 comment on table public.shop_items is '캐릭터 아이템 목록과 가격의 유일한 출처. 액세서리 120~300, 머리 색 300, 의상과 머리 모양 600~1500.';
 
+-- 머리 모양: 짧은 머리는 남자 기본 '짧은 바가지 머리'(무료)가 되고, 똥머리와 바가지 머리를 판다.
+update public.shop_items set name = '짧은 바가지 머리', price = 0, is_default = true, sort = 1 where id = 'hair-short';
+
 insert into public.shop_items (id, slot, name, price, is_default, sort) values
   ('hair-basic', 'hair', '단발 머리', 0, true, 0),
+  ('hair-bun', 'hair', '똥머리', 800, false, 34),
+  ('hair-bowl', 'hair', '바가지 머리', 600, false, 35),
   ('hair-color-black', 'hair_color', '검정 머리', 0, true, 0),
   ('hair-color-chestnut', 'hair_color', '밤색 염색', 0, true, 1),
   ('hair-color-lavender', 'hair_color', '라벤더 염색', 0, true, 2),

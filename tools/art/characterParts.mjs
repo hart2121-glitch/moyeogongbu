@@ -110,6 +110,68 @@ export function extractPart(dressed, base, kind) {
 }
 
 /**
+ * 생성한 머리카락이 기본 몸의 대머리보다 작게 그려져 정수리나 뒤통수가 비치는 자리(눈 위)를 머리카락으로 덮는다.
+ * 비치는 자리는 안쪽부터 옆 머리카락 색으로 채우고, 새 바깥 테두리는 머리카락 외곽선 색으로 바꾸며,
+ * 안쪽으로 들어간 예전 외곽선은 옆 머리카락 색으로 바꾼다.
+ */
+export function coverBaldPeeks(part, dressed, base) {
+  const W = part.width, out = { ...part, pixels: part.pixels.slice() };
+  const at = (im, x, y) => (x < 0 || y < 0 || x >= W || y >= im.height ? -1 : (y * W + x) * 4);
+  const dark = (im, i) => hsv(...im.pixels.subarray(i, i + 3)).v < 0.3;
+  const peeks = [];
+  for (let y = 0; y < FACE_TOP; y++)
+    for (let x = 0; x < W; x++) {
+      const i = at(base, x, y);
+      if (base.pixels[i + 3] && !dressed.pixels[i + 3]) peeks.push([x, y]);
+    }
+  if (!peeks.length) return out;
+  // 외곽선 색: 생성 그림 머리 부분(목 위)에서 가장 많이 쓴 짙은 색.
+  const counts = new Map();
+  for (let i = 0; i < W * NECK * 4; i += 4)
+    if (dressed.pixels[i + 3] === 255 && dark(dressed, i)) { const k = dressed.pixels.subarray(i, i + 3).join(); counts.set(k, (counts.get(k) ?? 0) + 1); }
+  if (!counts.size) return out;
+  const outline = [...[...counts].sort((a, b) => b[1] - a[1])[0][0].split(",").map(Number), 255];
+  const filled = new Set();
+  const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  let left = peeks;
+  while (left.length) {
+    const next = [];
+    for (const [x, y] of left) {
+      const near = N4.map(([dx, dy]) => at(out, x + dx, y + dy)).filter((j) => j >= 0 && out.pixels[j + 3]);
+      const src = near.find((j) => !dark(out, j)) ?? near[0];
+      if (src === undefined) { next.push([x, y]); continue; }
+      out.pixels.set(out.pixels.slice(src, src + 4), at(out, x, y));
+      filled.add(y * W + x);
+    }
+    if (next.length === left.length) break;
+    left = next;
+  }
+  // 채운 자리와 그 둘레: 바깥에 닿으면 외곽선 색, 안쪽의 짙은 픽셀(예전 외곽선)은 옆 머리카락 색.
+  const near = new Set();
+  for (const k of filled)
+    for (let dy = -1; dy <= 1; dy++)
+      for (let dx = -1; dx <= 1; dx++) {
+        const x = (k % W) + dx, y = Math.floor(k / W) + dy;
+        if (at(out, x, y) >= 0 && out.pixels[at(out, x, y) + 3]) near.add(y * W + x);
+      }
+  const outside = (x, y) => { const j = at(base, x, y); return j < 0 || (!base.pixels[j + 3] && !out.pixels[j + 3]); };
+  const inner = [];
+  for (const k of near) {
+    const x = k % W, y = Math.floor(k / W);
+    if (N4.some(([dx, dy]) => outside(x + dx, y + dy))) { if (filled.has(k)) out.pixels.set(outline, k * 4); }
+    else if (dark(out, k * 4)) inner.push(k);
+  }
+  for (let pass = 0; pass < 3; pass++)
+    for (const k of inner) {
+      if (!dark(out, k * 4)) continue;
+      const x = k % W, y = Math.floor(k / W);
+      const src = N4.map(([dx, dy]) => at(out, x + dx, y + dy)).find((j) => j >= 0 && out.pixels[j + 3] && !dark(out, j));
+      if (src !== undefined) out.pixels.set(out.pixels.slice(src, src + 4), k * 4);
+    }
+  return out;
+}
+
+/**
  * 몸 그림에서 눈과 입을 지우고 얼굴의 가장 흔한 살색으로 채운다. 눈과 입은 얼굴 레이어가 그린다.
  * @param dy 걷기 프레임처럼 머리가 내려간 양
  */

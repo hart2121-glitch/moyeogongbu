@@ -5,7 +5,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { decodePng, encodePng, FRAME } from "./pixelArt.mjs";
-import { cropCell, eraseFace, extractFace, extractPart, feetAlignment, fitWalkFrame, mirror, NECK, placeHeadPart, shift, SIT_DROP, symmetricEyes, toSheet } from "./characterParts.mjs";
+import { coverBaldPeeks, cropCell, eraseFace, extractFace, extractPart, feetAlignment, fitWalkFrame, mirror, NECK, placeHeadPart, shift, SIT_DROP, symmetricEyes, toSheet } from "./characterParts.mjs";
 import { emptyLike, hsv } from "./rigImage.mjs";
 import { restFrame, sitFrame } from "./rigidRig.mjs";
 
@@ -71,7 +71,10 @@ function headSheet(parts, base, which) {
 /** 머리카락: 방향당 1장을 떼어 내 프레임마다 머리 높이에 맞춰 앞머리와 뒷머리 시트로 나눈다. */
 function buildHair(id, base) {
   const parts = {};
-  for (const dir of DIRS) parts[dir] = extractPart(loadRot(base, dir, "hair", id, "rot"), base[dir].stand, "head");
+  for (const dir of DIRS) {
+    const dressed = loadRot(base, dir, "hair", id, "rot");
+    parts[dir] = coverBaldPeeks(extractPart(dressed, base[dir].stand, "head"), dressed, base[dir].stand);
+  }
   return { front: headSheet(parts, base, "front"), back: headSheet(parts, base, "back") };
 }
 

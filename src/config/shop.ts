@@ -53,8 +53,14 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   "face-blue": face("face-blue", "#285cc4"),
   "face-gray": face("face-gray", "#6c727e"),
   // 머리 모양. 웨이브는 처음 승인한 N1 머리카락이다 (art-src/characters/src/hair/wave).
-  // 단발 머리(기본): 기본 몸 세 방향을 PixelLab pixen으로 한 장씩 고친 머리 (art-src/characters/src/hair/bob).
+  // 아래 머리 모양은 기본 몸 세 방향을 PixelLab pixen으로 한 장씩 고친 머리 (art-src/characters/src/hair/<모양>).
+  // 단발 머리(여자 기본), 짧은 바가지 머리(남자 기본)는 무료.
   "hair-basic": hairStyle("bob"),
+  "hair-short": hairStyle("shortbowl"),
+  "hair-ponytail": hairStyle("ponytail"),
+  "hair-long": hairStyle("long"),
+  "hair-bun": hairStyle("bun"),
+  "hair-bowl": hairStyle("bowl"),
   "hair-wave": hairStyle("wave"),
   // 머리 색 (art-src/characters/src/recolor/hair-color/<색>.json, 라벤더는 원재료 색 그대로).
   "hair-color-black": hairColor("black", "#3a3848"),
@@ -76,9 +82,6 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   "outfit-hoodie": { placeholder: true, layers: {}, bodyTint: "outfit-세이지" },
   "outfit-cardigan": { placeholder: true, layers: {}, bodyTint: "outfit-로즈" },
   "outfit-suit": { placeholder: true, layers: {} },
-  "hair-ponytail": { placeholder: true, layers: {} },
-  "hair-short": { placeholder: true, layers: {} },
-  "hair-long": { placeholder: true, layers: {} },
   "acc-hairpin": { placeholder: true, layers: {} },
   "acc-glasses": { placeholder: true, layers: {} },
   "acc-headphones": { placeholder: true, layers: {} },
