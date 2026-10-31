@@ -1559,6 +1559,9 @@ button:active {
   max-width: none;
   image-rendering: pixelated;
 }
+.desk-preview img.is-flipped {
+  transform: scaleX(-1);
+}
 /* 소품 선택지: 32×44 그림(스티커 32×16)을 2배로, 바닥 가운데에 세운다 */
 .item-options.desk-options button {
   display: grid;
@@ -1571,7 +1574,8 @@ button:active {
   height: 56px;
   place-items: center;
 }
-.preview-controls[hidden] {
+.preview-controls[hidden],
+.gender-toggle[hidden] {
   display: none;
 }
 .desk-options .desk-thumb {
@@ -1586,4 +1590,48 @@ button:active {
 }
 .item-art .desk-item-art.slot-desk_top {
   width: 64px;
+}
+
+/* 꾸미기 안 상점 (2026-11-01: 상점 페이지를 꾸미기에 합쳤다). 입어 보는 아이템마다 한 줄: 이름, 가격, 구매하기(또는 확인). */
+.customize-balance strong {
+  color: #3a2f22;
+}
+.try-on-buy {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 2px dashed #c0a98d;
+  border-radius: 6px;
+  background: #fbf5e8;
+}
+.try-on-buy > p {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #53412e;
+  word-break: keep-all;
+}
+.try-on-buy ul {
+  display: grid;
+  padding: 0;
+  list-style: none;
+  gap: 10px;
+  margin-top: 10px;
+}
+.try-on-buy li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 4px 12px;
+}
+.try-on-buy li > .primary {
+  margin: 0;
+  padding-inline: 14px;
+}
+.try-on-buy li .buy-confirm,
+.try-on-buy li .buy-reason {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+.try-on-name {
+  font-weight: 700;
+  color: #3a2f22;
 }

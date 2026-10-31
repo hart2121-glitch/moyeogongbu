@@ -14,7 +14,6 @@ import RoomListPage from "../features/rooms/view/RoomListPage";
 import ThemeRoomPage from "../features/rooms/view/ThemeRoomPage";
 import { ROUTES, THEME_ROOM_BASE } from "../features/shell/model/paths";
 import AppShell from "../features/shell/view/AppShell";
-import ShopPage from "../features/shop/view/ShopPage";
 
 const toLobby = <Navigate to={ROUTES.lobby} replace />;
 
@@ -40,7 +39,8 @@ export const router = createBrowserRouter([
           { path: `${THEME_ROOM_BASE}/:theme`, element: <ThemeRoomPage /> },
           { path: ROUTES.cafe, element: <CafePage /> },
           { path: ROUTES.character, element: <CharacterPage /> },
-          { path: ROUTES.shop, element: <ShopPage /> },
+          // 상점은 꾸미기에 합쳤다 (2026-11-01). 예전 주소는 꾸미기로 보낸다.
+          { path: ROUTES.shop, element: <Navigate to={ROUTES.character} replace /> },
           { path: ROUTES.records, element: <RecordsPage /> },
           { path: ROUTES.friends, element: <FriendsPage /> },
           { path: ROUTES.guide, element: <GuidePage /> },

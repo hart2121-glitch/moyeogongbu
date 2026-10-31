@@ -49,8 +49,32 @@ const catFace = [".o........o.", "oWo......oWo", "oWWo....oWWo", "oWWWooooWWWo",
 const HEART = { r: [232, 96, 110] };
 const heart = [".r.r.", "rrrrr", ".rrr.", "..r.."];
 
+/** 책상 소품을 바닥 줄에 세운다: 가장 아래 불투명 줄이 BASE_ROW가 되도록 내린다 (2026-11-01: 책 더미가 떠 보였다). */
+const BASE_ROW = 42;
+function standOnDesk(image) {
+  let bottom = -1;
+  for (let k = 0; k < image.width * image.height; k++) if (image.pixels[k * 4 + 3]) bottom = Math.max(bottom, Math.floor(k / image.width));
+  const dy = BASE_ROW - bottom;
+  if (dy <= 0) return image;
+  const out = { ...image, pixels: new Uint8Array(image.pixels.length) };
+  out.pixels.set(image.pixels.subarray(0, (image.height - dy) * image.width * 4), dy * image.width * 4);
+  return out;
+}
+
+/** 머그와 쿠키: 생성 그림의 머그 손잡이가 양쪽에 있어 오른쪽(접시 쪽)을 지우고, 몸통 오른쪽 끝(x 19)을 외곽선으로 닫는다. */
+function oneHandle(image) {
+  const INK = [73, 1, 0, 255];
+  for (let y = 22; y <= 29; y++) {
+    for (let x = 20; x <= 22; x++) image.pixels.fill(0, (y * image.width + x) * 4, (y * image.width + x) * 4 + 4);
+    if (image.pixels[(y * image.width + 19) * 4 + 3]) image.pixels.set(INK, (y * image.width + 19) * 4);
+  }
+  return image;
+}
+
 const items = {};
 for (const name of readdirSync(SRC).filter((n) => n.endsWith(".png"))) items[name.replace(/\.png$/, "")] = solid(decodePng(readFileSync(join(SRC, name))));
+items["desk-mug"] = oneHandle(items["desk-mug"]);
+for (const id of Object.keys(items)) if (items[id].height === 44) items[id] = standOnDesk(items[id]);
 items["sticker-star"] = draw(32, 16, [
   label([196, 222, 246]),
   { x: 12, y: 3, rows: bigStar, palette: STAR },

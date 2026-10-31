@@ -72,8 +72,7 @@ export function buyBlockReason(item: Pick<ShopItem, "owned" | "price">, balance:
   return null;
 }
 
-export const purchasedMessage = (item: string, slot?: ItemSlot) =>
-  `${item}을(를) 샀어요! 꾸미기에서 바로 ${isDeskSlot(slot) ? "책상에 놓을" : "입어 볼"} 수 있어요.`;
+export const purchasedMessage = (item: string) => `${item}을(를) 샀어요! 저장하면 적용돼요.`;
 
 /** 내 책상 세트 아이템(책상 소품, 책상 스티커)인가. 캐릭터가 입는 대신 책상에 놓는다. */
 export const isDeskSlot = (slot: ItemSlot | undefined) => slot === "desk_top" || slot === "desk_front";

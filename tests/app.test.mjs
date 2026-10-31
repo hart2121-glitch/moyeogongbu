@@ -69,7 +69,6 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
     for (const label of [
       "공용 스터디카페",
       "캐릭터 꾸미기",
-      "상점",
       "공부 기록",
       "친구 목록",
       "가이드",
@@ -93,22 +92,19 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
     await page.getByRole("button", { name: /^세이지 옷/ }).click();
     await page.getByRole("button", { name: "이 모습으로 시작하기" }).click();
     await page.getByRole("button", { name: "이 모습으로 저장하기" }).waitFor();
-    await page
-      .getByRole("navigation")
-      .getByRole("button", { name: "상점", exact: true })
-      .click();
+    // 상점은 꾸미기에 합쳤다 (2026-11-01): 사지 않은 아이템을 입어 보고 그 자리에서 산다.
     // 구매는 서버가 처리한다: 342 - 120 = 222. 코인이 모자란 아이템은 버튼이 막힌다.
+    await page.getByRole("tab", { name: "액세서리", exact: true }).click();
+    await page.getByRole("button", { name: /^보라 리본/ }).click();
     await page.getByRole("button", { name: "보라 리본 구매하기" }).click();
-    // 되팔기와 환불이 없어서 카드 안에서 한 번 더 확인한다.
+    // 되팔기와 환불이 없어서 한 번 더 확인한다.
     await page.getByRole("button", { name: "보라 리본 사기", exact: true }).click();
-    await page.getByRole("button", { name: "보라 리본 보유 중" }).waitFor();
+    await page.getByRole("button", { name: "보라 리본, 보유 중" }).waitFor();
     await page.waitForFunction(() => document.querySelector(".wallet")?.textContent?.trim() === "222");
+    await page.getByRole("tab", { name: "머리", exact: true }).click();
+    await page.getByRole("button", { name: /^긴 생머리/ }).click();
     assert.equal(
       await page.getByRole("button", { name: "긴 생머리 구매하기" }).isDisabled(),
-      true,
-    );
-    assert.equal(
-      await page.getByRole("button", { name: "보라 리본 보유 중" }).isDisabled(),
       true,
     );
     await page

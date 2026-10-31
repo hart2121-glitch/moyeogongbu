@@ -21,15 +21,16 @@ const shot = async (page, name, locator = page) => {
   await locator.screenshot({ path: join(evidence, name) });
 };
 const nav = (page, label) => page.getByRole("navigation").getByRole("button", { name: label, exact: true }).click();
+/** 꾸미기 안에서 놓아 본 아이템을 산다 (되팔기가 없어 한 번 더 확인). */
 const buy = async (page, name) => {
   await page.getByRole("button", { name: `${name} 구매하기` }).click();
   await page.getByRole("button", { name: `${name} 사기`, exact: true }).click();
-  await page.getByRole("button", { name: `${name} 보유 중` }).waitFor();
+  await page.getByRole("button", { name: new RegExp(`^${name}, 보유 중`) }).first().waitFor();
 };
 /** 방에 깔린 책상 아이템: "자리번호:자리:아이템:주인" 목록 (주인 없음은 기본 세트). */
 const deskItems = (page) =>
   page.evaluate(() =>
-    [...document.querySelectorAll(".desk-item")]
+    [...document.querySelectorAll(".desk-item:not(.desk-monitor)")]
       .map((i) => [i.dataset.seat, i.dataset.spot, i.dataset.item, i.dataset.owner ?? "", i.classList.contains("is-front")].join(":"))
       .sort(),
   );
@@ -52,26 +53,27 @@ test("책상 세트: 사서 책상 탭에서 놓고 저장하면 내 자리에 �
     await page.getByRole("button", { name: "이 모습으로 시작하기" }).click();
     await page.getByRole("button", { name: "이 모습으로 저장하기" }).waitFor();
 
-    // 실행: 상점에서 고양이 인형과 별 스티커를 산다. 책상 아이템은 그림으로 진열하고 "놓아 보기"로 권한다.
-    await nav(page, "상점");
-    await page.getByRole("heading", { name: "책상 소품" }).waitFor();
-    assert.match(await page.locator('[data-item="desk-cat"] .item-art img').getAttribute("src"), /desk\/desk-cat\.png$/);
-    assert.equal(await page.getByRole("button", { name: "고양이 인형 놓아 보기" }).count(), 1);
-    await buy(page, "고양이 인형");
-    await buy(page, "별 스티커");
-
-    // 실행: 꾸미기 책상 탭에서 오른쪽에 고양이 인형, 앞면에 별 스티커. 미리보기 책상에 바로 보인다.
-    await nav(page, "캐릭터 꾸미기");
+    // 실행: 꾸미기 책상 탭. 처음에는 기본 세트(스탠드, 화분)이고, 오른쪽 소품은 왼쪽과 좌우 대칭으로 뒤집혀 보인다.
     await page.getByRole("tab", { name: "책상" }).click();
     const preview = page.getByTestId("desk-preview");
     assert.deepEqual(
-      await preview.locator("img").evaluateAll((imgs) => imgs.map((i) => `${i.dataset.spot}:${i.dataset.item}`)),
+      await preview.locator("img[data-spot]").evaluateAll((imgs) => imgs.map((i) => `${i.dataset.spot}:${i.dataset.item}`)),
       ["left:desk-lamp", "right:desk-plant"],
     );
+    assert.equal(await preview.locator('img[data-spot="right"]').getAttribute("class"), "is-flipped");
+    // 모니터는 소품 위에 다시 그려 소품이 늘 모니터 뒤에 놓인다
+    assert.equal(await preview.locator("img").last().getAttribute("data-monitor"), "true");
+    // 책상을 꾸미는 동안에는 성별 단추가 필요 없다
+    assert.equal(await page.getByRole("group", { name: "성별" }).isVisible(), false);
+
+    // 실행: 오른쪽에 고양이 인형, 앞면에 별 스티커를 놓아 보고 그 자리에서 산다. 고양이 인형은 오른쪽 방향 그림이라 뒤집지 않는다.
     await page.getByRole("region", { name: "오른쪽 소품" }).getByRole("button", { name: /^고양이 인형/ }).click();
+    assert.equal(await preview.locator('img[data-spot="right"]').getAttribute("class"), null);
+    await buy(page, "고양이 인형");
     await page.getByRole("region", { name: "앞면 스티커" }).getByRole("button", { name: /^별 스티커/ }).click();
+    await buy(page, "별 스티커");
     assert.deepEqual(
-      await preview.locator("img").evaluateAll((imgs) => imgs.map((i) => `${i.dataset.spot}:${i.dataset.item}`)),
+      await preview.locator("img[data-spot]").evaluateAll((imgs) => imgs.map((i) => `${i.dataset.spot}:${i.dataset.item}`)),
       ["left:desk-lamp", "right:desk-cat", "front:sticker-star"],
     );
     // 사지 않은 소품은 놓아 볼 수만 있고 저장은 막힌다. 같은 것을 다시 누르면 원래대로 치운다.
@@ -108,6 +110,7 @@ test("책상 세트: 사서 책상 탭에서 놓고 저장하면 내 자리에 �
     await b.goto(`${url}rooms/${SEED_ROOM.id}`);
     await sit(b, 5);
     await page.locator(`.desk-item[data-owner="${COMEMBER}"][data-item="desk-globe"].is-front`).waitFor({ timeout: 20000 });
+    await page.waitForFunction(() => document.querySelector('[data-testid="remote-character"]')?.dataset.activity === "seated", null, { timeout: 20000 });
     const theirs = [`5:front:sticker-cat:${COMEMBER}:true`, `5:right:desk-globe:${COMEMBER}:true`];
     assert.deepEqual(
       await deskItems(page),

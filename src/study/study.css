@@ -644,3 +644,7 @@
 .desk-item.is-front {
   z-index: 3;
 }
+/* 오른쪽 자리 소품은 왼쪽과 좌우 대칭 */
+.desk-item.is-flipped {
+  transform: scaleX(-1);
+}
