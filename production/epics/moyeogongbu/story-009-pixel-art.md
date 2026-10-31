@@ -6,7 +6,7 @@
 > **Type**: Visual/Feel
 > **Estimate**: L
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: 2026-10-30
+> **Last Updated**: 2026-11-01
 
 *아트 제작은 사람(사용자 또는 외주)이 하고, 개발은 검사 도구와 연결을 맡는다. 생성 이미지나 자동 변환 결과를 손 보정 없이 쓰지 않는다 (`AGENTS.md`).*
 
@@ -103,13 +103,13 @@
 ## Acceptance Criteria
 
 - [x] 사용자가 앞모습 시안으로 그림체를 확정한다. (2026-10-30, N1: `art-src/characters/draft-front-n1.png`, 생성 원본 `art-src/drafts/gen-raw-1.png`)
-- [ ] 자동 검사가 안쪽 반투명 픽셀, 크기 위반(캐릭터 시트 1288×72, 방 672×432), 발 기준점 어긋남을 테스트에서 막는다.
-- [ ] 캐릭터 시트 26장이 같은 23프레임 구성과 같은 발 기준점을 가진다.
-- [ ] 상점에서 산 머리, 의상, 액세서리가 로비 아바타, 꾸미기 화면, 방 캐릭터, 같은 방 멤버 화면에 실제 그림으로 보인다. `src/config/shop.ts`의 임시 연결 표시가 모두 사라진다.
-- [ ] 4방향 서기와 걷기, 위아래 좌석 앉기, 소파 휴식이 새 프레임으로 재생된다.
+- [x] 자동 검사가 안쪽 반투명 픽셀, 크기 위반(캐릭터 시트 1288×72, 방 672×432), 발 기준점 어긋남을 테스트에서 막는다. (`tools/art/validate.mjs`, `tests/pixel-art.test.mjs`: 반투명, 크기, 발 기준점을 각각 막는 테스트와 실제 그림 검사. 2026-11-01 정식 그림 230장 통과)
+- [x] 캐릭터 시트 26장이 같은 23프레임 구성과 같은 발 기준점을 가진다. (머리 모양 9종에 머리 색 10종, 눈 색과 남자 눈매가 늘어 시트가 26장보다 많다. 모두 같은 검사를 통과한다)
+- [x] 상점에서 산 머리, 의상, 액세서리가 로비 아바타, 꾸미기 화면, 방 캐릭터, 같은 방 멤버 화면에 실제 그림으로 보인다. `src/config/shop.ts`의 임시 연결 표시가 모두 사라진다. (`placeholder: true` 아이템 0개. 증거 `customize-all-items.png`, Story 007 증거 `lobby-avatar-saved-look.png`, `room-comember-customized.png`)
+- [x] 4방향 서기와 걷기, 위아래 좌석 앉기, 소파 휴식이 새 프레임으로 재생된다. (증거 `room-walking.png`, `fix-arms-room-walk.png`, `poses-seat-up-down-sofa.png`, 테스트 `movement-browser`, `seat-sides-browser`)
 - [x] 회사 방이 새 픽셀아트로 바뀌고, 좌석, 통로, 휴게실, 화장실, 출입구 좌표가 새 그림에 맞는다. 기존 이동과 충돌 테스트가 통과한다. (2026-10-31, `art-src/rooms/company-room.png`: 원본 방 영역을 정확히 절반으로 다시 그려 좌표를 그대로 쓴다. 책상 소품은 내 책상 세트로 떼어 낸다)
-- [ ] 화면에서 정수 배율로만 확대되고 흐림 없이(pixelated) 보인다.
-- [ ] 원본 이미지 파일은 바이트 변경 없이 보존된다.
+- [x] 화면에서 정수 배율로만 확대되고 흐림 없이(pixelated) 보인다. (회사 방과 캐릭터 1배, 로비 내 방 3배, 현관 2배와 3배, 꾸미기 선택지 2배. 증거 `company-room-1x.png`, `home-lobby-decorated.png`, `entrance-login-1440.png`)
+- [x] 원본 이미지 파일은 바이트 변경 없이 보존된다. (`public/assets/company-study-room-final.png`는 처음 넣은 커밋 419129a 뒤로 바뀌지 않았다)
 
 ---
 
@@ -119,6 +119,7 @@
 - 시트 한 장을 프레임 23칸으로 자르는 메타데이터 하나를 두고, `characterSprites.js`와 레이어 합성이 그것을 쓴다.
 - 그림을 끼우는 작업은 `src/config/shop.ts`의 표 교체와 `characterSprites.js`의 경로 등록이다. 아이템 가격과 판매 목록은 바꾸지 않는다.
 - 방 좌표는 상대 좌표라 새 그림이 같은 배치를 따르면 대부분 그대로 쓴다. 새 그림 기준으로 다시 맞추고 기존 브라우저 테스트로 확인한다.
+- 범위 밖으로 적었던 방 꾸미기 슬롯은 2026-10-31~11-01 사용자 결정으로 이 브랜치에서 함께 만들었다: 내 책상 세트, 회사 방 공용 꾸밈(방장), 내 방 꾸밈 (`design/quick-specs/room-decor-slots.md` 1~3절). 학교 방은 브리프대로 첫 출시 이후다.
 
 ---
 
@@ -153,7 +154,7 @@
 **Story Type**: Visual/Feel
 **Required evidence**: 새 캐릭터(서기, 걷기, 앉기, 휴식)와 아이템 착용, 새 회사 방의 retained screenshot과 `production/qa/evidence/story-009-pixel-art-evidence.md`의 승인 기록.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created: `production/qa/evidence/story-009-pixel-art/`와 `production/qa/evidence/story-009-pixel-art-evidence.md` (사용자 승인 대기)
 
 ---
 
