@@ -76,14 +76,15 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   "hair-color-red": hairColor("red", "#e66959"),
   "hair-color-pink": hairColor("pink", "#fabbd3"),
   "hair-color-skyblue": hairColor("skyblue", "#b1d8f6"),
-  // 교복 치마: 완성 캐릭터에서 임시로 떼어 냈다 (art-src/characters/src/outfit/uniform/FROM-FULL-CHARACTER).
+  // 교복 치마: "기본 몸 + 교복"으로 생성한 서기와 같은 뼈대의 걷기 (art-src/characters/src/outfit/uniform).
   "outfit-lavender": { placeholder: false, layers: { outfit: sheet("outfit-uniform") } },
+  // 세이지 옷과 로즈 옷은 교복 치마의 색만 바꿨다 (art-src/characters/src/recolor/outfit-*.json).
+  "outfit-sage": { placeholder: false, layers: { outfit: sheet("outfit-sage") } },
+  "outfit-rose": { placeholder: false, layers: { outfit: sheet("outfit-rose") } },
   // 교복 바지: "기본 몸 + 교복"으로 생성한 서기와 같은 뼈대의 걷기 (art-src/characters/src/outfit/uniform-boy).
   "outfit-boy": { placeholder: false, layers: { outfit: sheet("outfit-uniform-boy") } },
   "acc-ribbon": { placeholder: false, layers: { accessory: sheet("acc-ribbon") } },
   // 아래는 전용 레이어 그림이 아직 없다.
-  "outfit-sage": { placeholder: true, layers: {}, bodyTint: "outfit-세이지" },
-  "outfit-rose": { placeholder: true, layers: {}, bodyTint: "outfit-로즈" },
   "outfit-hoodie": { placeholder: true, layers: {}, bodyTint: "outfit-세이지" },
   "outfit-cardigan": { placeholder: true, layers: {}, bodyTint: "outfit-로즈" },
   "outfit-suit": { placeholder: true, layers: {} },

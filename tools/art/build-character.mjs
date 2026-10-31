@@ -274,7 +274,26 @@ const base = loadBase();
 const report = [];
 /** 만든 시트 (색 바꾸기 변형의 원본). */
 const built = {};
-const save = (name, image) => { built[name] = image; writeFileSync(join(OUT, `${name}.png`), encodePng(image)); report.push(`${name}.png`); };
+/**
+ * 뒷모습(북쪽) 칸 손질: 생성한 뒷모습은 머리가 앞모습보다 4픽셀쯤 크고 높게 그려져, 돌아서면 몸이 떠 보인다.
+ * 서기와 걷기 뒷모습 칸은 다리에서 3줄(62, 64, 66)을 빼 몸을 내리고, 앉은 뒷모습 칸은 통째로 3줄 내린다.
+ * 모든 레이어에 똑같이 해서 서로 어긋나지 않는다. 파일로 쓸 때만 하므로 색 바꾸기 변형이 두 번 내려가지 않는다.
+ */
+const NORTH_CELLS = [1, 8, 9, 10, 11], NORTH_SIT = 20, NORTH_DROP_ROWS = [62, 64, 66];
+function lowerNorth(sheet) {
+  const out = { ...sheet, pixels: sheet.pixels.slice() };
+  const row = (src, cell, y) => src.pixels.subarray((y * src.width + cell * FRAME.width) * 4, (y * src.width + (cell + 1) * FRAME.width) * 4);
+  for (const cell of [...NORTH_CELLS, NORTH_SIT]) {
+    const keep = [];
+    for (let y = 0; y < FRAME.height; y++) if (cell === NORTH_SIT || !NORTH_DROP_ROWS.includes(y)) keep.push(y);
+    const drop = cell === NORTH_SIT ? NORTH_DROP_ROWS.length : FRAME.height - keep.length;
+    const rows = cell === NORTH_SIT ? keep.slice(0, FRAME.height - drop) : keep;
+    for (let y = 0; y < FRAME.height; y++) row(out, cell, y).fill(0);
+    rows.forEach((sy, k) => row(out, cell, k + drop).set(row(sheet, cell, sy)));
+  }
+  return out;
+}
+const save = (name, image) => { built[name] = image; writeFileSync(join(OUT, `${name}.png`), encodePng(lowerNorth(image))); report.push(`${name}.png`); };
 save("body-basic", buildBody(base));
 for (const id of list(join(SRC, "face"))) {
   save(`face-${id}`, buildFace(id, base));

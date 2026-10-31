@@ -134,7 +134,7 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     // 로비 캐릭터 (꾸미기와 같은 레이어로 그린다)
     await page.goto(`${url}lobby`);
     await page.locator('.desk-character [data-layer-outfit="outfit-sage"]').waitFor();
-    assert.match(await page.locator('.desk-character img[data-layer="body"]').getAttribute("class"), /세이지/);
+    assert.match(await page.locator('.desk-character img[data-layer="outfit"]').getAttribute("src"), /outfit-sage\.png$/);
     await shot(page, "lobby-avatar-saved-look.png");
 
     // 같은 방 멤버의 꾸민 캐릭터
@@ -150,7 +150,7 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     const remote = page.locator('[data-testid="remote-character"][data-layer-outfit="outfit-rose"]');
     await remote.waitFor({ timeout: 20000 });
     assert.equal(await remote.getAttribute("data-layer-accessory"), "acc-beret");
-    assert.match(await remote.locator('img[data-active="true"]').getAttribute("class"), /로즈/);
+    assert.match(await remote.locator('img[data-layer="outfit"]').getAttribute("src"), /outfit-rose\.png$/);
     assert.equal(await page.getByTestId("study-character").getAttribute("data-layer-outfit"), "outfit-sage");
     await shot(page, "room-comember-customized.png");
     assert.ok(!(await page.locator("body").innerText()).includes("·"));

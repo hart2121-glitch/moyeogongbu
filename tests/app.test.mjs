@@ -115,8 +115,8 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
     // 꾸미기에서 저장한 모습이 로비 캐릭터에 그대로 보인다.
     await page.locator('.desk-character [data-layer-outfit="outfit-sage"]').waitFor();
     assert.match(
-      await page.locator('.desk-character img[data-layer="body"]').getAttribute("class"),
-      /세이지/,
+      await page.locator('.desk-character img[data-layer="outfit"]').getAttribute("src"),
+      /outfit-sage\.png$/,
     );
     assert.equal(await page.getByLabel("React 공부하기").isChecked(), true);
     await page.getByRole("button", { name: "프로필 수정" }).click();
