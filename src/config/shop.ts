@@ -53,6 +53,8 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   "face-blue": face("face-blue", "#285cc4"),
   "face-gray": face("face-gray", "#6c727e"),
   // 머리 모양. 웨이브는 처음 승인한 N1 머리카락이다 (art-src/characters/src/hair/wave).
+  // 단발 머리(기본): 기본 몸 세 방향을 PixelLab pixen으로 한 장씩 고친 머리 (art-src/characters/src/hair/bob).
+  "hair-basic": hairStyle("bob"),
   "hair-wave": hairStyle("wave"),
   // 머리 색 (art-src/characters/src/recolor/hair-color/<색>.json, 라벤더는 원재료 색 그대로).
   "hair-color-black": hairColor("black", "#3a3848"),
@@ -74,8 +76,6 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   "outfit-hoodie": { placeholder: true, layers: {}, bodyTint: "outfit-세이지" },
   "outfit-cardigan": { placeholder: true, layers: {}, bodyTint: "outfit-로즈" },
   "outfit-suit": { placeholder: true, layers: {} },
-  // 단발 머리(기본): 그림을 만들기 전까지 머리카락 없이 보인다.
-  "hair-basic": { placeholder: true, layers: {} },
   "hair-ponytail": { placeholder: true, layers: {} },
   "hair-short": { placeholder: true, layers: {} },
   "hair-long": { placeholder: true, layers: {} },

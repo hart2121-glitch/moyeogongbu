@@ -116,14 +116,24 @@ function stripHeadColors(part, under) {
       if (!touchesCloth) stray.push(i);
     }
   for (const i of stray) out.pixels.fill(0, i, i + 4);
-  // 몸 밖 허공에 홀로 남은 점도 지운다.
-  const opaque = (x, y) => x >= 0 && y >= 0 && x < part.width && y < part.height && out.pixels[(y * part.width + x) * 4 + 3];
-  for (let y = 0; y < part.height; y++)
-    for (let x = 0; x < part.width; x++) {
-      const i = (y * part.width + x) * 4;
-      if (!out.pixels[i + 3] || under.pixels[i + 3]) continue;
-      if (![-1, 0, 1].some((dy) => [-1, 0, 1].some((dx) => (dx || dy) && opaque(x + dx, y + dy)))) out.pixels.fill(0, i, i + 4);
+  // 몸 밖 허공에 떠 있는 작은 덩어리(완성 캐릭터의 리본, 머리카락 조각)도 지운다. 몸과 겹치는 덩어리(치마 등)는 둔다.
+  const left = new Set();
+  for (let k = 0; k < part.width * part.height; k++) if (out.pixels[k * 4 + 3]) left.add(k);
+  for (const start of [...left]) {
+    if (!left.has(start)) continue;
+    const stack = [start], comp = [];
+    left.delete(start);
+    while (stack.length) {
+      const k = stack.pop(), x = k % part.width, y = Math.floor(k / part.width);
+      comp.push(k);
+      for (let dy = -1; dy <= 1; dy++)
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx, ny = y + dy, n = ny * part.width + nx;
+          if (nx >= 0 && ny >= 0 && nx < part.width && ny < part.height && left.has(n)) { left.delete(n); stack.push(n); }
+        }
     }
+    if (comp.length < 12 && comp.every((k) => !under.pixels[k * 4 + 3])) for (const k of comp) out.pixels.fill(0, k * 4, k * 4 + 4);
+  }
   return out;
 }
 
@@ -192,13 +202,15 @@ function rampColor(ramp, v) {
  * 색 바꾸기 변형 (src/recolor/<시트 이름>.json: from, hue, ramp).
  * 이미 만든 시트에서 hue 범위 안의 픽셀만 명도 순서를 지켜 새 색 띠로 바꾼다. 생성 없이 같은 모양의 다른 색 아이템을 만든다
  * (머리 색, 눈 색). 흰자처럼 채도가 낮은 픽셀은 그대로 둔다.
+ * paleHighlights면 아주 밝은 연한 픽셀(채도 0.06 이상, 명도 0.85 초과)도 바꾼다: 머리카락의 흰 광택 띠가 라벤더 빛으로 남지 않게.
  */
-function recolorSheet(sheet, { hue: [h0, h1], ramp }) {
+function recolorSheet(sheet, { hue: [h0, h1], ramp }, paleHighlights = false) {
   const out = { ...sheet, pixels: sheet.pixels.slice() };
   for (let i = 0; i < out.pixels.length; i += 4) {
     if (!out.pixels[i + 3]) continue;
     const c = hsv(out.pixels[i], out.pixels[i + 1], out.pixels[i + 2]);
-    if (c.h >= h0 && c.h <= h1 && c.s >= 0.15) out.pixels.set(rampColor(ramp, c.v), i);
+    const tinted = c.s >= 0.15 || (paleHighlights && c.s >= 0.06 && c.v > 0.85);
+    if (c.h >= h0 && c.h <= h1 && tinted) out.pixels.set(rampColor(ramp, c.v), i);
   }
   return out;
 }
@@ -210,7 +222,7 @@ function recolorSheet(sheet, { hue: [h0, h1], ramp }) {
 function recolorHair(front, back, body, recipe) {
   const [h0, h1] = recipe.hue;
   const hairAt = (im, i) => { if (!im.pixels[i + 3]) return false; const c = hsv(im.pixels[i], im.pixels[i + 1], im.pixels[i + 2]); return c.h >= h0 && c.h <= h1 && c.s >= 0.15; };
-  const newFront = recolorSheet(front, recipe);
+  const newFront = recolorSheet(front, recipe, true);
   const W = body.width;
   for (let y = 0; y < body.height; y++)
     for (let x = 0; x < W; x++) {
@@ -227,7 +239,7 @@ function recolorHair(front, back, body, recipe) {
       }
       if (hairNeighbors >= 2) newFront.pixels.set([...rampColor(recipe.ramp, c.v), 255], i);
     }
-  return { front: newFront, back: recolorSheet(back, recipe) };
+  return { front: newFront, back: recolorSheet(back, recipe, true) };
 }
 
 const list = (dir) => (existsSync(dir) ? readdirSync(dir).filter((n) => !n.startsWith(".")) : []);
