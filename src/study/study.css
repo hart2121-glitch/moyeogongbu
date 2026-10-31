@@ -190,12 +190,14 @@
 /* 무대와 오른쪽 열. 바깥 창(company-viewport)이 그림의 방 영역만 보여 준다 (companyLayout.view). */
 .company-main {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 264px;
+  grid-template-columns: 672px minmax(208px, 264px);
   gap: 14px;
   align-items: start;
 }
+/* 도트 방을 1배로 그리도록 창 너비를 그림 너비(672px)에 고정한다. */
 .company-viewport {
   position: relative;
+  width: 672px;
   overflow: hidden;
   background: #46454b;
 }
@@ -258,18 +260,36 @@
 }
 @media (max-width: 1240px) {
   .company-main {
-    grid-template-columns: minmax(0, 1fr) 208px;
     gap: 10px;
   }
 }
-.company-original {
+/* Story 009: 도트 방(672×432)을 무대 안 view 자리에 1배로 놓는다 (위치와 크기는 roomArtBox). */
+.company-room-art {
+  position: absolute;
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  max-width: none;
   image-rendering: pixelated;
   user-select: none;
   pointer-events: none;
+}
+/* 그림 속 빈 표지판과 화이트보드에 올린 글자. 캐릭터보다 뒤(벽)다. */
+.room-sign {
+  position: absolute;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  color: #3a2f22;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: pre;
+  pointer-events: none;
+  user-select: none;
+}
+.room-sign-board {
+  color: #4a4550;
+  font-size: 10px;
+  line-height: 1.4;
+  text-align: center;
 }
 .seat-overlay {
   position: absolute;
@@ -408,11 +428,17 @@
   transform: translate(-50%, -50%);
 }
 
-/* 최종 원본의 1~6 숫자 위에는 투명 클릭 영역만 겹칩니다. */
+/* 그림의 빈 동그라미(1배 12칸) 위에 번호 글자와 투명 클릭 영역을 겹칩니다. */
 .seat-marker.baked {
+  width: 14px;
+  height: 14px;
   background: transparent;
   border-color: transparent;
   box-shadow: none;
+  color: #3a2f22;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
 }
 .seat-marker.baked.is-selected {
   background: #dab5f233;
@@ -428,9 +454,7 @@
 }
 .seat-foreground {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  max-width: none;
   pointer-events: none;
   z-index: 3;
   image-rendering: pixelated;

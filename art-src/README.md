@@ -11,6 +11,9 @@
 - `lobby/`: 로비 물건 틀 (`tools/art/lobby-props.mjs`).
 - `home/room/`: 로비 "내 방" 256×152 (화면 3배). `node tools/art/home-room.mjs`가 `home/room/src/`의 생성 원본(가구가 있는 방과
   빈 방, 영역표)에서 부품을 떼어 내고 손 보정(베개 무늬 지우기, 고양이 다시 찍기)한 뒤 같은 파일을 `public/assets/home/room/`에 쓴다.
+- `rooms/company-room.png`: 회사 스터디룸 672×432 (화면 1배). `node tools/art/company-room.mjs --prep`가 회사 원본 화면용 사본의 방 영역에서 글자를 지운
+  두 조각을 만들고, PixelLab image_to_pixelart(faithful, 보존 200)로 바꾼 `rooms/src/converted-left.png`, `converted-right.png`를
+  `node tools/art/company-room.mjs`가 최소 오차 이음매로 잇고 좌석 동그라미를 다시 찍어 `public/assets/rooms/`에 쓴다.
 - `home/entrance/`: 로그인과 환영 화면의 집 현관 240×144 (넓은 화면 3배, 좁은 화면 2배). `node tools/art/home-entrance.mjs`가
   `home/entrance/src/`의 생성 원본(pixen 시안 2번을 pixflux로 다시 그린 그림)을 손 보정(벽등 빛을 타원으로, 문패 자리에 벽지 채우기)하고,
   이름 길이에 맞춰 늘어나는 문패 9조각 `sign.png`(9×16)를 그려 같은 파일을 `public/assets/home/entrance/`에 쓴다.

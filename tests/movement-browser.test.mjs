@@ -106,9 +106,9 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
       });
       assert.ok(Math.abs(geometry.ratio - 56 / 72) < 0.001);
       assert.ok(Math.abs(geometry.width - geometry.box) < 0.1);
-      assert.ok(
-        Math.abs(geometry.width / geometry.stage - 0.042 * 1.2 * 1.1 * 1.1) < 0.0001,
-      );
+      // 도트 방(672×432)과 같은 1배: 칸 56×72가 화면 56px이다 (원본 기준 112 / 1705).
+      assert.ok(Math.abs(geometry.width / geometry.stage - 112 / 1705) < 0.0001);
+      assert.ok(Math.abs(geometry.width - 56) < 0.01, `캐릭터 폭 ${geometry.width}`);
       assert.ok(Math.abs(geometry.footBottom) < 0.1);
       assert.ok(geometry.pixelated);
     }
@@ -123,8 +123,10 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
     const final = await p
       .getByTestId("study-character")
       .evaluate((s) => ({ x: Number(s.dataset.x), y: Number(s.dataset.y) }));
+    // 클릭은 화면 1px 단위라 허용 오차는 화면 1.5px (1배 방에서 원본 3px).
+    const stageWidth = (await p.getByTestId("company-stage").boundingBox()).width;
     assert.ok(
-      Math.hypot((final.x - 0.52) * 1705, (final.y - 0.89) * 922) < 1.5,
+      Math.hypot((final.x - 0.52) * 1705, (final.y - 0.89) * 922) < (1.5 * 1705) / stageWidth,
     );
     const before = final;
     await floor(p, { x: 0.4, y: 0.55 });

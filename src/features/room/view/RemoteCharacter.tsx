@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import FriendRequestAction from "../../friends/view/FriendRequestAction";
 import CharacterSprite from "../../../study/CharacterSprite";
-import { COMPANY_BACKGROUND, companyLayout } from "../../../study/companyLayout";
+import { COMPANY_ROOM_ART, companyLayout, foregroundClip, roomArtBox } from "../../../study/companyLayout";
 import { useCharacterMovement } from "../../../study/useCharacterMovement";
 import type { MemberStatus } from "../model/room";
 import type { PresenceMeta } from "../model/roomRealtime";
@@ -85,13 +85,11 @@ export default function RemoteCharacter({ meta, status, reaction, subscribeMoves
       </CharacterSprite>
       {rect && (
         <img
-          src={COMPANY_BACKGROUND}
+          src={COMPANY_ROOM_ART}
           alt=""
           aria-hidden="true"
           className="seat-foreground"
-          style={{
-            clipPath: `polygon(${rect.left * 100}% ${rect.top * 100}%,${rect.right * 100}% ${rect.top * 100}%,${rect.right * 100}% ${rect.bottom * 100}%,${rect.left * 100}% ${rect.bottom * 100}%)`,
-          }}
+          style={{ ...roomArtBox(companyLayout), clipPath: foregroundClip(rect, companyLayout) }}
         />
       )}
     </>

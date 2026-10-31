@@ -7,7 +7,7 @@ import {
   Toilet,
   ArrowLeft,
 } from "@phosphor-icons/react";
-import { COMPANY_BACKGROUND, companyLayout } from "./companyLayout";
+import { COMPANY_ROOM_ART, companyLayout, foregroundClip, roomArtBox } from "./companyLayout";
 import { useCharacterMovement } from "./useCharacterMovement";
 import CharacterSprite from "./CharacterSprite";
 import { useSeatOccupancy } from "./useSeatOccupancy";
@@ -304,13 +304,25 @@ export default function CompanyRoom({
         }}
       >
         <img
-          className="company-original"
-          src={COMPANY_BACKGROUND}
-          alt="최종 확정 회사 스터디룸 원본"
+          className="company-room-art"
+          src={COMPANY_ROOM_ART}
+          alt="회사 스터디룸: 휴게실, 화장실, 책상 여섯 자리가 있는 사무실"
+          style={roomArtBox(companyLayout)}
+          draggable={false}
           onError={() => setBackgroundFailed(true)}
         />
         {!backgroundFailed && (
           <>
+            {companyLayout.signs.map((sign) => (
+              <span
+                key={sign.id}
+                className={`room-sign room-sign-${sign.id}`}
+                style={{ left: `${sign.x * 100}%`, top: `${sign.y * 100}%` }}
+                aria-hidden="true"
+              >
+                {sign.text}
+              </span>
+            ))}
             <div
               className="seat-overlay"
               role="group"
@@ -342,7 +354,7 @@ export default function CompanyRoom({
                       : "빈 좌석"
                   }
                 >
-                  {!companyLayout.seatMarkersBaked && seat.id}
+                  {seat.id}
                   {seat.occupantId && (
                     <span>
                       {seat.occupantId === occupancy.ownerId
@@ -391,13 +403,11 @@ export default function CompanyRoom({
             {overlay}
             {rect && (
               <img
-                src={COMPANY_BACKGROUND}
+                src={COMPANY_ROOM_ART}
                 alt=""
                 aria-hidden="true"
                 className="seat-foreground"
-                style={{
-                  clipPath: `polygon(${rect.left * 100}% ${rect.top * 100}%,${rect.right * 100}% ${rect.top * 100}%,${rect.right * 100}% ${rect.bottom * 100}%,${rect.left * 100}% ${rect.bottom * 100}%)`,
-                }}
+                style={{ ...roomArtBox(companyLayout), clipPath: foregroundClip(rect, companyLayout) }}
               />
             )}
           </>

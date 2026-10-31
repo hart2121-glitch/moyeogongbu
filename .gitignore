@@ -27,3 +27,6 @@ art-src/drafts/
 .impeccable/hook.cache.json
 .impeccable/live/
 .impeccable/questions/
+
+# tools/art/company-room.mjs --prep 이 만드는 변환용 조각 (원본에서 다시 만든다)
+art-src/rooms/src/ref-*.png
