@@ -1,11 +1,11 @@
 import { CaretLeft, CaretRight, Check, Coin, Desk, Eye, PersonSimpleWalk, Scissors, Sparkle, TShirt, type Icon } from "@phosphor-icons/react";
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { DESK_ITEM_ART, GENDER_PRESETS, ITEM_ASSETS, type Gender } from "../../../config/shop";
 import { characterSprites, WALK_FRAME_MS, WALK_FRAMES } from "../../../study/characterSprites";
 import { useProfile } from "../../account/viewmodel/useAccount";
-import { isDeskSlot, type ItemSlot, type ShopItem } from "../../shop/model/shop";
-import { ROUTES } from "../../shell/model/paths";
+import { buyBlockReason, isDeskSlot, type ItemSlot, type ShopItem } from "../../shop/model/shop";
+import { useShop } from "../../shop/viewmodel/useShop";
 import PageFrame from "../../shell/view/PageFrame";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
 import { tryOnNotice } from "../model/look";
@@ -76,7 +76,9 @@ const BASE_SPRITE = characterSprites.idle.down[0];
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 /**
- * `/character`: 캐릭터 꾸미기. 상태: 불러오는 중, 불러오기 실패, 처음 꾸미기(기본 아이템에서 고르기), 꾸미기.
+ * `/character`: 캐릭터 꾸미기와 상점 (2026-11-01 사용자 결정: 상점 페이지를 따로 두지 않는다).
+ * 상태: 불러오는 중, 불러오기 실패, 처음 꾸미기(기본 아이템에서 고르기), 꾸미기.
+ * 사지 않은 아이템은 입어 보거나 책상에 놓아 보고, 아래 "입어 보는 아이템" 상자에서 바로 산다 (되팔기와 환불이 없어 한 번 더 확인).
  * 왼쪽은 마루 위에 선 큰 미리보기(돌려 보기, 걷기, 남녀), 오른쪽은 머리, 눈, 의상, 액세서리 탭.
  * 선택지에는 이름을 쓰지 않고, 고른 것과 가리킨 것의 이름만 칸 제목 옆에 보인다.
  * 사지 않은 아이템은 입어 볼 수만 있고 저장되지 않는다.
@@ -84,7 +86,8 @@ const reducedMotion = () => typeof window !== "undefined" && window.matchMedia?.
 export default function CharacterPage() {
   const { toast } = useAppState();
   const c = useCustomize(toast.notify);
-  const navigate = useNavigate();
+  const shop = useShop(toast.notify);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const displayName = useProfile().data?.displayName;
   const tabs = c.firstTime ? TABS.filter((t) => t.id !== "accessory" && t.id !== "desk") : TABS;
   const shown = c.firstTime ? c.items.filter((i) => i.isDefault) : c.items;
@@ -135,8 +138,13 @@ export default function CharacterPage() {
         <p>
           {c.firstTime
             ? "남녀를 고르면 기본 모습이 바뀌어요. 머리 모양 2종, 머리 색 3종, 눈 색 7종, 의상 3종을 무료로 드려요."
-            : "산 아이템은 바로 적용하고, 사지 않은 아이템은 입어 볼 수 있어요."}
+            : "산 아이템은 바로 적용하고, 사지 않은 아이템은 입어 보거나 책상에 놓아 본 뒤 여기서 바로 살 수 있어요."}
         </p>
+        {!c.firstTime && (
+          <p className="customize-balance">
+            지금 가진 코인 <strong data-testid="shop-balance">{shop.balance.toLocaleString()}</strong>
+          </p>
+        )}
       </div>
       {c.loading ? (
         <p className="muted">꾸미기 정보를 불러오는 중이에요.</p>
@@ -181,7 +189,7 @@ export default function CharacterPage() {
               </button>
             </div>
             <strong>{displayName}</strong>
-            <div className="gender-toggle" role="group" aria-label="성별">
+            <div className="gender-toggle" role="group" aria-label="성별" hidden={active.id === "desk"}>
               {(Object.keys(GENDER_PRESETS) as Gender[]).map((g) => (
                 <button key={g} className={c.look.gender === g ? "selected" : ""} aria-pressed={c.look.gender === g} onClick={() => c.setGender(g)}>
                   {GENDER_PRESETS[g].label}
@@ -271,9 +279,58 @@ export default function CharacterPage() {
               })}
             </div>
             {c.tryingOn.length > 0 && (
-              <p className="buy-reason" role="status">
-                입어 본 {trying}은(는) 상점에서 산 뒤 저장할 수 있어요.
-              </p>
+              <section className="try-on-buy" aria-label="입어 보는 아이템 사기">
+                <p>
+                  입어 본 {trying}은(는) 사야 저장할 수 있어요. 산 아이템은 되팔거나 환불할 수 없어요.
+                </p>
+                <ul>
+                  {c.tryingOn.map((item) => {
+                    const reason = buyBlockReason(item, shop.balance);
+                    return (
+                      <li key={item.id} data-item={item.id}>
+                        <span className="try-on-name">{item.name}</span>
+                        <span className="price">
+                          <Coin />
+                          {item.price.toLocaleString()}
+                        </span>
+                        {confirmingId === item.id ? (
+                          <div className="buy-confirm" role="group" aria-label={`${item.name} 구매 확인`}>
+                            <p>
+                              코인 {shop.balance.toLocaleString()}에서 <strong>{(shop.balance - item.price).toLocaleString()}</strong>으로 줄어요.
+                              <br />
+                              환불할 수 없어요.
+                            </p>
+                            <button
+                              className="primary"
+                              aria-label={`${item.name} 사기`}
+                              disabled={shop.buyingId !== null}
+                              onClick={() => {
+                                shop.buy(item);
+                                setConfirmingId(null);
+                              }}
+                            >
+                              사기
+                            </button>
+                            <button className="secondary-button" onClick={() => setConfirmingId(null)}>
+                              그만두기
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            className="primary"
+                            aria-label={`${item.name} 구매하기`}
+                            disabled={!!reason || shop.buyingId !== null}
+                            onClick={() => setConfirmingId(item.id)}
+                          >
+                            {shop.buyingId === item.id ? "사는 중" : "구매하기"}
+                          </button>
+                        )}
+                        {reason && <p className="buy-reason">{reason}</p>}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
             )}
             <div className="customize-actions">
               <button
@@ -286,11 +343,6 @@ export default function CharacterPage() {
               {c.changed && (
                 <button className="secondary-button" onClick={c.reset}>
                   원래대로
-                </button>
-              )}
-              {c.tryingOn.length > 0 && (
-                <button className="secondary-button" onClick={() => navigate(ROUTES.shop)}>
-                  상점으로 가기
                 </button>
               )}
             </div>

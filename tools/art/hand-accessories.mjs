@@ -63,12 +63,30 @@ function sideScarf(im) {
   ], SCARF);
 }
 
-/** 7×7 별 머리핀 (왼쪽 위 x0, y0). */
+/**
+ * 11×10 별 머리핀 (왼쪽 위 x0, y0). 다섯 꼭짓점이 보이도록 모양을 먼저 정하고, 바깥에 닿은 칸은 외곽선,
+ * 안쪽은 노랑으로 칠한 뒤 왼쪽 위에 빛, 아래 다리에 그늘을 둔다 (2026-11-01: 7×7은 별로 보이지 않았다).
+ */
 function star(im, x0, y0) {
-  const art = ["...o...", "..oyo..", "ooyyyoo", "oyyyyyo", ".oyssyo", ".oso.so", "oo...oo"];
-  art.forEach((row, dy) => [...row].forEach((c, dx) => {
-    const rgba = c === "o" ? STAR.line : c === "y" ? STAR.fill : c === "s" ? STAR.shade : null;
-    if (rgba) dot(im, x0 + dx, y0 + dy, rgba);
+  const shape = [
+    ".....#.....",
+    "....###....",
+    "....###....",
+    "###########",
+    ".#########.",
+    "..#######..",
+    "..#######..",
+    ".####.####.",
+    ".###...###.",
+    "##.......##",
+  ];
+  const on = (x, y) => shape[y]?.[x] === "#";
+  const LIGHT = [255, 236, 150, 255];
+  shape.forEach((row, y) => [...row].forEach((c, x) => {
+    if (c !== "#") return;
+    const edge = !on(x - 1, y) || !on(x + 1, y) || !on(x, y - 1) || !on(x, y + 1);
+    const rgba = edge ? STAR.line : y <= 4 && x <= 5 ? LIGHT : y >= 6 ? STAR.shade : STAR.fill;
+    dot(im, x0 + x, y0 + y, rgba);
   }));
 }
 
@@ -79,9 +97,9 @@ const drawings = {
     north: () => {},
   },
   hairpin: {
-    south: (im) => star(im, 37, 17),
-    west: (im) => star(im, 32, 16),
-    north: (im) => star(im, 12, 17),
+    south: (im) => star(im, 35, 15),
+    west: (im) => star(im, 30, 14),
+    north: (im) => star(im, 10, 15),
   },
   // 목도리는 앞과 뒤는 pixen 그림을 쓰고, 생성 옆모습이 앞모습 무늬를 붙인 T자 모양이라 옆만 손으로 찍는다.
   scarf: {

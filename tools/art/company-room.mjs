@@ -124,6 +124,20 @@ const empty = decodePng(readFileSync(join(SRC, "desk-empty.png")));
 for (const { desk } of layout.seats)
   for (let y = BAND.y0; y <= BAND.y1; y++) for (let x = BAND.x0; x <= BAND.x1; x++) at(room, desk.x + x, desk.y + y).set(at(empty, x, y));
 
+// 모니터만 따로 뗀 투명 그림 (2026-11-01 사용자 결정: 책상 소품은 모니터보다 뒤, 모니터는 늘 온전히 보인다).
+// 빈 책상의 모니터 상자(layout.deskMonitor) 안에서 짙은 칸(화면, 테, 받침)만 남긴다. 받침 그림자처럼 밝은 갈색은 책상 몫이다.
+const MON = layout.deskMonitor;
+const monitor = { width: MON.width, height: MON.height, pixels: new Uint8Array(MON.width * MON.height * 4) };
+for (let y = 0; y < MON.height; y++) for (let x = 0; x < MON.width; x++) {
+  const p = at(empty, MON.x + x, MON.y + y);
+  // 상자 가장자리의 갈색(의자 팔걸이) 칸은 뺀다: 모니터는 남색과 검정이다.
+  const brownEdge = p[0] - p[2] > 16 && (y < 8 || x < 3 || x > MON.width - 4);
+  if (Math.max(p[0], p[1], p[2]) < 82 && !brownEdge) monitor.pixels.set([p[0], p[1], p[2], 255], (y * MON.width + x) * 4);
+}
+mkdirSync("public/assets/rooms/desk", { recursive: true });
+writeFileSync("art-src/rooms/desk/desk-monitor.png", encodePng(monitor));
+writeFileSync("public/assets/rooms/desk/desk-monitor.png", encodePng(monitor));
+
 mkdirSync("public/assets/rooms", { recursive: true });
 const png = encodePng(room);
 writeFileSync("art-src/rooms/company-room.png", png);

@@ -132,6 +132,20 @@ export const DESK_ITEM_ART: Readonly<Record<string, string>> = Object.fromEntrie
   ),
 );
 
+/** 책상 소품 위에 다시 그리는 모니터 (tools/art/company-room.mjs). 소품은 늘 모니터 뒤에 놓인다. */
+export const DESK_MONITOR_ART = "/assets/rooms/desk/desk-monitor.png";
+
+/** 그림이 오른쪽 자리 방향으로 그려진 책상 소품. 나머지는 왼쪽 자리 방향이다. */
+const DESK_ITEMS_DRAWN_FOR_RIGHT = new Set(["desk-cat"]);
+
+/**
+ * 책상 소품을 이 자리에 좌우로 뒤집어 놓는가 (2026-11-01 사용자 결정: 양쪽 소품은 좌우 대칭).
+ * 소품 그림은 왼쪽 자리 방향(고양이 인형만 오른쪽 자리 방향)이고, 다른 쪽 자리에서는 뒤집는다. 앞면 스티커는 뒤집지 않는다.
+ * @example deskItemFlipped("desk-lamp", "right") // true
+ */
+export const deskItemFlipped = (id: string, spot: "left" | "right" | "front") =>
+  spot !== "front" && (spot === "right") !== DESK_ITEMS_DRAWN_FOR_RIGHT.has(id);
+
 /** 처음 꾸미기에서 남녀를 고르면 입혀 주는 기본 머리 모양과 옷 (서버 기본 아이템 id). */
 export const GENDER_PRESETS: Readonly<Record<Gender, { label: string; hair: string; outfit: string }>> = {
   f: { label: "여자", hair: "hair-basic", outfit: "outfit-lavender" },

@@ -93,15 +93,22 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     assert.equal(server.looks.get(FAKE_USER_ID).face, "face-green");
     assert.equal(server.looks.get(FAKE_USER_ID).hair_color, "hair-color-chestnut");
 
-    // 상점: 120코인으로 리본은 살 수 있고, 나머지는 부드러운 이유와 함께 막힌다
-    await nav(page, "상점");
-    await page.getByRole("button", { name: "보라 리본 구매하기" }).waitFor();
-    // 액세서리 6, 의상 4, 머리 모양 8, 머리 색 7, 책상 소품 6, 책상 스티커 2
-    assert.equal(await page.locator(".shop-item").count(), 33);
+    // 꾸미기 안 상점 (2026-11-01: 상점 페이지를 꾸미기에 합쳤다). 예전 상점 주소는 꾸미기로 간다.
+    await page.goto(`${url}shop`);
+    await page.waitForURL(/\/character$/);
+    await page.getByRole("button", { name: "이 모습으로 저장하기" }).waitFor();
+    assert.equal(await page.getByRole("navigation").getByRole("button", { name: "상점", exact: true }).count(), 0);
+    await page.getByTestId("shop-balance").filter({ hasText: /^120$/ }).waitFor();
+    // 120코인으로 별 머리핀(150)은 이유와 함께 막힌다
+    await tab("액세서리");
+    await page.getByRole("button", { name: /^별 머리핀/ }).click();
+    await page.getByText("입어 보는 중이에요. 사지 않은 아이템은 저장되지 않아요.").waitFor();
     assert.equal(await page.getByRole("button", { name: "별 머리핀 구매하기" }).isDisabled(), true);
-    await page.locator('[data-item="acc-hairpin"]').getByText("30코인이 더 모이면 살 수 있어요.").waitFor();
+    await page.locator('.try-on-buy [data-item="acc-hairpin"]').getByText("30코인이 더 모이면 살 수 있어요.").waitFor();
+    assert.equal(await page.getByRole("button", { name: "이 모습으로 저장하기" }).isDisabled(), true);
     await shot(page, "shop-prices-insufficient.png");
-    // 구매 확인: 줄어들 코인을 보여 주고, 그만두면 사지 않는다
+    // 리본으로 바꿔 입어 보고 산다. 줄어들 코인을 보여 주고, 그만두면 사지 않는다.
+    await page.getByRole("button", { name: /^보라 리본/ }).click();
     await page.getByRole("button", { name: "보라 리본 구매하기" }).click();
     const confirm = page.getByRole("group", { name: "보라 리본 구매 확인" });
     await confirm.getByText("환불할 수 없어요.").waitFor();
@@ -110,26 +117,15 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     await confirm.getByRole("button", { name: "그만두기" }).click();
     await page.getByRole("button", { name: "보라 리본 구매하기" }).waitFor();
     assert.equal(state.coins.balance, 120);
-    // 되팔기와 환불이 없어서 카드 안에서 한 번 더 확인한 뒤에 산다.
     await page.getByRole("button", { name: "보라 리본 구매하기" }).click();
     await page.getByRole("button", { name: "보라 리본 사기", exact: true }).click();
-    await page.getByRole("button", { name: "보라 리본 보유 중" }).waitFor();
+    await page.getByRole("button", { name: "보라 리본, 보유 중" }).waitFor();
     await page.getByTestId("shop-balance").filter({ hasText: /^0$/ }).waitFor();
+    assert.equal(await page.locator(".try-on-buy").count(), 0);
     await shot(page, "shop-purchase-success.png");
     assert.equal(state.coins.balance, 0);
 
-    // 상점 카드의 "입어 보기"는 그 아이템을 입힌 꾸미기 화면의 그 탭으로 간다 (저장은 산 뒤에만)
-    await page.getByRole("button", { name: "로즈 옷 입어 보기" }).click();
-    await page.waitForURL(/\/character\?try=/);
-    await page.getByText("입어 보는 중이에요. 사지 않은 아이템은 저장되지 않아요.").waitFor();
-    assert.equal(await page.getByRole("button", { name: /^로즈 옷/ }).getAttribute("aria-pressed"), "true");
-    await nav(page, "상점");
-    await page.getByRole("button", { name: "보라 리본 보유 중" }).waitFor();
-
-    // 꾸미기: 산 리본 적용, 사지 않은 로즈 옷은 입어 보기만
-    await nav(page, "캐릭터 꾸미기");
-    await tab("액세서리");
-    await page.getByRole("button", { name: /^보라 리본/ }).click();
+    // 산 리본은 저장할 수 있고, 사지 않은 로즈 옷은 입어 보기만
     await tab("의상");
     await page.getByRole("button", { name: /^로즈 옷/ }).click();
     await page.getByText("입어 보는 중이에요. 사지 않은 아이템은 저장되지 않아요.").waitFor();
@@ -140,6 +136,11 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     await page.getByRole("button", { name: "이 모습으로 저장하기" }).click();
     await page.getByText("꾸민 모습을 저장했어요!").waitFor();
     assert.equal(server.looks.get(FAKE_USER_ID).accessory, "acc-ribbon");
+
+    // 꾸미기 주소의 ?try=아이템은 그 아이템을 입힌 그 탭을 연다 (공지나 우편에서 이어 줄 때)
+    await page.goto(`${url}character?try=outfit-rose`);
+    await page.getByText("입어 보는 중이에요. 사지 않은 아이템은 저장되지 않아요.").waitFor();
+    assert.equal(await page.locator('.item-options [data-item="outfit-rose"]').getAttribute("aria-pressed"), "true");
 
     // 새로고침 후에도 같은 모습
     await page.reload();

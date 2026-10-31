@@ -20,7 +20,6 @@ export const MENU_ITEMS: readonly MenuItem[] = [
   { label: "스터디룸", path: ROUTES.rooms, icon: "house" },
   { label: "공용 스터디카페", path: ROUTES.cafe, icon: "coffee" },
   { label: "캐릭터 꾸미기", path: ROUTES.character, icon: "tshirt" },
-  { label: "상점", path: ROUTES.shop, icon: "tote" },
   { label: "공부 기록", path: ROUTES.records, icon: "clipboard" },
   { label: "친구 목록", path: ROUTES.friends, icon: "users" },
   { label: "가이드", path: ROUTES.guide, icon: "book" },

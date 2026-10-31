@@ -22,7 +22,7 @@ export function useShopItems() {
 }
 
 /**
- * 상점 화면 상태: 목록, 잔액, 구매. 결과는 토스트로 알리고, 잔액과 보유 목록은 서버에서 다시 읽는다.
+ * 꾸미기 화면의 구매 상태: 목록, 잔액, 구매. 결과는 토스트로 알리고, 잔액과 보유 목록은 서버에서 다시 읽는다.
  * @param notify 결과를 알리는 토스트 함수
  * @example const shop = useShop(toast.notify); shop.buy(item);
  */
@@ -34,7 +34,7 @@ export function useShop(notify: (text: string) => void) {
   const buy = useMutation({
     mutationFn: (item: ShopItem) => shopStore.buy(item.id),
     onSuccess: (result, item) => {
-      if (result.status === "bought") notify(purchasedMessage(item.name, item.slot));
+      if (result.status === "bought") notify(purchasedMessage(item.name));
       else if (result.status === "owned") notify(alreadyOwnedMessage);
       else notify(insufficientMessage);
     },

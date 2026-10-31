@@ -1,0 +1,6 @@
+Reviewed-Content-Hash: tools/art/build-character.mjs b10131b1cadc590ac2954507677c3e153f6cea1d
+Reviewed-Content-Hash: tools/art/hand-accessories.mjs b2987b6406abc1cb3c14e0b09d0d2925d6a9a298
+Reviewed-Content-Hash: tools/art/desk-items.mjs 47476b9a96aa25456773a2ccfcf715298a8519c8
+Reviewed-Content-Hash: tools/art/company-room.mjs 80c725d0647e2a5f523b0063c1bd88b62df8fd48
+Reviewed-Content-Hash: src/features/character/view/CharacterPage.tsx 830d1f42b7adbc3d415169a4af6fdf08f2007976
+Reviewed-Content-Hash: src/study/DeskSet.jsx 109a7ab53356b22b38096baf8aeac56cc28939ae

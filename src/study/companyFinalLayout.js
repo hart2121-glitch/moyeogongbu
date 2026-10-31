@@ -104,6 +104,8 @@ export const companyFinalLayout = {
     right: { x: 75, y: 10, width: 32, height: 44 },
     front: { x: 14, y: 60, width: 32, height: 16 },
   },
+  // 책상 안 모니터 상자 (그림 칸). 소품 위에 모니터만 다시 그려 소품이 늘 모니터 뒤에 놓이게 한다.
+  deskMonitor: { x: 39, y: 24, width: 41, height: 29 },
   areas: [
     {
       id: "lounge",

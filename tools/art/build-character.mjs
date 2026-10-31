@@ -203,6 +203,8 @@ function buildAccessory(id, base) {
     // 목도리처럼 목 아래에 걸치는 장식은 kind "body"로 뗀다 (머리 부품은 목 줄 위에서 시작하는 덩어리만 남는다).
     const raw = extractPart(loadRot(base, dir, "accessory", id, "rot"), withHair, keep.kind ?? "head");
     parts[dir] = dropSpecks(keepVivid(raw, keep), 6, keep.maxTop);
+    // largestOnly: 장식이 한 덩어리일 때 가장 큰 덩어리만 남긴다 (리본: 함께 생성된 머리카락 가닥이 따로 떨어져 남는다).
+    if (keep.largestOnly) parts[dir] = keepLargest(parts[dir]);
   }
   // 생성 그림이 어색한 방향은 손으로 찍은 칸(hand/<방향>.png)으로 바꾼다.
   if (existsSync(handDir)) Object.assign(parts, handParts(handDir, base));
@@ -220,6 +222,30 @@ function handParts(handDir, base) {
   const w = base.west.align, e = base.east.align;
   if (parts.west) parts.east = shift(mirror(parts.west), e.dx + w.dx, e.dy - w.dy);
   return parts;
+}
+
+/** 8방향으로 이어진 덩어리 중 가장 큰 것만 남긴다. */
+function keepLargest(part) {
+  const W = part.width, seen = new Uint8Array(W * part.height);
+  let best = [];
+  for (let start = 0; start < W * part.height; start++) {
+    if (seen[start] || !part.pixels[start * 4 + 3]) continue;
+    const stack = [start], comp = [];
+    seen[start] = 1;
+    while (stack.length) {
+      const k = stack.pop(), x = k % W, y = Math.floor(k / W);
+      comp.push(k);
+      for (let dy = -1; dy <= 1; dy++)
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx, ny = y + dy, n = ny * W + nx;
+          if (nx >= 0 && ny >= 0 && nx < W && ny < part.height && !seen[n] && part.pixels[n * 4 + 3]) { seen[n] = 1; stack.push(n); }
+        }
+    }
+    if (comp.length > best.length) best = comp;
+  }
+  const out = { ...part, pixels: new Uint8Array(part.pixels.length) };
+  for (const k of best) out.pixels.set(part.pixels.subarray(k * 4, k * 4 + 4), k * 4);
+  return out;
 }
 
 /**
@@ -345,6 +371,95 @@ function lowerNorth(sheet) {
   }
   return out;
 }
+/**
+ * 반팔 옷의 팔 찌꺼기 (2026-11-01 사용자 지적: 걷는 손이 어색하다). 옷 걷기는 기본 몸과 따로 생성해 팔이 1~2칸 어긋나고,
+ * 옷 부품에 옷 쪽 팔(살색과 외곽선)이 남아 몸의 팔과 겹쳐 손이 두 번 그려진다. 팔이 몸 옆에 늘어지는 앞뒤 칸
+ * (서기, 걷기)에서만, 신발 줄(62) 위에 대해: 몸이 살이거나 빈 자리에 놓인 옷의 살색 칸을 지우고, 옷감에 닿지 않는
+ * 짙은 외곽선 칸을 걷어 낸 뒤 4칸보다 작은 조각을 지운다. 옆 칸은 옷 쪽 팔이 소매와 맞으므로 그대로 둔다.
+ */
+const FRONT_BACK_CELLS = new Set([0, 1, 4, 5, 6, 7, 8, 9, 10, 11]);
+function cleanShortSleeves(sheet, body) {
+  const W = sheet.width, H = sheet.height, ROW_MAX = 62, out = { ...sheet, pixels: sheet.pixels.slice() };
+  const at = (im, x, y) => (x < 0 || y < 0 || x >= W || y >= H ? null : im.pixels.subarray((y * W + x) * 4, (y * W + x) * 4 + 4));
+  const isSkin = (p) => { const c = hsv(p[0], p[1], p[2]); return c.h >= 5 && c.h <= 40 && c.s >= 0.12 && c.s <= 0.6 && c.v >= 0.72; };
+  const skin = new Set();
+  for (let k = 0; k < W * H; k++) { const p = body.pixels.subarray(k * 4, k * 4 + 4); if (p[3] && isSkin(p)) skin.add(p.subarray(0, 3).join()); }
+  const nearSkin = (p) => [...skin].some((c) => { const [r, g, b] = c.split(",").map(Number); return Math.abs(r - p[0]) + Math.abs(g - p[1]) + Math.abs(b - p[2]) <= 12; });
+  const kind = (x, y) => {
+    const p = at(out, x, y);
+    if (!p || !p[3]) return "none";
+    if (hsv(p[0], p[1], p[2]).v < 0.24) return "ink";
+    return nearSkin(p) ? "skin" : "cloth";
+  };
+  const kill = (x, y) => { if (FRONT_BACK_CELLS.has(Math.floor(x / FRAME.width))) out.pixels.fill(0, (y * W + x) * 4, (y * W + x) * 4 + 4); };
+  for (let y = 0; y < ROW_MAX; y++) for (let x = 0; x < W; x++) {
+    const b = at(body, x, y);
+    if (kind(x, y) === "skin" && (!b[3] || isSkin(b))) kill(x, y);
+  }
+  const NEAR = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
+  for (let pass = 0; pass < 3; pass++)
+    for (let y = 0; y < ROW_MAX; y++) for (let x = 0; x < W; x++)
+      if (kind(x, y) === "ink" && !NEAR.some(([dx, dy]) => kind(x + dx, y + dy) === "cloth")) kill(x, y);
+  for (const cell of FRONT_BACK_CELLS) {
+    const x0 = cell * FRAME.width, seen = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++) for (let x = x0; x < x0 + FRAME.width; x++) {
+      const k = y * W + x;
+      if (seen[k] || !out.pixels[k * 4 + 3]) continue;
+      const stack = [k], comp = [];
+      seen[k] = 1;
+      while (stack.length) {
+        const q = stack.pop(), qx = q % W, qy = Math.floor(q / W);
+        comp.push(q);
+        for (const [dx, dy] of NEAR) {
+          const nx = qx + dx, ny = qy + dy, n = ny * W + nx;
+          if (nx >= x0 && nx < x0 + FRAME.width && ny >= 0 && ny < H && !seen[n] && out.pixels[n * 4 + 3]) { seen[n] = 1; stack.push(n); }
+        }
+      }
+      if (comp.length < 4) for (const q of comp) out.pixels.fill(0, q * 4, q * 4 + 4);
+    }
+  }
+  return out;
+}
+
+/**
+ * 바지 허리 내리기 (2026-11-01 사용자 지적: 남자 교복 바지 허리가 너무 크다). 생성한 옆모습은 바지가 겨드랑이 바로 아래에서
+ * 시작해 앞모습(57줄)보다 허리가 3줄 높다. 칸마다 첫 바지 줄(셔츠 흰색이 1칸 이하, 바지 보라가 4칸 이상)을 찾아,
+ * 그 위 셔츠 마지막 줄을 rows줄 내려 그리고 허리 줄을 그 아래로 옮긴다. 다리는 그대로다.
+ */
+function lowerWaist(sheet, { rows, cells }) {
+  const W = sheet.width, out = { ...sheet, pixels: sheet.pixels.slice() };
+  const px = (im, cell, x, y) => im.pixels.subarray((y * W + cell * FRAME.width + x) * 4, (y * W + cell * FRAME.width + x) * 4 + 4);
+  const kind = (cell, x, y) => {
+    const p = px(sheet, cell, x, y);
+    if (!p[3]) return "none";
+    const c = hsv(p[0], p[1], p[2]);
+    return c.v > 0.7 && c.s < 0.2 ? "shirt" : c.h >= 240 && c.h <= 320 && c.s > 0.15 ? "pants" : "other";
+  };
+  for (const cell of cells) {
+    let belt = -1;
+    for (let y = 48; y < 64 && belt < 0; y++) {
+      let shirt = 0, pants = 0;
+      for (let x = 0; x < FRAME.width; x++) { const k = kind(cell, x, y); if (k === "shirt") shirt++; if (k === "pants") pants++; }
+      if (shirt <= 1 && pants >= 4) belt = y;
+    }
+    if (belt < 0) continue;
+    for (let x = 0; x < FRAME.width; x++) {
+      if (!px(sheet, cell, x, belt)[3]) continue;
+      const above = px(sheet, cell, x, belt - 1);
+      for (let y = belt; y < belt + rows; y++) px(out, cell, x, y).set(above[3] ? above : px(sheet, cell, x, belt));
+      px(out, cell, x, belt + rows).set(px(sheet, cell, x, belt));
+    }
+  }
+  return out;
+}
+
+/** 옷 시트 마무리: 폴더의 LOWER-WAIST.json(바지 허리 내리기), SHORT-SLEEVES(반팔 팔 찌꺼기 걷기) 표시대로. */
+function finishOutfit(id, sheet, body) {
+  const dir = join(SRC, "outfit", id), waist = join(dir, "LOWER-WAIST.json");
+  let out = existsSync(waist) ? lowerWaist(sheet, JSON.parse(readFileSync(waist, "utf8"))) : sheet;
+  if (existsSync(join(dir, "SHORT-SLEEVES"))) out = cleanShortSleeves(out, body);
+  return out;
+}
 const save = (name, image) => { built[name] = image; writeFileSync(join(OUT, `${name}.png`), encodePng(lowerNorth(image))); report.push(`${name}.png`); };
 save("body-basic", buildBody(base));
 for (const id of list(join(SRC, "face"))) {
@@ -364,7 +479,7 @@ for (const style of list(join(SRC, "hair"))) {
     save(`hair-${style}-${color}-back`, dyed.back);
   }
 }
-for (const id of list(join(SRC, "outfit"))) save(`outfit-${id}`, buildOutfit(id, base));
+for (const id of list(join(SRC, "outfit"))) save(`outfit-${id}`, finishOutfit(id, buildOutfit(id, base), built["body-basic"]));
 for (const id of list(join(SRC, "accessory"))) save(`acc-${id}`, buildAccessory(id, base));
 // 그 밖의 색 바꾸기 변형 (눈 색): recolor/<시트 이름>.json의 from 시트에서 만든다. 남자 눈매 판(-m)이 있으면 같이 만든다.
 for (const file of list(join(SRC, "recolor")).filter((n) => n.endsWith(".json"))) {

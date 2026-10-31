@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { DESK_ITEM_ART } from "../../../config/shop";
+import { DESK_ITEM_ART, DESK_MONITOR_ART, deskItemFlipped } from "../../../config/shop";
 import { COMPANY_ROOM_ART, companyLayout } from "../../../study/companyLayout";
 import type { DeskSpot, Look } from "../model/layers";
 
@@ -15,6 +15,7 @@ const SPOTS: readonly ["left" | "right" | "front", DeskSpot][] = [
 
 /**
  * 꾸미기 "책상" 탭의 미리보기: 회사 방의 빈 책상을 정수 2배로 잘라 보이고, 고른 세트를 방과 같은 자리에 얹는다.
+ * 방과 같이 오른쪽 소품은 뒤집고 소품 위에 모니터를 다시 그린다.
  * @example <DeskPreview look={c.look} label="내 책상 미리보기" />
  */
 export default function DeskPreview({ look, label }: { look: Look; label: string }) {
@@ -39,10 +40,22 @@ export default function DeskPreview({ look, label }: { look: Look; label: string
             alt=""
             data-spot={spot}
             data-item={id}
+            className={deskItemFlipped(id, spot) ? "is-flipped" : undefined}
             style={{ left: s.x * SCALE, top: s.y * SCALE, width: s.width * SCALE, height: s.height * SCALE }}
           />
         );
       })}
+      <img
+        src={DESK_MONITOR_ART}
+        alt=""
+        data-monitor
+        style={{
+          left: companyLayout.deskMonitor.x * SCALE,
+          top: companyLayout.deskMonitor.y * SCALE,
+          width: companyLayout.deskMonitor.width * SCALE,
+          height: companyLayout.deskMonitor.height * SCALE,
+        }}
+      />
     </div>
   );
 }

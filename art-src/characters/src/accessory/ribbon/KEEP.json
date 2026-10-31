@@ -1,1 +1,1 @@
-{ "maxTop": 30 }
+{ "maxTop": 30, "largestOnly": true }
