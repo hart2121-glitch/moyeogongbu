@@ -170,7 +170,7 @@
   }
 }
 
-/* 명패: 장면 왼쪽 위 벽에 건 나무 문패(home/nameplate.png 9조각, 1배). 환영 화면에서 이름을 새긴 문패와 같은 물건이다.
+/* 명패: 장면 왼쪽 위 벽에 건 나무 문패(home/nameplate.png 9조각, 1배). 환영 화면에서 현관 문 위 문패(home/entrance/sign.png)에 새긴 이름이 여기에 걸린다.
    날짜와 꾸미기 링크는 문패 아래 벽지 위에 둔다. */
 .desk-nameplate {
   position: absolute;

@@ -1,6 +1,6 @@
-/* 로그인과 환영: 집 현관 (2026-10-31). 벽지 타일 위에 패널을 두고 화면 아래에 마루를 깐다 (art-src/home).
-   환영 화면의 캐릭터를 2배로 세우므로 현관 장면은 벽지, 마루, 문패까지 모두 정수 2배로 맞춘다 (한 장면 한 배율).
-   집 현관 그림이 나오면 패널 옆 액자로 건다. */
+/* 로그인과 환영: 집 현관 (2026-10-31). 벽지 타일 위에 현관 장면(home/entrance, 240×144)을 액자로 걸고 패널을 옆에 둔다.
+   장면 안 그림, 문패, 캐릭터는 모두 같은 정수 배율 --s로 그린다 (한 장면 한 배율): 넓은 화면 3배, 그 밖에는 2배.
+   2배 장면(480px)이 화면보다 넓으면 문과 캐릭터가 있는 가운데만 보이게 양옆을 자른다. */
 .auth-page {
   position: relative;
   padding-block: 12px;
@@ -20,59 +20,104 @@
   background: url("/assets/home/floor.png") 0 0 / 96px 32px repeat;
 }
 .auth-stack {
+  --s: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  width: min(480px, 100%);
+  gap: 16px;
+  width: min(488px, 100%);
 }
 .auth-stack > .panel {
   width: 100%;
   image-rendering: auto;
 }
 
-/* 환영 화면: 위에 방문 문패, 그 아래 문 앞에 선 캐릭터, 그 아래 이름 입력 */
-.door-scene {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-/* 문패 9조각(nameplate.png 48×48, 모서리 16px)을 2배로: 그림 폭 32px = 테두리 24px + 바깥 8px */
-.door-nameplate {
-  min-width: 240px;
-  max-width: 340px;
+/* 현관 장면 액자: 로비 내 방과 같은 짙은 테두리와 그림자 */
+.entrance-scene {
   display: flex;
   justify-content: center;
-  border: 24px solid transparent;
-  border-image: url("/assets/home/nameplate.png") 16 fill / 32px / 8px stretch;
-  background: #d0a067;
-  background-clip: padding-box;
-  padding: 0 8px;
+  max-width: 100%;
+  padding: 4px;
+  overflow: hidden;
+  background: #140e0c;
+  filter: drop-shadow(3px 4px 0 #342c3540);
+}
+.entrance-art {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+}
+.entrance-art > img {
+  display: block;
+  max-width: none;
+  user-select: none;
+  pointer-events: none;
+}
+/* 문패: 9조각 sign.png(양 끝 4칸, 가운데 1칸)를 배율만큼 키운다. 줄은 문 가운데(x 118)를 중심으로 글자 폭만큼 늘어난다. */
+.entrance-sign-row {
+  position: absolute;
+  left: 0;
+  display: flex;
+  justify-content: center;
+}
+.entrance-sign {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 0 calc(4px * var(--s));
+  border-image-slice: 0 4 fill;
+  border-image-width: 0 calc(4px * var(--s));
+  border-image-repeat: stretch;
+  padding: 0 calc(3px * var(--s)) calc(1px * var(--s));
   color: #3b2416;
-  filter: drop-shadow(0 8px 0 #0004);
-  image-rendering: pixelated;
-}
-.door-nameplate strong {
   font-family: "Gowun Batang", serif;
-  font-size: 22px;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-  text-align: center;
+  font-size: calc(7px * var(--s));
+  line-height: 1;
+  white-space: nowrap;
 }
-.door-nameplate strong span {
-  font-size: 16px;
-  margin-left: 2px;
+.entrance-sign span {
+  margin-left: calc(1px * var(--s));
+  font-size: calc(5px * var(--s));
 }
-.door-nameplate strong.is-empty {
-  font-size: 16px;
+.entrance-sign.is-empty {
   color: #4a2f1d;
+  font-size: calc(6px * var(--s));
 }
-/* 캐릭터는 정수 2배 (56×72 → 112×144) */
-.door-character {
-  width: 112px;
+.entrance-character {
+  position: absolute;
+  animation: entrance-breathe 2.4s steps(1) infinite;
 }
-.door-character .layer-stack {
+.entrance-character .layer-stack {
   background: none;
   border: 0;
+}
+@keyframes entrance-breathe {
+  0%,
+  70% {
+    transform: translateY(0);
+  }
+  85% {
+    transform: translateY(calc(-1px * var(--s)));
+  }
+}
+
+/* 넓고 높은 화면: 3배 장면(720×432) 옆에 패널 */
+@media (min-width: 1200px) and (min-height: 640px) {
+  .auth-stack {
+    --s: 3;
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+    width: auto;
+  }
+  .auth-stack > .panel {
+    width: 400px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entrance-character {
+    animation: none;
+  }
 }

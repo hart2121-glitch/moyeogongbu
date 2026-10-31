@@ -3,14 +3,15 @@ import { ROUTES } from "../../shell/model/paths";
 import { useSession } from "../viewmodel/SessionContext";
 import { useSignIn } from "../viewmodel/useAccount";
 import AuthFrame from "./AuthFrame";
+import EntranceScene from "./EntranceScene";
 
-/** 로그인 화면. 이미 로그인했으면 로비로 보낸다 (화면 이름이 없으면 접근 제어가 이름 설정으로 보낸다). */
+/** 로그인 화면: 집 현관 문패에 서비스 이름을 걸어 둔다. 이미 로그인했으면 로비로 보낸다 (화면 이름이 없으면 접근 제어가 이름 설정으로 보낸다). */
 export default function LoginPage() {
   const session = useSession();
   const { signIn, pending, failed } = useSignIn();
   if (session) return <Navigate to={ROUTES.lobby} replace />;
   return (
-    <AuthFrame title="로그인">
+    <AuthFrame title="로그인" scene={<EntranceScene sign="모여공부" />}>
       <h2>모여공부에 오신 걸 환영해요</h2>
       <p>Google 계정으로 로그인하고 함께 공부해요.</p>
       <button

@@ -3,9 +3,9 @@ import Panel from "../../shell/view/Panel";
 import "./authFrame.css";
 
 /**
- * 로그인 전후 단계(로그인, 첫 화면 이름 설정)의 가운데 정렬 패널. 앱 틀과 로비는 보이지 않는다.
- * 집 현관처럼 벽지와 마루 위에 놓이고(authFrame.css), scene은 패널 위에 그리는 장면(예: 환영 화면의 방문 문패)이다.
- * @example <AuthFrame title="로그인">...</AuthFrame>
+ * 로그인 전후 단계(로그인, 첫 화면 이름 설정)의 틀. 앱 틀과 로비는 보이지 않는다.
+ * 벽지와 마루 위에(authFrame.css) 집 현관 장면(scene, EntranceScene)을 액자로 걸고 그 옆에 패널을 둔다. 좁은 화면에서는 위아래로 쌓는다.
+ * @example <AuthFrame title="로그인" scene={<EntranceScene sign="모여공부" />}>...</AuthFrame>
  */
 export default function AuthFrame({
   title,

@@ -4,15 +4,19 @@ import { ROUTES } from "../../shell/model/paths";
 import { useDisplayNameForm } from "../viewmodel/useAccount";
 import AuthFrame from "./AuthFrame";
 import DisplayNameField from "./DisplayNameField";
-import DoorNameplate from "./DoorNameplate";
+import EntranceScene from "./EntranceScene";
 
-/** 첫 로그인 단계: 화면 이름을 정하고 만 14세 이상임을 확인한다. 적는 이름이 방문 문패에 바로 새겨진다. */
+/** 첫 로그인 단계: 화면 이름을 정하고 만 14세 이상임을 확인한다. 적는 이름이 현관 문패에 "이름의 방"으로 바로 새겨지고, 내 캐릭터가 문 앞에 선다. */
 export default function WelcomePage() {
   const navigate = useNavigate();
   const form = useDisplayNameForm("");
   const [isOver14, setIsOver14] = useState(false);
+  const name = form.nameInput.trim();
   return (
-    <AuthFrame title="처음 오셨네요" scene={<DoorNameplate name={form.nameInput} />}>
+    <AuthFrame
+      title="처음 오셨네요"
+      scene={<EntranceScene sign={name ? <>{name}<span>의 방</span></> : "이름을 적어 주세요"} placeholder={!name} character />}
+    >
       <form
         onSubmit={async (e) => {
           e.preventDefault();
