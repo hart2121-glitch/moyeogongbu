@@ -1331,6 +1331,25 @@ button:active {
   color: #826a56;
   font-size: 12px;
 }
+/* 성별 고르기 (Story 009): 몸은 하나, 눈매와 처음 기본 모습만 바뀐다 */
+.gender-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+.gender-toggle button {
+  min-width: 72px;
+  padding: 8px 16px;
+  border: 2px solid #b6a084;
+  border-radius: 6px;
+  background: #fff8e8;
+  color: #24231f;
+  font-size: 16px;
+}
+.gender-toggle button.selected {
+  border-color: #8b699e;
+  background: #e3d3e5;
+}
 /* 꾸미기 선택지 (Story 009): 색은 동그라미, 나머지는 내 캐릭터에 입혀 본 2배 작은 그림 */
 .wardrobe-slot h2 {
   display: flex;

@@ -118,11 +118,14 @@ export function coverBaldPeeks(part, dressed, base) {
   const W = part.width, out = { ...part, pixels: part.pixels.slice() };
   const at = (im, x, y) => (x < 0 || y < 0 || x >= W || y >= im.height ? -1 : (y * W + x) * 4);
   const dark = (im, i) => hsv(...im.pixels.subarray(i, i + 3)).v < 0.3;
+  // 비치는 자리: 몸은 칠해졌는데 머리카락 부품은 비었고, 생성 그림에서도 살(이마, 눈썹)이 아닌 곳.
+  // 걷기 칸은 머리 윤곽이 1픽셀쯤 어긋나 생성 그림의 외곽선 자리에도 대머리 윤곽이 드러난다.
+  const skin = (im, i) => { const c = hsv(...im.pixels.subarray(i, i + 3)); return (c.h < 45 || c.h > 340) && c.s > 0.08 && c.v > 0.6; };
   const peeks = [];
   for (let y = 0; y < FACE_TOP; y++)
     for (let x = 0; x < W; x++) {
       const i = at(base, x, y);
-      if (base.pixels[i + 3] && !dressed.pixels[i + 3]) peeks.push([x, y]);
+      if (base.pixels[i + 3] && !out.pixels[i + 3] && !(dressed.pixels[i + 3] && skin(dressed, i))) peeks.push([x, y]);
     }
   if (!peeks.length) return out;
   // 외곽선 색: 생성 그림 머리 부분(목 위)에서 가장 많이 쓴 짙은 색.
@@ -213,6 +216,36 @@ export function extractFace(dressed, base) {
     if (!face(sx, sy)) continue;
     const i = pixelIndex(dressed, sx, sy);
     out.pixels.set(dressed.pixels.subarray(i, i + 4), k * 4);
+  }
+  return out;
+}
+
+/**
+ * 남자 눈매: 정면 눈에서 눈꺼풀 위로 솟은 속눈썹과 눈 바깥으로 뻗은 꼬리를 지운다.
+ * 눈마다(가운데 축 기준 왼쪽, 오른쪽) 흰자와 눈동자가 있는 범위를 재고, 그 범위 위로 2줄보다 높거나
+ * 옆으로 1칸보다 바깥에 있는 짙은 픽셀을 지운다. 입(축 가까이)은 건드리지 않는다.
+ */
+export function plainEyes(part, base) {
+  const xs = [...faceFeatures(base)].map((k) => k % base.width);
+  const axis2 = Math.min(...xs) + Math.max(...xs);
+  const out = { ...part, pixels: part.pixels.slice() };
+  const dark = (i) => hsv(...part.pixels.subarray(i, i + 3)).v < 0.3;
+  for (const side of [-1, 1]) {
+    const mine = (x) => Math.sign(2 * x - axis2) === side && Math.abs(2 * x - axis2) > 4;
+    let top = Infinity, lo = Infinity, hi = -Infinity;
+    for (let y = 0; y < part.height; y++)
+      for (let x = 0; x < part.width; x++) {
+        const i = pixelIndex(part, x, y);
+        if (!mine(x) || !part.pixels[i + 3] || dark(i)) continue;
+        top = Math.min(top, y); lo = Math.min(lo, x); hi = Math.max(hi, x);
+      }
+    if (top === Infinity) continue;
+    for (let y = 0; y < part.height; y++)
+      for (let x = 0; x < part.width; x++) {
+        const i = pixelIndex(part, x, y);
+        if (!mine(x) || !part.pixels[i + 3] || !dark(i)) continue;
+        if (y < top - 2 || x < lo - 1 || x > hi + 1) out.pixels.fill(0, i, i + 4);
+      }
   }
   return out;
 }

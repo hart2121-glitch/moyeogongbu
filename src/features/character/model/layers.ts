@@ -1,4 +1,4 @@
-import { DEFAULT_LOOK, hairSheet, ITEM_ASSETS, type ItemAsset, type LayerId } from "../../../config/shop";
+import { DEFAULT_LOOK, faceSheet, hairSheet, ITEM_ASSETS, type Gender, type ItemAsset, type LayerId } from "../../../config/shop";
 import { SHEET_FRAME } from "../../../study/characterSprites";
 
 /**
@@ -26,6 +26,8 @@ export interface Look {
   hair_color: string;
   outfit: string;
   accessory: string | null;
+  /** 남녀: 눈매를 정한다 (아이템은 누구나 쓴다). */
+  gender: Gender;
 }
 
 export const defaultLook = (): Look => ({ ...DEFAULT_LOOK });
@@ -50,7 +52,9 @@ export function composeLayers(look: Look, assets: Readonly<Record<string, ItemAs
     const source =
       id === "hair_back" || id === "hair_front"
         ? hairSheet(itemId ?? "", look.hair_color, id === "hair_front" ? "front" : "back")
-        : itemId ? assets[itemId]?.layers[id] : undefined;
+        : id === "face"
+          ? faceSheet(itemId ?? "", look.gender)
+          : itemId ? assets[itemId]?.layers[id] : undefined;
     return { id, order, itemId, sheet: source?.sheet ?? null, className: id === "body" ? tint : "" };
   });
 }
@@ -66,5 +70,6 @@ export function toLook(row: unknown): Look | null {
   const body = str("body"), face = str("face"), hairBack = str("hair_back"), hairFront = str("hair_front"), outfit = str("outfit");
   if (!body || !face || !hairBack || !hairFront || !outfit) return null;
   const hairColor = str("hair_color") ?? DEFAULT_LOOK.hair_color;
-  return { body, face, hair_back: hairBack, hair_front: hairFront, hair_color: hairColor, outfit, accessory: str("accessory") };
+  const gender: Gender = str("gender") === "m" ? "m" : "f";
+  return { body, face, hair_back: hairBack, hair_front: hairFront, hair_color: hairColor, outfit, accessory: str("accessory"), gender };
 }

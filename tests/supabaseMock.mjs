@@ -130,11 +130,12 @@ export const SHOP_ITEMS = [
   ["face-basic", "face", "보라 눈", 0, true],
   // Story 009 머리 모양과 머리 색 (*_hair_style_color.sql)
   ["hair-basic", "hair", "단발 머리", 0, true],
-  ["hair-short", "hair", "짧은 바가지 머리", 0, true],
+  ["hair-short", "hair", "짧은 머리", 0, true],
   ["hair-color-black", "hair_color", "검정 머리", 0, true],
   ["hair-color-chestnut", "hair_color", "밤색 염색", 0, true],
   ["hair-color-lavender", "hair_color", "라벤더 염색", 0, true],
-  ["outfit-lavender", "outfit", "라벤더 옷", 0, true],
+  ["outfit-lavender", "outfit", "교복 치마", 0, true],
+  ["outfit-boy", "outfit", "교복 바지", 0, true],
   ["outfit-sage", "outfit", "세이지 옷", 0, true],
   ["acc-ribbon", "accessory", "보라 리본", 120, false],
   ["acc-hairpin", "accessory", "별 머리핀", 150, false],
@@ -181,10 +182,11 @@ function shopRpc(server, me, name, args, balance, debit) {
       const ok = canUse(args.p_body, "body") && canUse(args.p_face, "face") && canUse(args.p_hair_back, "hair") &&
         canUse(args.p_hair_front, "hair") && canUse(args.p_hair_color, "hair_color") && canUse(args.p_outfit, "outfit") &&
         (args.p_accessory == null || canUse(args.p_accessory, "accessory"));
+      if (!["f", "m"].includes(args.p_gender)) fail("invalid_gender");
       if (!ok) fail("not_owned");
       const look = {
         body: args.p_body, face: args.p_face, hair_back: args.p_hair_back, hair_front: args.p_hair_front,
-        hair_color: args.p_hair_color, outfit: args.p_outfit, accessory: args.p_accessory ?? null,
+        hair_color: args.p_hair_color, outfit: args.p_outfit, accessory: args.p_accessory ?? null, gender: args.p_gender,
       };
       server.looks.set(me, look);
       return look;

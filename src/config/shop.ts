@@ -8,6 +8,9 @@
  * placeholder: true 인 항목은 전용 도트 그림이 아직 없어 그리지 않거나 임시 색상만 입힌 것이다.
  */
 
+/** 남녀. 몸은 하나이고, 눈매와 처음 꾸미기의 기본 머리, 기본 옷만 다르다. */
+export type Gender = "f" | "m";
+
 /** 레이어 id. 서버 `character_looks` 열 이름과 같다. */
 export type LayerId = "hair_back" | "body" | "outfit" | "face" | "hair_front" | "accessory";
 
@@ -54,9 +57,9 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   "face-gray": face("face-gray", "#6c727e"),
   // 머리 모양. 웨이브는 처음 승인한 N1 머리카락이다 (art-src/characters/src/hair/wave).
   // 아래 머리 모양은 기본 몸 세 방향을 PixelLab pixen으로 한 장씩 고친 머리 (art-src/characters/src/hair/<모양>).
-  // 단발 머리(여자 기본), 짧은 바가지 머리(남자 기본)는 무료.
+  // 단발 머리(여자 기본), 짧은 머리(남자 기본)는 무료. 남자 머리는 남자 눈매를 얹은 기본 몸에서 만들었다.
   "hair-basic": hairStyle("bob"),
-  "hair-short": hairStyle("shortbowl"),
+  "hair-short": hairStyle("short"),
   "hair-ponytail": hairStyle("ponytail"),
   "hair-long": hairStyle("long"),
   "hair-bun": hairStyle("bun"),
@@ -73,8 +76,10 @@ export const ITEM_ASSETS: Readonly<Record<string, ItemAsset>> = {
   "hair-color-red": hairColor("red", "#e66959"),
   "hair-color-pink": hairColor("pink", "#fabbd3"),
   "hair-color-skyblue": hairColor("skyblue", "#b1d8f6"),
-  // 교복: 완성 캐릭터에서 임시로 떼어 냈다 (art-src/characters/src/outfit/uniform/FROM-FULL-CHARACTER).
+  // 교복 치마: 완성 캐릭터에서 임시로 떼어 냈다 (art-src/characters/src/outfit/uniform/FROM-FULL-CHARACTER).
   "outfit-lavender": { placeholder: false, layers: { outfit: sheet("outfit-uniform") } },
+  // 교복 바지: "기본 몸 + 교복"으로 생성한 서기와 같은 뼈대의 걷기 (art-src/characters/src/outfit/uniform-boy).
+  "outfit-boy": { placeholder: false, layers: { outfit: sheet("outfit-uniform-boy") } },
   "acc-ribbon": { placeholder: false, layers: { accessory: sheet("acc-ribbon") } },
   // 아래는 전용 레이어 그림이 아직 없다.
   "outfit-sage": { placeholder: true, layers: {}, bodyTint: "outfit-세이지" },
@@ -99,7 +104,23 @@ export function hairSheet(styleId: string, colorId: string, which: "front" | "ba
   return style && color ? sheet(`hair-${style}-${color}-${which}`) : null;
 }
 
-/** 아직 저장한 꾸밈이 없을 때 보여 주는 모습 (서버 기본 아이템 id): 단발 머리, 검은 머리, 검은 눈. */
+/**
+ * 눈 색 아이템의 얼굴 시트. 남자 눈매는 정면 속눈썹과 꼬리를 지운 같은 이름의 -m 시트다.
+ * @example faceSheet("face-black", "m")?.sheet // "/assets/characters/layers/face-black-m.png"
+ */
+export function faceSheet(faceId: string, gender: Gender): LayerSource | null {
+  const src = ITEM_ASSETS[faceId]?.layers.face;
+  if (!src) return null;
+  return gender === "m" ? { sheet: src.sheet.replace(/\.png$/, "-m.png") } : src;
+}
+
+/** 처음 꾸미기에서 남녀를 고르면 입혀 주는 기본 머리 모양과 옷 (서버 기본 아이템 id). */
+export const GENDER_PRESETS: Readonly<Record<Gender, { label: string; hair: string; outfit: string }>> = {
+  f: { label: "여자", hair: "hair-basic", outfit: "outfit-lavender" },
+  m: { label: "남자", hair: "hair-short", outfit: "outfit-boy" },
+};
+
+/** 아직 저장한 꾸밈이 없을 때 보여 주는 모습 (서버 기본 아이템 id): 여자, 단발 머리, 검은 머리, 검은 눈. */
 export const DEFAULT_LOOK = {
   body: "body-basic",
   face: "face-black",
@@ -108,4 +129,5 @@ export const DEFAULT_LOOK = {
   hair_color: "hair-color-black",
   outfit: "outfit-lavender",
   accessory: null,
+  gender: "f",
 } as const;

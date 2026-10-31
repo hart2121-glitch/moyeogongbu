@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { GENDER_PRESETS, type Gender } from "../../../config/shop";
 import { useSession } from "../../account/viewmodel/SessionContext";
 import type { ItemSlot, ShopItem } from "../../shop/model/shop";
 import { shopStore } from "../../shop/model/shopStore";
@@ -24,6 +25,16 @@ export function wearItem(look: Look, slot: ItemSlot, itemId: string): Look {
   if (slot === "hair_color") return { ...look, hair_color: itemId };
   if (slot === "accessory") return { ...look, accessory: look.accessory === itemId ? null : itemId };
   return { ...look, [slot]: itemId };
+}
+
+/**
+ * 남녀를 바꾼 꾸밈. 눈매가 바뀌고, 처음 꾸미기에서는 그 남녀의 기본 머리 모양과 옷도 입힌다.
+ * @example chooseGender(defaultLook(), "m", true).hair_front // "hair-short"
+ */
+export function chooseGender(look: Look, gender: Gender, withPreset: boolean): Look {
+  if (!withPreset) return { ...look, gender };
+  const preset = GENDER_PRESETS[gender];
+  return { ...look, gender, hair_back: preset.hair, hair_front: preset.hair, outfit: preset.outfit };
 }
 
 /** 꾸밈에 들어간 아이템 중 사지 않은 것 (입어 보기 중인 것). */
@@ -75,6 +86,8 @@ export function useCustomize(notify: (text: string) => void) {
     tryingOn,
     saving: save.isPending,
     wear: (item: ShopItem) => setDraft(wearItem(look, item.slot, item.id)),
+    /** 남녀 고르기. 처음 꾸미기에서는 기본 머리 모양과 옷도 바뀐다. */
+    setGender: (gender: Gender) => setDraft(chooseGender(look, gender, firstTime)),
     reset: () => setDraft(null),
     /** 사지 않은 아이템이 들어 있으면 저장하지 않는다 (서버도 거절한다). */
     save: () => {

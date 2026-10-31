@@ -1,7 +1,7 @@
 import { Check, Coin } from "@phosphor-icons/react";
 import { useEffect, useRef, type CSSProperties } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ITEM_ASSETS } from "../../../config/shop";
+import { GENDER_PRESETS, ITEM_ASSETS, type Gender } from "../../../config/shop";
 import { characterSprites } from "../../../study/characterSprites";
 import { useProfile } from "../../account/viewmodel/useAccount";
 import type { ItemSlot, ShopItem } from "../../shop/model/shop";
@@ -62,7 +62,7 @@ export default function CharacterPage() {
         <h1>{c.firstTime ? "처음 꾸미기" : "오늘은 어떤 모습으로 공부할까?"}</h1>
         <p>
           {c.firstTime
-            ? "머리 색 3종, 눈 색 7종, 의상 2종을 무료로 드려요. 마음에 드는 모습을 골라 시작해 보세요."
+            ? "남녀를 고르면 기본 모습이 바뀌어요. 머리 모양 2종, 머리 색 3종, 눈 색 7종, 의상 3종을 무료로 드려요."
             : "산 아이템은 바로 적용하고, 사지 않은 아이템은 입어 볼 수 있어요."}
         </p>
       </div>
@@ -83,6 +83,21 @@ export default function CharacterPage() {
             <span className={c.tryingOn.length ? "try-on-note" : ""}>{c.tryingOn.length ? tryOnNotice : c.changed ? "바꾼 모습이에요. 저장하면 적용돼요." : "지금 적용된 모습"}</span>
           </div>
           <div className="wardrobe">
+            <section className="wardrobe-slot" aria-label="성별">
+              <h2>성별</h2>
+              <div className="gender-toggle" role="group" aria-label="성별">
+                {(Object.keys(GENDER_PRESETS) as Gender[]).map((g) => (
+                  <button
+                    key={g}
+                    className={c.look.gender === g ? "selected" : ""}
+                    aria-pressed={c.look.gender === g}
+                    onClick={() => c.setGender(g)}
+                  >
+                    {GENDER_PRESETS[g].label}
+                  </button>
+                ))}
+              </div>
+            </section>
             {slots.map(({ slot, label, view }) => {
               const options = shown.filter((i) => i.slot === slot);
               const picked = options.find((i) => isWorn(c.look, i));

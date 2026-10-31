@@ -5,7 +5,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { decodePng, encodePng, FRAME } from "./pixelArt.mjs";
-import { coverBaldPeeks, cropCell, eraseFace, extractFace, extractPart, feetAlignment, fitWalkFrame, mirror, NECK, placeHeadPart, shift, SIT_DROP, symmetricEyes, toSheet } from "./characterParts.mjs";
+import { coverBaldPeeks, cropCell, plainEyes, eraseFace, extractFace, extractPart, feetAlignment, fitWalkFrame, mirror, NECK, placeHeadPart, shift, SIT_DROP, symmetricEyes, toSheet } from "./characterParts.mjs";
 import { emptyLike, hsv } from "./rigImage.mjs";
 import { restFrame, sitFrame } from "./rigidRig.mjs";
 
@@ -71,21 +71,39 @@ function headSheet(parts, base, which) {
 /** 머리카락: 방향당 1장을 떼어 내 프레임마다 머리 높이에 맞춰 앞머리와 뒷머리 시트로 나눈다. */
 function buildHair(id, base) {
   const parts = {};
+  const dressed = {};
   for (const dir of DIRS) {
-    const dressed = loadRot(base, dir, "hair", id, "rot");
-    parts[dir] = coverBaldPeeks(extractPart(dressed, base[dir].stand, "head"), dressed, base[dir].stand);
+    dressed[dir] = loadRot(base, dir, "hair", id, "rot");
+    parts[dir] = coverBaldPeeks(extractPart(dressed[dir], base[dir].stand, "head"), dressed[dir], base[dir].stand);
   }
-  return { front: headSheet(parts, base, "front"), back: headSheet(parts, base, "back") };
+  // 걷기 칸은 움직이며 머리가 1픽셀쯤 커지기도 해서, 그 칸의 대머리가 비치는 자리도 칸마다 덮는다 (서기 좌표에서 덮고 다시 올린다).
+  const walkParts = {};
+  for (const dir of DIRS)
+    walkParts[dir] = base[dir].walk.map((w) => (w.placeholder ? parts[dir] : coverBaldPeeks(parts[dir], dressed[dir], shift(w.cell, 0, -w.headDy))));
+  const sheet = (which) => {
+    const per = {};
+    for (const dir of DIRS)
+      per[dir] = { stand: placeHeadPart(parts[dir], 0, which), walk: base[dir].walk.map((w, i) => placeHeadPart(walkParts[dir][i], w.headDy, which)) };
+    per.north.sitUp = placeHeadPart(parts.north, SIT_DROP, which);
+    per.south.sitDown = placeHeadPart(parts.south, SIT_DROP, which);
+    per.south.rest = placeHeadPart(parts.south, SIT_DROP, which);
+    return toSheet(frameOrder(per));
+  };
+  return { front: sheet("front"), back: sheet("back") };
 }
 
-/** 얼굴(눈과 입): 방향당 1장에서 떼어 내 머리카락처럼 붙인다. 뒷모습(북쪽)은 그림이 없어 빈 칸이고, 정면은 두 눈을 같은 모양으로 맞춘다. */
-function buildFace(id, base) {
+/**
+ * 얼굴(눈과 입): 방향당 1장에서 떼어 내 머리카락처럼 붙인다. 뒷모습(북쪽)은 그림이 없어 빈 칸이고, 정면은 두 눈을 같은 모양으로 맞춘다.
+ * 남자 눈매(male)는 정면 눈의 속눈썹과 꼬리를 지운 판이다 (옆모습은 같다).
+ */
+function buildFace(id, base, male = false) {
   const parts = {};
   for (const dir of DIRS)
     parts[dir] = existsSync(join(SRC, "face", id, "rot", `${srcDir(dir)}.png`))
       ? extractFace(loadRot(base, dir, "face", id, "rot"), base[dir].stand)
       : emptyLike(base[dir].stand);
   parts.south = symmetricEyes(parts.south, base.south.stand);
+  if (male) parts.south = plainEyes(parts.south, base.south.stand);
   return headSheet(parts, base, "all");
 }
 
@@ -143,7 +161,13 @@ function stripHeadColors(part, under) {
 /** 옷: 서기는 방향별로, 걷기는 프레임마다 기본 몸 걷기와 같은 자리에서 잘라 차이를 떼어 낸다. */
 function buildOutfit(id, base) {
   const fromFull = existsSync(join(SRC, "outfit", id, "FROM-FULL-CHARACTER"));
-  const clean = (part, under) => (fromFull ? stripHeadColors(part, under) : part);
+  // 생성한 옷 그림은 얼굴 윤곽을 1픽셀쯤 다시 그리기도 해서, 옷깃과 이어진 볼 윤곽이 옷에 섞인다. 목 줄 위는 버린다.
+  const belowNeck = (part, headDy = 0) => {
+    const out = { ...part, pixels: part.pixels.slice() };
+    out.pixels.fill(0, 0, Math.max(0, NECK - 2 + headDy) * part.width * 4);
+    return out;
+  };
+  const clean = (part, under, headDy = 0) => (fromFull ? stripHeadColors(part, under) : belowNeck(part, headDy));
   const per = {};
   for (const dir of DIRS) {
     const standPart = clean(extractPart(loadRot(base, dir, "outfit", id, "rot"), base[dir].stand, "body"), base[dir].stand);
@@ -152,7 +176,7 @@ function buildOutfit(id, base) {
     const walk = base[dir].walk.map((w, i) => {
       if (w.placeholder || !existsSync(walkDir)) return standPart;
       const cell = cropCell(flipIfEast(dir, load(join(walkDir, `${i}.png`))), w.origin.x, w.origin.y);
-      return clean(extractPart(cell, w.cell, "body"), w.cell);
+      return clean(extractPart(cell, w.cell, "body"), w.cell, w.headDy);
     });
     per[dir] = { stand: standPart, walk, standPart };
   }
@@ -252,7 +276,10 @@ const report = [];
 const built = {};
 const save = (name, image) => { built[name] = image; writeFileSync(join(OUT, `${name}.png`), encodePng(image)); report.push(`${name}.png`); };
 save("body-basic", buildBody(base));
-for (const id of list(join(SRC, "face"))) save(`face-${id}`, buildFace(id, base));
+for (const id of list(join(SRC, "face"))) {
+  save(`face-${id}`, buildFace(id, base));
+  save(`face-${id}-m`, buildFace(id, base, true));
+}
 // 머리 모양 원재료는 라벤더색으로 생성한다. 머리 색 recolor/hair-color/<색>.json을 모든 모양에 입혀 hair-<모양>-<색>을 만든다.
 const recipe = (...path) => JSON.parse(readFileSync(join(SRC, "recolor", ...path), "utf8"));
 for (const style of list(join(SRC, "hair"))) {
@@ -268,10 +295,11 @@ for (const style of list(join(SRC, "hair"))) {
 }
 for (const id of list(join(SRC, "outfit"))) save(`outfit-${id}`, buildOutfit(id, base));
 for (const id of list(join(SRC, "accessory"))) save(`acc-${id}`, buildAccessory(id, base));
-// 그 밖의 색 바꾸기 변형 (눈 색): recolor/<시트 이름>.json의 from 시트에서 만든다.
+// 그 밖의 색 바꾸기 변형 (눈 색): recolor/<시트 이름>.json의 from 시트에서 만든다. 남자 눈매 판(-m)이 있으면 같이 만든다.
 for (const file of list(join(SRC, "recolor")).filter((n) => n.endsWith(".json"))) {
-  const r = recipe(file);
-  save(file.replace(/\.json$/, ""), recolorSheet(built[r.from], r));
+  const r = recipe(file), name = file.replace(/\.json$/, "");
+  save(name, recolorSheet(built[r.from], r));
+  if (built[`${r.from}-m`]) save(`${name}-m`, recolorSheet(built[`${r.from}-m`], r));
 }
 const placeholders = DIRS.filter((d) => base[d].walk[0].placeholder);
 console.log("시트:", report.join(", "));

@@ -68,9 +68,10 @@
 - 기본 (무료)
   - 몸: `body-basic`
   - 얼굴: `face-basic` (보라 눈), 눈 색 6종 (2026-10-31 추가, 눈동자 색만 바꿈): `face-black`, `face-brown`, `face-amber`, `face-green`, `face-blue`, `face-gray`
-  - 머리 모양: `hair-basic` (단발 머리, 여자 기본), `hair-short` (짧은 바가지 머리, 남자 기본)
+  - 머리 모양: `hair-basic` (단발 머리, 여자 기본), `hair-short` (짧은 머리, 남자 기본)
   - 머리 색 3종: `hair-color-black` (처음 모습), `hair-color-chestnut`, `hair-color-lavender`
-  - 의상 2종: `outfit-lavender`, `outfit-sage`
+  - 의상 3종: `outfit-lavender` (교복 치마, 여자 기본), `outfit-boy` (교복 바지, 남자 기본), `outfit-sage`
+  - 남녀: 몸 하나, `character_looks.gender`가 눈매(`face-<색>-m`은 속눈썹 없는 남자 눈)와 처음 기본 모습을 정한다
 - 상점 액세서리 6종: `acc-ribbon`, `acc-hairpin`, `acc-glasses`, `acc-headphones`, `acc-scarf`, `acc-beret`
 - 상점 의상 4종: `outfit-rose`, `outfit-hoodie`, `outfit-cardigan`, `outfit-suit`
 - 상점 머리 모양 5종: `hair-ponytail`, `hair-wave` (N1의 긴 웨이브 머리), `hair-long`, `hair-bun` (똥머리), `hair-bowl` (바가지 머리)

@@ -22,7 +22,7 @@ const nav = (page, label) => page.getByRole("navigation").getByRole("button", { 
 const COMEMBER = "00000000-0000-4000-8000-000000000021";
 const defaultLook = () => ({
   body: "body-basic", face: "face-black", hair_back: "hair-basic", hair_front: "hair-basic", hair_color: "hair-color-black",
-  outfit: "outfit-lavender", accessory: null,
+  outfit: "outfit-lavender", accessory: null, gender: "f",
 });
 
 test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로비와 방의 꾸민 캐릭터", async () => {
@@ -50,12 +50,21 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     await page.keyboard.press("Escape");
     await page.goto(`${url}character`);
 
-    // 처음 꾸미기: 기본 아이템만 (머리 모양 2, 머리 색 3, 눈 색 7, 의상 2). 처음 모습은 단발, 검은 머리, 검은 눈이다.
+    // 처음 꾸미기: 기본 아이템만 (머리 모양 2, 머리 색 3, 눈 색 7, 의상 3). 처음 모습은 여자, 단발, 검은 머리, 검은 눈이다.
     await page.getByRole("heading", { name: "처음 꾸미기" }).waitFor();
-    assert.equal(await page.locator(".item-options button").count(), 14);
+    assert.equal(await page.locator(".item-options button").count(), 15);
     const preview = page.getByTestId("character-layers").first();
     assert.equal(await preview.getAttribute("data-hair-color"), "hair-color-black");
     assert.equal(await preview.getAttribute("data-layer-face"), "face-black");
+    assert.equal(await preview.getAttribute("data-gender"), "f");
+    // 남자를 고르면 눈매와 기본 머리 모양, 옷이 바뀌고, 여자로 돌아가면 되돌아온다
+    await page.getByRole("button", { name: "남자", exact: true }).click();
+    assert.equal(await preview.getAttribute("data-gender"), "m");
+    assert.equal(await preview.getAttribute("data-layer-hair-front"), "hair-short");
+    assert.equal(await preview.getAttribute("data-layer-outfit"), "outfit-boy");
+    assert.match(await preview.locator('img[data-layer="face"]').getAttribute("src"), /face-black-m\.png$/);
+    await page.getByRole("button", { name: "여자", exact: true }).click();
+    assert.equal(await preview.getAttribute("data-layer-hair-front"), "hair-basic");
     await page.getByRole("button", { name: /^밤색 염색/ }).click();
     assert.equal(await page.getByTestId("character-layers").first().getAttribute("data-hair-color"), "hair-color-chestnut");
     await page.getByRole("button", { name: /^초록 눈/ }).click();

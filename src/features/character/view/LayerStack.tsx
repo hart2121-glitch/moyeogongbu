@@ -27,7 +27,7 @@ export default function LayerStack({ look, action = "idle", direction = "down", 
   return (
     <div className={`layer-stack ${className}`} {...(decorative ? { "aria-hidden": true } : { role: "img", "aria-label": label, "data-testid": "character-layers" })}
       data-direction={direction} data-pose={`${action}.${direction}`} data-frame={index}
-      style={{ aspectRatio: `${CANVAS.width} / ${CANVAS.height}` }} data-hair-color={look.hair_color} {...data}>
+      style={{ aspectRatio: `${CANVAS.width} / ${CANVAS.height}` }} data-hair-color={look.hair_color} data-gender={look.gender} {...data}>
       {layers.map((l) =>
         l.sheet ? <SheetFrame key={l.id} sheet={l.sheet} index={index} layer={l.id} order={l.order} className={l.className} active={l.id === "body"} /> : null,
       )}

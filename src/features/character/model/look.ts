@@ -17,6 +17,7 @@ export const saveLook = async (client: SupabaseClient, look: Look): Promise<Look
       p_hair_color: look.hair_color,
       p_outfit: look.outfit,
       p_accessory: look.accessory,
+      p_gender: look.gender,
     }),
   );
 
