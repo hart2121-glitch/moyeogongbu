@@ -27,6 +27,11 @@
 `companyFinalLayout.js`의 상대 좌표(좌석, 통로, 충돌, 전경)는 그대로 맞는다. 원본과 화면용 사본은 기준 자료로 계속 보관한다.
 만드는 방법은 `tools/art/company-room.mjs` 머리말에 있다.
 
+휴게실 공용 꾸밈(2026-11-01 사용자 결정, 방장이 고른다): 소파 쿠션, 탁자 위 소품, 출입구 매트 자리는 도트 방 그림에서 비웠고,
+원래 소품은 기본 아이템(`lounge/cushions-cat.png`, `table-cat.png`, `mat-cat.png`)으로 얹어 기본 모습은 이전과 픽셀 단위로 같다.
+러그는 비우지 않고 보이는 러그 칸만 다른 색으로 덮는다. 판매 아이템은 `lounge/`에 있고 `tools/art/company-decor.mjs`가 만든다.
+회사 원본과 화면용 사본은 그대로다.
+
 ## 이전 디자인 보존
 
 `company-study-room-v2.png`와 `company-study-room.png.png`도 편집·삭제하지 않고 보존합니다. `study-room.png`는 로비 배경이며 회사 원본이 아닙니다.

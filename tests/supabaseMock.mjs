@@ -65,6 +65,7 @@ export function createFakeServer() {
     /** Story 007: userId -> 저장한 꾸밈, userId -> 산 아이템 id 집합. */
     looks: new Map(),
     owned: new Map(),
+    homes: new Map(),
     /** Story 006 친구, 우편, 알림. 판정 규칙은 *_friends_mail.sql과 같다. */
     social: { codes: new Map(), friends: new Set(), requests: new Set(), blocks: new Map(), mail: [], notifications: [], mailSeq: 1, notifSeq: 1 },
     /** 두 사람을 바로 친구로 묶는다 (테스트 준비용). */
@@ -81,7 +82,10 @@ export function createFakeServer() {
       server.social.notifications.push({ id: server.social.notifSeq++, user_id: userId, read: false, created_at: new Date().toISOString(), ...n });
     },
     addRoom({ id = `10000000-0000-4000-8000-${String(++roomSeq).padStart(12, "0")}`, name, code, ownerId }) {
-      server.rooms.set(id, { id, name, invite_code: code, owner_id: ownerId, created_at: Date.now() });
+      server.rooms.set(id, {
+        id, name, invite_code: code, owner_id: ownerId, created_at: Date.now(),
+        board_text: null, decor: { cushions: "cushions-cat", table: "table-cat", rug: "rug-beige", mat: "mat-cat" },
+      });
       server.members.set(id, new Map([[ownerId, Date.now()]]));
       server.bans.set(id, new Set());
       server.seats.set(id, Array.from({ length: RULES.seats }, () => ({ userId: null, lastSeen: 0 })));
@@ -173,6 +177,78 @@ export const SHOP_ITEMS = [
   ["desk-globe", "desk_top", "작은 지구본", 600, false],
   ["sticker-star", "desk_front", "별 스티커", 180, false],
   ["sticker-cat", "desk_front", "고양이 스티커", 240, false],
+  // Story 009 회사 방 공용 꾸밈 (*_room_decor.sql): 방장이 휴게실에 놓는다
+  ["cushions-cat", "room_cushions", "고양이 쿠션", 0, true],
+  ["cushions-heart", "room_cushions", "하트 쿠션", 900, false],
+  ["cushions-star", "room_cushions", "별 쿠션", 900, false],
+  ["cushions-check", "room_cushions", "체크 쿠션", 1200, false],
+  ["table-cat", "room_table", "고양이 인형과 간식", 0, true],
+  ["table-tea", "room_table", "찻잔 세트", 1200, false],
+  ["table-cake", "room_table", "딸기 케이크", 1500, false],
+  ["table-flower", "room_table", "튤립 꽃병", 1500, false],
+  ["rug-beige", "room_rug", "베이지 러그", 0, true],
+  ["rug-pink", "room_rug", "분홍 러그", 1800, false],
+  ["rug-mint", "room_rug", "민트 러그", 2000, false],
+  ["rug-sky", "room_rug", "하늘 러그", 2400, false],
+  ["mat-cat", "room_mat", "고양이 매트", 0, true],
+  ["mat-stripe", "room_mat", "줄무늬 매트", 900, false],
+  ["mat-paw", "room_mat", "발바닥 매트", 1200, false],
+  ["mat-heart", "room_mat", "하트 매트", 1200, false],
+  // Story 009 내 방 꾸밈 (*_home_decor.sql): 자리마다 기본(무료)과 판매 아이템
+  ["home-wall-pink", "home_wallpaper", "분홍 점 벽지", 0, true],
+  ["home-wall-mint", "home_wallpaper", "민트 점 벽지", 900, false],
+  ["home-wall-sky", "home_wallpaper", "하늘 점 벽지", 900, false],
+  ["home-wall-lemon", "home_wallpaper", "레몬 점 벽지", 900, false],
+  ["home-floor-oak", "home_floor", "원목 마루", 0, true],
+  ["home-floor-maple", "home_floor", "밝은 원목 마루", 900, false],
+  ["home-floor-walnut", "home_floor", "호두나무 마루", 1200, false],
+  ["home-floor-gray", "home_floor", "회색 마루", 1200, false],
+  ["home-curtain-white", "home_curtains", "흰 망사 커튼", 0, true],
+  ["home-curtain-pink", "home_curtains", "분홍 커튼", 480, false],
+  ["home-curtain-mint", "home_curtains", "민트 커튼", 480, false],
+  ["home-curtain-yellow", "home_curtains", "노랑 커튼", 480, false],
+  ["home-frames-wood", "home_frames", "나무 액자", 0, true],
+  ["home-frames-white", "home_frames", "흰 액자", 360, false],
+  ["home-frames-black", "home_frames", "검은 액자", 360, false],
+  ["home-shelves-wood", "home_shelves", "나무 벽 선반", 0, true],
+  ["home-shelves-white", "home_shelves", "흰 벽 선반", 480, false],
+  ["home-desk-wood", "home_desk", "책장 달린 나무 책상", 0, true],
+  ["home-desk-white", "home_desk", "흰 책상", 1200, false],
+  ["home-desk-walnut", "home_desk", "호두나무 책상", 1200, false],
+  ["home-desktop-paper", "home_desk_top", "책상 위 종이", 0, true],
+  ["home-desktop-book", "home_desk_top", "펼친 책", 240, false],
+  ["home-desktop-notebook", "home_desk_top", "하늘 공책", 240, false],
+  ["home-lamps-cream", "home_lamps", "크림 스탠드", 0, true],
+  ["home-lamps-mint", "home_lamps", "민트 스탠드", 360, false],
+  ["home-lamps-pink", "home_lamps", "분홍 스탠드", 360, false],
+  ["home-chair-cream", "home_armchair", "크림 안락의자", 0, true],
+  ["home-chair-sage", "home_armchair", "세이지 안락의자", 900, false],
+  ["home-chair-sky", "home_armchair", "하늘 안락의자", 900, false],
+  ["home-chair-mustard", "home_armchair", "겨자 안락의자", 900, false],
+  ["home-nightstand-wood", "home_nightstands", "나무 협탁", 0, true],
+  ["home-nightstand-white", "home_nightstands", "흰 협탁", 900, false],
+  ["home-nightstand-walnut", "home_nightstands", "호두나무 협탁", 900, false],
+  ["home-nighttop-plant", "home_nightstand_top", "화분과 작은 병", 0, true],
+  ["home-nighttop-clock", "home_nightstand_top", "알람시계와 책", 240, false],
+  ["home-nighttop-vase", "home_nightstand_top", "튤립 꽃병", 300, false],
+  ["home-bed-wood", "home_bed", "나무 침대", 0, true],
+  ["home-bed-white", "home_bed", "흰 침대", 1500, false],
+  ["home-bed-walnut", "home_bed", "호두나무 침대", 1500, false],
+  ["home-blanket-sage", "home_blanket", "세이지 이불", 0, true],
+  ["home-blanket-pink", "home_blanket", "분홍 이불", 600, false],
+  ["home-blanket-sky", "home_blanket", "하늘 이불", 600, false],
+  ["home-blanket-yellow", "home_blanket", "겨자 이불", 600, false],
+  ["home-plush-cat", "home_plush", "흰 고양이 인형", 0, true],
+  ["home-plush-cheese", "home_plush", "치즈 고양이 인형", 240, false],
+  ["home-plush-black", "home_plush", "검은 고양이 인형", 240, false],
+  ["home-plush-gray", "home_plush", "회색 고양이 인형", 240, false],
+  ["home-rug-cream", "home_rug", "크림 러그", 0, true],
+  ["home-rug-pink", "home_rug", "분홍 러그", 600, false],
+  ["home-rug-mint", "home_rug", "민트 러그", 600, false],
+  ["home-rug-sky", "home_rug", "하늘 러그", 600, false],
+  ["home-plant-leaf", "home_floor_plant", "큰 잎 화분", 0, true],
+  ["home-plant-maple", "home_floor_plant", "붉은 잎 화분", 480, false],
+  ["home-plant-whitepot", "home_floor_plant", "흰 화분", 360, false],
 ].map(([id, slot, name, price, is_default]) => ({ id, slot, name, price, is_default }));
 
 // Story 007 상점과 꾸밈 RPC. 판정 규칙은 *_shop.sql과 같다. balance()는 지금 잔액, debit(n)은 차감.
@@ -211,6 +287,15 @@ function shopRpc(server, me, name, args, balance, debit) {
     }
     case "get_my_look":
       return server.looks.get(me) ?? null;
+    // 내 방 꾸밈 (*_home_decor.sql와 같은 판정): 자리마다 기본이거나 산 아이템
+    case "get_my_home":
+      return server.homes.get(me) ?? {};
+    case "save_home": {
+      const parts = args.p_parts ?? {};
+      for (const [slot, item] of Object.entries(parts)) if (!/^[a-z_]{1,20}$/.test(slot) || !canUse(item, `home_${slot}`)) fail("not_owned");
+      server.homes.set(me, { ...parts });
+      return parts;
+    }
     default:
       return undefined;
   }
@@ -394,6 +479,8 @@ function roomRpc(server, me, name, args) {
     is_owner: r.owner_id === me,
     member_count: server.members.get(r.id).size,
     online_count: new Set([...server.presence.get(r.id).values()].filter((p) => fresh(p.lastSeen)).map((p) => p.userId)).size,
+    board_text: r.board_text,
+    decor: { ...r.decor },
   });
   const sweep = (id) => {
     for (const s of server.seats.get(id)) if (s.userId && !fresh(s.lastSeen)) Object.assign(s, { userId: null, lastSeen: 0 });
@@ -459,6 +546,23 @@ function roomRpc(server, me, name, args) {
       requireOwner();
       room.invite_code = server.nextCode();
       return json(room);
+    // 공용 꾸밈과 화이트보드 (*_room_decor.sql와 같은 판정)
+    case "set_room_decor": {
+      requireOwner();
+      if (!["cushions", "table", "rug", "mat"].includes(args.p_slot)) fail("invalid_slot");
+      const item = SHOP_ITEMS.find((i) => i.id === args.p_item && i.slot === `room_${args.p_slot}`);
+      if (!item || !(item.is_default || server.owned.get(me)?.has(item.id))) fail("not_owned");
+      room.decor[args.p_slot] = item.id;
+      return json(room);
+    }
+    case "set_room_board": {
+      requireOwner();
+      const text = String(args.p_text ?? "").replace(/\r/g, "").replace(/^[ \n]+|[ \n]+$/g, "");
+      const lines = text.split("\n");
+      if (lines.length > 2 || lines.some((l) => l.trim().length > 12)) fail("invalid_board");
+      room.board_text = text || null;
+      return json(room);
+    }
     case "kick_member":
       requireOwner();
       if (args.p_user === me) fail("invalid_member");
@@ -826,7 +930,7 @@ export async function mockSupabase(
     }
     const coin = path.match(/\/rpc\/(get_coin_summary|settle_study|pending_settlement|dismiss_settlement|claim_pomodoro_bonus)$/);
     if (coin) return json(route, coinRpc(coin[1], request.postDataJSON() ?? {}));
-    const shop = path.match(/\/rpc\/(get_shop|buy_item|save_look|get_my_look)$/);
+    const shop = path.match(/\/rpc\/(get_shop|buy_item|save_look|get_my_look|get_my_home|save_home)$/);
     if (shop) {
       try {
         const body = shopRpc(server, userId, shop[1], request.postDataJSON() ?? {}, () => daySummary().balance, (n) => (state.coins.balance -= n));

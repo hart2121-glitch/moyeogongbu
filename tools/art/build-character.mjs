@@ -375,7 +375,10 @@ function lowerNorth(sheet) {
  * 반팔 옷의 팔 찌꺼기 (2026-11-01 사용자 지적: 걷는 손이 어색하다). 옷 걷기는 기본 몸과 따로 생성해 팔이 1~2칸 어긋나고,
  * 옷 부품에 옷 쪽 팔(살색과 외곽선)이 남아 몸의 팔과 겹쳐 손이 두 번 그려진다. 팔이 몸 옆에 늘어지는 앞뒤 칸
  * (서기, 걷기)에서만, 신발 줄(62) 위에 대해: 몸이 살이거나 빈 자리에 놓인 옷의 살색 칸을 지우고, 옷감에 닿지 않는
- * 짙은 외곽선 칸을 걷어 낸 뒤 4칸보다 작은 조각을 지운다. 옆 칸은 옷 쪽 팔이 소매와 맞으므로 그대로 둔다.
+ * 짙은 외곽선 칸을 걷어 낸 뒤 4칸보다 작은 조각을 지운다.
+ * 팔 자리 (2026-11-01 사용자 지적: 팔이 제대로 안 보인다): 처음 정리는 몸 외곽선 위의 옷 살색을 남겨 팔 외곽선을 덮었다.
+ * 이제 몸 그림의 팔과 외곽선 위에 놓인 옷 픽셀은 팔 윗부분 소매(흰 옷감과 그 끝선)만 남기고 걷는다. 팔은 치마와 바지보다 앞이다.
+ * 옆 칸은 옷 쪽 팔이 외곽선까지 갖춰 치마 앞에 그려져 있고, 몸의 옆 팔은 몸통 쪽 외곽선이 없어 드러내면 뭉개지므로 그대로 둔다.
  */
 const FRONT_BACK_CELLS = new Set([0, 1, 4, 5, 6, 7, 8, 9, 10, 11]);
 function cleanShortSleeves(sheet, body) {
@@ -394,12 +397,53 @@ function cleanShortSleeves(sheet, body) {
   const kill = (x, y) => { if (FRONT_BACK_CELLS.has(Math.floor(x / FRAME.width))) out.pixels.fill(0, (y * W + x) * 4, (y * W + x) * 4 + 4); };
   for (let y = 0; y < ROW_MAX; y++) for (let x = 0; x < W; x++) {
     const b = at(body, x, y);
-    if (kind(x, y) === "skin" && (!b[3] || isSkin(b))) kill(x, y);
+    if (kind(x, y) === "skin" && (!b[3] || isSkin(b) || hsv(b[0], b[1], b[2]).v < 0.3)) kill(x, y);
   }
   const NEAR = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
   for (let pass = 0; pass < 3; pass++)
     for (let y = 0; y < ROW_MAX; y++) for (let x = 0; x < W; x++)
       if (kind(x, y) === "ink" && !NEAR.some(([dx, dy]) => kind(x + dx, y + dy) === "cloth")) kill(x, y);
+  // 몸의 팔(어깨 아래 47~56줄에서 시작하는 살색 조각, 다리는 그 아래에서 시작한다)과 그 외곽선이 팔 자리다. 팔은 옷보다
+  // 앞이므로 그 자리의 옷 픽셀은 팔 윗부분 소매(흰 옷감과 그 끝선)만 남긴다. 세이지, 로즈처럼 옛 팔 외곽선을 옷 색으로
+  // 그린 옷은 위 검정 기준에 걸리지 않으므로, 팔 둘레 2칸 안에 한 칸 굵기로 떠 있는 픽셀도 걷는다.
+  const arm = new Uint8Array(W * H), ring = new Uint8Array(W * H), sleeve = new Uint8Array(W * H);
+  const opaque = (x, y) => !!at(out, x, y)?.[3];
+  const light = (x, y) => { const p = at(out, x, y); if (!p?.[3]) return false; const c = hsv(p[0], p[1], p[2]); return c.v >= 0.6 && c.s < 0.3 && !nearSkin(p); };
+  for (const cell of FRONT_BACK_CELLS) {
+    const x0 = cell * FRAME.width, seen = new Uint8Array(W * H);
+    for (let y = 0; y < ROW_MAX; y++) for (let x = x0; x < x0 + FRAME.width; x++) {
+      const k = y * W + x, b = at(body, x, y);
+      if (seen[k] || !b[3] || !isSkin(b)) continue;
+      const stack = [k], comp = [];
+      seen[k] = 1;
+      while (stack.length) {
+        const q = stack.pop(), qx = q % W, qy = Math.floor(q / W);
+        comp.push(q);
+        for (const [dx, dy] of NEAR.slice(0, 4)) {
+          const nx = qx + dx, ny = qy + dy, n = ny * W + nx, p = at(body, nx, ny);
+          if (nx >= x0 && nx < x0 + FRAME.width && p && !seen[n] && p[3] && isSkin(p)) { seen[n] = 1; stack.push(n); }
+        }
+      }
+      const top = Math.min(...comp.map((q) => Math.floor(q / W)));
+      if (top < 47 || top > 56) continue;
+      for (const q of comp) for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) {
+        const nx = q % W + dx, ny = Math.floor(q / W) + dy;
+        if (nx < x0 || nx >= x0 + FRAME.width || ny < 0 || ny >= ROW_MAX) continue;
+        const d = Math.max(Math.abs(dx), Math.abs(dy)), n = ny * W + nx, p = at(body, nx, ny);
+        const onArm = d === 0 || (d === 1 && p[3] && (isSkin(p) || hsv(p[0], p[1], p[2]).v < 0.3));
+        if (onArm) { arm[n] = 1; if (ny <= top + 3) sleeve[n] = 1; } else ring[n] = 1;
+      }
+    }
+  }
+  const sleeveLight = (x, y) => sleeve[y * W + x] && light(x, y);
+  for (let y = 0; y < ROW_MAX; y++) for (let x = 0; x < W; x++)
+    if (arm[y * W + x] && opaque(x, y) && !sleeveLight(x, y) && !(sleeve[y * W + x] && NEAR.slice(0, 4).some(([dx, dy]) => sleeveLight(x + dx, y + dy)))) kill(x, y);
+  for (let pass = 0; pass < 3; pass++)
+    for (let y = 0; y < ROW_MAX; y++) for (let x = 0; x < W; x++) {
+      if (!ring[y * W + x] || arm[y * W + x] || !opaque(x, y) || light(x, y)) continue;
+      const thin = (!opaque(x - 1, y) && !opaque(x + 1, y)) || (!opaque(x, y - 1) && !opaque(x, y + 1));
+      if (thin || NEAR.slice(0, 4).filter(([dx, dy]) => opaque(x + dx, y + dy)).length <= 1) kill(x, y);
+    }
   for (const cell of FRONT_BACK_CELLS) {
     const x0 = cell * FRAME.width, seen = new Uint8Array(W * H);
     for (let y = 0; y < H; y++) for (let x = x0; x < x0 + FRAME.width; x++) {

@@ -3,10 +3,13 @@ import { socialRpc } from "../../friends/model/socialError";
 
 /**
  * 상점 (Story 007). 목록, 가격, 보유 여부, 구매 판정은 모두 서버(`shop_items`, `buy_item`)가 정한다.
- * 첫 출시 상점은 캐릭터 아이템(액세서리, 의상, 머리 모양, 머리 색)과 내 책상 세트(책상 소품, 책상 스티커)를 판다.
+ * 첫 출시 상점은 캐릭터 아이템(액세서리, 의상, 머리 모양, 머리 색)과 내 책상 세트(책상 소품, 책상 스티커)를 꾸미기 화면에서,
+ * 회사 방 공용 꾸밈(소파 쿠션, 탁자 위, 러그, 매트, slot `room_*`)을 방장 도구에서 판다.
  */
 
-export type ItemSlot = "body" | "face" | "hair" | "hair_color" | "outfit" | "accessory" | "desk_top" | "desk_front";
+export type ItemSlot =
+  | "body" | "face" | "hair" | "hair_color" | "outfit" | "accessory" | "desk_top" | "desk_front"
+  | "room_cushions" | "room_table" | "room_rug" | "room_mat";
 
 export interface ShopItem {
   id: string;

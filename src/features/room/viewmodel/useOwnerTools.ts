@@ -1,9 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { DecorSlot } from "../../../config/roomDecor";
 import { roomStore } from "../model/roomStore";
 import { useRoomActions } from "./useMyRooms";
 
 /**
- * 방장 도구: 이름 변경, 초대 코드 재발급, 강퇴, 강퇴 풀기. 서버가 방장인지 다시 확인한다.
+ * 방장 도구: 이름 변경, 초대 코드 재발급, 휴게실 꾸밈, 화이트보드 문구, 강퇴, 강퇴 풀기. 서버가 방장인지 다시 확인한다.
  * `onChanged`는 같은 방 사람들에게 다시 읽으라고 알릴 때 쓴다.
  * @example const tools = useOwnerTools(room.id, room.isOwner, live.notifyMembers);
  */
@@ -28,6 +29,14 @@ export function useOwnerTools(roomId: string, isOwner: boolean, onChanged: () =>
     },
     reissue: async () => {
       await roomStore.reissue(roomId);
+      await after();
+    },
+    decorate: async (slot: DecorSlot, itemId: string) => {
+      await roomStore.setDecor(roomId, slot, itemId);
+      await after();
+    },
+    writeBoard: async (text: string) => {
+      await roomStore.setBoard(roomId, text);
       await after();
     },
     kick: async (userId: string) => {

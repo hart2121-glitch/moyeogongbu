@@ -1,3 +1,4 @@
+import { DEFAULT_DECOR, type DecorSlot, type RoomDecor } from "../../../config/roomDecor";
 import { toLook, type Look } from "../../character/model/layers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ROOM_CONFIG } from "./roomConfig";
@@ -16,6 +17,10 @@ export interface Room {
   isOwner: boolean;
   memberCount: number;
   onlineCount: number;
+  /** 방장이 쓴 화이트보드 문구. null이면 기본 문구. */
+  boardText: string | null;
+  /** 휴게실 공용 꾸밈 (자리마다 아이템 id). */
+  decor: RoomDecor;
 }
 
 /** 좌석 하나. userId가 null이면 빈자리 (유예가 지난 자리도 서버가 비워서 준다). */
@@ -79,6 +84,9 @@ const MESSAGES: Record<string, string> = {
   invalid_seat: "올바른 좌석을 선택해 주세요.",
   invalid_task: `지금 하는 일은 ${ROOM_CONFIG.taskMaxLength}자까지 쓸 수 있어요.`,
   invalid_member: "그 사람에게는 할 수 없어요.",
+  not_owned: "아직 사지 않은 아이템이에요.",
+  invalid_board: "화이트보드에는 2줄, 줄마다 12자까지 쓸 수 있어요.",
+  invalid_slot: "꾸밀 수 없는 자리예요.",
 };
 
 /** 서버 오류를 RoomError로. 알려진 코드가 아니면 일반 문구. */
@@ -104,6 +112,8 @@ interface RoomRow {
   is_owner: boolean;
   member_count: number;
   online_count: number;
+  board_text?: string | null;
+  decor?: Partial<RoomDecor> | null;
 }
 
 const toRoom = (row: RoomRow): Room => ({
@@ -114,6 +124,8 @@ const toRoom = (row: RoomRow): Room => ({
   isOwner: !!row.is_owner,
   memberCount: Number(row.member_count) || 0,
   onlineCount: Number(row.online_count) || 0,
+  boardText: row.board_text ?? null,
+  decor: { ...DEFAULT_DECOR, ...(row.decor ?? {}) },
 });
 
 interface StateRow {
@@ -147,6 +159,14 @@ export const leaveRoom = (client: SupabaseClient, roomId: string) =>
 /** 방장: 이름 바꾸기. */
 export const renameRoom = async (client: SupabaseClient, roomId: string, name: string) =>
   toRoom(await rpc<RoomRow>(client, "rename_room", { p_room: roomId, p_name: name }));
+
+/** 방장: 휴게실 공용 꾸밈 바꾸기 (산 아이템이나 기본 아이템). @example await setRoomDecor(supabase, room.id, "rug", "rug-pink"); */
+export const setRoomDecor = async (client: SupabaseClient, roomId: string, slot: DecorSlot, itemId: string) =>
+  toRoom(await rpc<RoomRow>(client, "set_room_decor", { p_room: roomId, p_slot: slot, p_item: itemId }));
+
+/** 방장: 화이트보드 문구 바꾸기 (무료). 빈 문구면 기본 문구로. @example await setRoomBoard(supabase, room.id, "오늘도\n화이팅"); */
+export const setRoomBoard = async (client: SupabaseClient, roomId: string, text: string) =>
+  toRoom(await rpc<RoomRow>(client, "set_room_board", { p_room: roomId, p_text: text }));
 
 /** 방장: 초대 코드 재발급. */
 export const reissueCode = async (client: SupabaseClient, roomId: string) =>

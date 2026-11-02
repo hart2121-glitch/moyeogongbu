@@ -1578,6 +1578,33 @@ button:active {
 .gender-toggle[hidden] {
   display: none;
 }
+/* 내 방 탭 (꾸미기 슬롯 계획 3절): 미리보기는 방 전체 1배(256×152), 선택지는 그 자리 둘레 72×44를 2배로 */
+.preview-stage .home-preview {
+  position: absolute;
+  left: 0;
+  top: 84px;
+  width: 256px;
+  height: 152px;
+  image-rendering: pixelated;
+}
+.preview-stage:has(.home-preview)::before {
+  display: none;
+}
+.item-options.home-options button {
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  background: #fbf5e8;
+}
+.home-thumb {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+.home-thumb-room {
+  position: absolute;
+  display: block;
+}
 .desk-options .desk-thumb {
   width: 64px;
   max-width: none;

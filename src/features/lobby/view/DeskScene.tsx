@@ -5,22 +5,23 @@ import { characterSprites } from "../../../study/characterSprites";
 import { useProfile } from "../../account/viewmodel/useAccount";
 import { CANVAS, defaultLook } from "../../character/model/layers";
 import LayerStack from "../../character/view/LayerStack";
-import { useMyLook } from "../../character/viewmodel/useCharacter";
+import { useMyHome, useMyLook } from "../../character/viewmodel/useCharacter";
 import { ROUTES } from "../../shell/model/paths";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
 import { dayLabel, todayKey } from "../../todos/model/studyDay";
-import { HOME_ROOM } from "../model/homeRoomLayers";
 import { LOBBY_SCENE, characterOffset, weekdayOf, type Facing } from "../model/lobbyScene";
+import HomeRoomArt from "./HomeRoomArt";
 
 const { size, scale } = LOBBY_SCENE;
 
 /**
- * 로비의 "내 방" 장면. 빈 방 위에 가구와 소품 부품을 차례로 얹고, 꾸민 내 캐릭터를 레이어로 세운다.
+ * 로비의 "내 방" 장면. 빈 방 위에 내가 꾸민 가구와 소품 층을 차례로 얹고(꾸미기 슬롯 계획 3절), 꾸민 내 캐릭터를 레이어로 세운다.
  * 방과 캐릭터는 같은 정수 배율(scale)로 그린다. facing은 지금 가리키는 물건 쪽 방향이다.
  */
 export default function DeskScene({ facing, characterRef }: { facing: Facing; characterRef: Ref<HTMLDivElement> }) {
   const { modal, tip } = useAppState();
   const look = useMyLook().data ?? defaultLook();
+  const home = useMyHome().data ?? {};
   const displayName = useProfile().data?.displayName ?? "";
   const today = todayKey();
   const offset = characterOffset(facing);
@@ -32,18 +33,7 @@ export default function DeskScene({ facing, characterRef }: { facing: Facing; ch
         aria-label="책상, 안락의자, 창문, 침대가 있는 포근한 내 방"
         style={{ width: size.width, height: size.height, "--scale": scale } as CSSProperties}
       >
-        <img className="home-room-part" src={HOME_ROOM.base} alt="" draggable={false} style={{ left: 0, top: 0, width: size.width }} />
-        {HOME_ROOM.layers.map((part) => (
-          <img
-            key={part.id}
-            className="home-room-part"
-            data-slot={part.id}
-            src={part.src}
-            alt=""
-            draggable={false}
-            style={{ left: part.x * scale, top: part.y * scale, width: part.width * scale }}
-          />
-        ))}
+        <HomeRoomArt look={home} scale={scale} />
         <div className="desk-character" ref={characterRef} style={{ left: offset.left, top: offset.top, width: CANVAS.width * scale }}>
           {tip.tip && (
             <div className="desk-speech">
