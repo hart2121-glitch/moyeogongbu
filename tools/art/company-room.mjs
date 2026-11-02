@@ -160,16 +160,75 @@ const dark = (p) => Math.max(p[0], p[1], p[2]) < 80;
 const onCushion = (x, y) =>
   ((x <= 127 && y >= 122 && (y <= 138 || (y <= 141 && dark(at(room, x, y))))) || (x >= 152 && x <= 188 && y >= 120 && y <= 148)) &&
   !(y >= 130 && leafy(at(room, x, y)));
-const cut = (box, keep) => {
-  const im = { width: box.width, height: box.height, pixels: new Uint8Array(box.width * box.height * 4) };
-  for (let y = 0; y < box.height; y++) for (let x = 0; x < box.width; x++)
-    if (keep(box.x + x, box.y + y)) im.pixels.set(at(room, box.x + x, box.y + y), (y * box.width + x) * 4);
+// 2026-11-02 사용자 결정: 아이템 그림에는 그 물건 칸만 둔다. 빈 휴게실과 조금만 다른 칸(탁자 윗면 빛, 소파 결)은 물건이 아니라
+// 빈 휴게실을 다시 그리며 생긴 차이라 빼고(색 거리 40 이하), 8칸 미만 조각도 뺀 뒤, 물건 안에 갇힌 빈 칸은 원래 칸으로 채운다.
+const distance = (x, y) => {
+  const a = at(room, x, y), b = at(lounge, x - LOUNGE.x, y - LOUNGE.y);
+  return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+};
+const cut = (box, keep, peel = () => false) => {
+  const W2 = box.width, H2 = box.height, on = new Uint8Array(W2 * H2);
+  for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) if (keep(box.x + x, box.y + y, x, y)) on[y * W2 + x] = 1;
+  // 물건 둘레에 붙은 바탕색 칸(탁자 윗면 주황 빛)을 바깥부터 두 겹 벗긴다
+  for (let pass = 0; pass < 2; pass++) {
+    const drop = [];
+    for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) {
+      if (!on[y * W2 + x] || !peel(at(room, box.x + x, box.y + y))) continue;
+      const rim = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => {
+        const nx = x + dx, ny = y + dy;
+        return nx < 0 || ny < 0 || nx >= W2 || ny >= H2 || !on[ny * W2 + nx];
+      });
+      if (rim) drop.push(y * W2 + x);
+    }
+    for (const k of drop) on[k] = 0;
+  }
+  // 작은 조각 빼기 (상하좌우와 대각선으로 이어진 칸끼리)
+  const seen = new Uint8Array(W2 * H2);
+  for (let k = 0; k < on.length; k++) {
+    if (!on[k] || seen[k]) continue;
+    const group = [k], stack = [k];
+    seen[k] = 1;
+    while (stack.length) {
+      const q = stack.pop(), qx = q % W2, qy = Math.floor(q / W2);
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const nx = qx + dx, ny = qy + dy, n = ny * W2 + nx;
+        if (nx < 0 || ny < 0 || nx >= W2 || ny >= H2 || seen[n] || !on[n]) continue;
+        seen[n] = 1;
+        stack.push(n);
+        group.push(n);
+      }
+    }
+    if (group.length < 8) for (const n of group) on[n] = 0;
+  }
+  // 갇힌 빈 칸 채우기: 상자 테두리에서 빈 칸을 따라 닿지 않는 빈 칸
+  const reach = new Uint8Array(W2 * H2), stack = [];
+  for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++)
+    if ((x === 0 || y === 0 || x === W2 - 1 || y === H2 - 1) && !on[y * W2 + x]) { reach[y * W2 + x] = 1; stack.push(y * W2 + x); }
+  while (stack.length) {
+    const q = stack.pop(), qx = q % W2, qy = Math.floor(q / W2);
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = qx + dx, ny = qy + dy, n = ny * W2 + nx;
+      if (nx < 0 || ny < 0 || nx >= W2 || ny >= H2 || reach[n] || on[n]) continue;
+      reach[n] = 1;
+      stack.push(n);
+    }
+  }
+  const im = { width: W2, height: H2, pixels: new Uint8Array(W2 * H2 * 4) };
+  for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++)
+    if (on[y * W2 + x] || !reach[y * W2 + x]) im.pixels.set(at(room, box.x + x, box.y + y), (y * W2 + x) * 4);
   return im;
 };
+/** 오른쪽 큰 쿠션 옆으로 올라온 화분 줄기 (쿠션 상자 오른쪽 끝). */
+const stem = (lx, ly) => lx >= 90 || (lx >= 88 && (ly <= 4 || ly >= 20));
+/** 고양이 매트 안쪽 (짙은 테두리까지). 그 밖은 바닥이다. */
+const matInside = (lx, ly) => lx >= 6 && lx <= 82 && ly >= 2 && ly <= 38;
 const defaults = {
-  "cushions-cat": cut(slot("cushions"), (x, y) => changed(x, y) && onCushion(x, y)),
-  "table-cat": cut(slot("table"), (x, y) => changed(x, y) && !onCushion(x, y)),
-  "mat-cat": cut(slot("mat"), () => true),
+  "cushions-cat": cut(slot("cushions"), (x, y, lx, ly) => distance(x, y) > 40 && onCushion(x, y) && !stem(lx, ly)),
+  "table-cat": cut(slot("table"), (x, y) => distance(x, y) > 40 && !onCushion(x, y), (p) => {
+    const c = hsv(p[0], p[1], p[2]);
+    return c.h >= 15 && c.h <= 33 && c.s >= 0.5 && c.v >= 0.62;
+  }),
+  "mat-cat": cut(slot("mat"), (x, y, lx, ly) => matInside(lx, ly)),
 };
 mkdirSync("art-src/rooms/lounge", { recursive: true });
 mkdirSync("public/assets/rooms/lounge", { recursive: true });

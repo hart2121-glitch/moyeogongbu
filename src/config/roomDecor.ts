@@ -25,7 +25,7 @@ export const DECOR_ITEM_ART: Readonly<Record<string, string>> = Object.fromEntri
   [
     "cushions-cat", "cushions-heart", "cushions-star", "cushions-check",
     "table-cat", "table-tea", "table-cake", "table-flower",
-    "rug-pink", "rug-mint", "rug-sky",
+    "rug-camel", "rug-ivory", "rug-charcoal", "rug-persian", "rug-pink", "rug-mint", "rug-sky",
     "mat-cat", "mat-stripe", "mat-paw", "mat-heart",
   ].map((id) => [id, `/assets/rooms/lounge/${id}.png`]),
 );

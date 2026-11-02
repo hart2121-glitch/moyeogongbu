@@ -1,10 +1,28 @@
-import { useState, type FormEvent } from "react";
+import { useState, type CSSProperties, type FormEvent } from "react";
+import { COMPANY_ROOM_ART, companyLayout } from "../../../study/companyLayout";
 import { BOARD_DEFAULT_TEXT, DECOR_ITEM_ART, DECOR_SLOTS, boardTextError, type DecorSlot } from "../../../config/roomDecor";
 import { buyBlockReason, type ShopItem } from "../../shop/model/shop";
 import type { MemberStatus, Room } from "../model/room";
 import { ROOM_CONFIG } from "../model/roomConfig";
 import { useOwnerTools } from "../viewmodel/useOwnerTools";
 import { useRoomDecorShop } from "../viewmodel/useRoomDecorShop";
+
+/**
+ * 선택지 그림 창 (방 그림 1배). 아이템을 휴게실의 그 자리에 놓은 모습에서 자리 가운데를 보인다.
+ * 러그는 가운데가 탁자에 가려 오른쪽 아래(테두리와 탁자 다리 둘레)를 보인다.
+ */
+const THUMB = { width: 96, height: 44 };
+const THUMB_CENTER: Partial<Record<DecorSlot, { x: number; y: number }>> = { rug: { x: 150, y: 190 } };
+const thumbAt = (slot: DecorSlot) => {
+  const box = (companyLayout.decorSlots as readonly { id: string; box: { x: number; y: number; width: number; height: number } }[])
+    .find((s) => s.id === slot)!.box;
+  const center = THUMB_CENTER[slot] ?? { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  const left = Math.round(center.x - THUMB.width / 2), top = Math.round(center.y - THUMB.height / 2);
+  return {
+    room: { backgroundImage: `url("${COMPANY_ROOM_ART}")`, backgroundPosition: `${-left}px ${-top}px` } as CSSProperties,
+    item: { left: box.x - left, top: box.y - top } as CSSProperties,
+  };
+};
 
 interface Props {
   room: Room;
@@ -105,8 +123,8 @@ export default function OwnerTools({ room, members, onChanged }: Props) {
                   aria-label={`${label}, ${item.name}${item.owned ? "" : `, ${item.price}코인`}`}
                   onClick={() => (item.owned ? place(slot, item) : setConfirming(item))}
                 >
-                  <span className={`owner-decor-thumb owner-decor-thumb-${slot}`}>
-                    {art && <img src={art} alt="" draggable={false} />}
+                  <span className={`owner-decor-thumb owner-decor-thumb-${slot}`} style={thumbAt(slot).room}>
+                    {art && <img src={art} alt="" draggable={false} style={thumbAt(slot).item} />}
                   </span>
                   <span>{item.name}</span>
                   <span className="muted">{placed ? "놓여 있어요" : item.owned ? "가지고 있어요" : `${item.price}코인`}</span>

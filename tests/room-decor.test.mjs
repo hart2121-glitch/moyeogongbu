@@ -51,30 +51,31 @@ test("공용 꾸밈: 방장이 러그와 쿠션을 사서 놓고 화이트보드
     assert.equal(await board(owner), "오늘도\n수고했어요!");
     assert.equal(await member.getByTestId("owner-tools").count(), 0);
 
-    // 실행: 방장 도구에서 분홍 러그를 골라 가격을 확인하고 사서 놓는다
+    // 실행: 방장 도구에서 카멜 러그를 골라 가격을 확인하고 사서 놓는다
     const tools = owner.getByTestId("owner-tools");
     await tools.locator("summary").click();
     await tools.getByTestId("owner-decor-balance").getByText("지금 가진 코인 3000").waitFor();
-    // 확인: 자리마다 네 가지이고, 기본 러그를 뺀 열다섯 아이템 그림이 모두 실제로 불러와진다
+    // 확인: 자리마다 네 가지(러그는 테마 넷과 기본, 판매를 멈춘 파스텔 셋은 없다)이고, 기본 러그를 뺀 열여섯 아이템 그림이 모두 불러와진다
     await owner.waitForFunction(() => [...document.querySelectorAll(".owner-decor-thumb img")].every((i) => i.complete));
     assert.deepEqual(
       await tools.locator(".owner-decor-row").evaluateAll((rows) => rows.map((r) => `${r.dataset.slot}:${r.querySelectorAll(".owner-decor-option").length}`)),
-      ["cushions:4", "table:4", "rug:4", "mat:4"],
+      ["cushions:4", "table:4", "rug:5", "mat:4"],
     );
     assert.deepEqual(
       await tools.locator(".owner-decor-thumb img").evaluateAll((imgs) => imgs.filter((i) => i.naturalWidth === 0).map((i) => i.src)),
       [],
     );
-    assert.equal(await tools.locator(".owner-decor-thumb img").count(), 15);
-    await tools.getByRole("button", { name: "휴게실 러그, 분홍 러그, 1800코인" }).click();
-    await tools.getByRole("group", { name: "분홍 러그 구매 확인" }).waitFor();
-    await tools.getByRole("button", { name: "분홍 러그 사서 놓기" }).click();
-    await tools.getByText("분홍 러그을(를) 사서 휴게실에 놓았어요.").waitFor();
+    assert.equal(await tools.locator(".owner-decor-thumb img").count(), 16);
+    assert.equal(await tools.getByRole("button", { name: /분홍 러그/ }).count(), 0);
+    await tools.getByRole("button", { name: "휴게실 러그, 카멜 러그, 1800코인" }).click();
+    await tools.getByRole("group", { name: "카멜 러그 구매 확인" }).waitFor();
+    await tools.getByRole("button", { name: "카멜 러그 사서 놓기" }).click();
+    await tools.getByText("카멜 러그을(를) 사서 휴게실에 놓았어요.").waitFor();
 
     // 확인: 러그가 깔리고, 코인이 줄고, 산 러그는 이제 "놓여 있어요"
-    await owner.locator('.room-decor[data-slot="rug"][data-item="rug-pink"]').waitFor();
+    await owner.locator('.room-decor[data-slot="rug"][data-item="rug-camel"]').waitFor();
     await tools.getByTestId("owner-decor-balance").getByText("지금 가진 코인 1200").waitFor();
-    assert.equal(await tools.getByRole("button", { name: "휴게실 러그, 분홍 러그" }).getAttribute("aria-pressed"), "true");
+    assert.equal(await tools.getByRole("button", { name: "휴게실 러그, 카멜 러그" }).getAttribute("aria-pressed"), "true");
 
     // 실행과 확인: 하트 쿠션을 사서 놓은 뒤, 가진 기본 쿠션은 누르면 바로 다시 놓인다
     await tools.getByRole("button", { name: "소파 쿠션, 하트 쿠션, 900코인" }).click();
@@ -85,11 +86,11 @@ test("공용 꾸밈: 방장이 러그와 쿠션을 사서 놓고 화이트보드
     await tools.getByRole("button", { name: "소파 쿠션, 하트 쿠션" }).click();
     await owner.locator('.room-decor[data-slot="cushions"][data-item="cushions-heart"]').waitFor();
 
-    // 실행과 확인: 코인이 모자란 하늘 러그는 얼마가 더 필요한지만 알려 주고 살 수 없다
-    await tools.getByRole("button", { name: "휴게실 러그, 하늘 러그, 2400코인" }).click();
-    const sky = tools.getByRole("group", { name: "하늘 러그 구매 확인" });
+    // 실행과 확인: 코인이 모자란 페르시안 러그는 얼마가 더 필요한지만 알려 주고 살 수 없다
+    await tools.getByRole("button", { name: "휴게실 러그, 페르시안 러그, 2400코인" }).click();
+    const sky = tools.getByRole("group", { name: "페르시안 러그 구매 확인" });
     await sky.getByText("2,100코인이 더 모이면 살 수 있어요.").waitFor();
-    assert.equal(await sky.getByRole("button", { name: "하늘 러그 사서 놓기" }).count(), 0);
+    assert.equal(await sky.getByRole("button", { name: "페르시안 러그 사서 놓기" }).count(), 0);
     await sky.getByRole("button", { name: "그만두기" }).click();
 
     // 실행과 확인: 화이트보드 문구. 한 줄이 12자를 넘으면 막고, 두 줄 문구는 그대로 올라간다
@@ -105,7 +106,7 @@ test("공용 꾸밈: 방장이 러그와 쿠션을 사서 놓고 화이트보드
     assert.equal(server.rooms.get(SEED_ROOM.id).board_text, "시험 기간\n다 같이 힘내요!");
 
     // 확인: 먼저 들어와 있던 멤버 화면에도 같은 꾸밈과 문구가 보인다
-    const expected = ["rug:rug-pink", "cushions:cushions-heart", "table:table-cat", "mat:mat-cat"];
+    const expected = ["rug:rug-camel", "cushions:cushions-heart", "table:table-cat", "mat:mat-cat"];
     await member.waitForFunction(
       (want) => [...document.querySelectorAll(".room-decor")].map((i) => `${i.dataset.slot}:${i.dataset.item}`).join() === want,
       expected.join(),
@@ -154,7 +155,7 @@ test("공용 꾸밈: 멤버는 바꿀 수 없고, 방장도 사지 않은 아이
     // 실행: 멤버가 꾸밈과 문구를 바꾸려 하고, 방장이 사지 않은 러그를 놓으려 한다
     const byMember = await call(member, "set_room_decor", { p_room: SEED_ROOM.id, p_slot: "rug", p_item: "rug-beige" });
     const boardByMember = await call(member, "set_room_board", { p_room: SEED_ROOM.id, p_text: "안녕" });
-    const notOwned = await call(owner, "set_room_decor", { p_room: SEED_ROOM.id, p_slot: "rug", p_item: "rug-pink" });
+    const notOwned = await call(owner, "set_room_decor", { p_room: SEED_ROOM.id, p_slot: "rug", p_item: "rug-camel" });
     const wrongSlot = await call(owner, "set_room_decor", { p_room: SEED_ROOM.id, p_slot: "rug", p_item: "mat-cat" });
 
     // 확인: 모두 거절되고 방은 그대로다

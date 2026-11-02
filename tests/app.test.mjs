@@ -29,7 +29,7 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
     await page.waitForFunction(() =>
       [...document.querySelectorAll(".desk-character img")].some((img) => img.naturalWidth > 0),
     );
-    // 로비는 집, 내 방이다. 256×152 도트 방(빈 방 위에 꾸밈 자리별 층 18개, 꾸미기 슬롯 계획 3절)과 캐릭터를 같은 3배로 그린다
+    // 로비는 집, 내 방이다. 256×152 도트 방(빈 방 위에 불빛, 러그, 그림자와 물건 층 18개, 꾸미기 슬롯 계획 3절)과 캐릭터를 같은 3배로 그린다
     // (회사 사무실 그림은 쓰지 않는다).
     await page.waitForFunction(() => [...document.querySelectorAll(".home-room-part")].every((img) => img.complete && img.naturalWidth > 0));
     assert.deepEqual(
@@ -45,7 +45,7 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
           height: box.height,
         };
       }),
-      { base: 768, parts: 18, character: 168, office: false, width: 768, height: 456 },
+      { base: 768, parts: 21, character: 168, office: false, width: 768, height: 456 },
     );
     assert.equal(await page.getByRole("heading", { name: "오늘 어디로 갈까" }).count(), 1);
     assert.match(await page.locator(".desk-date").innerText(), /^\d+월 \d+일 [일월화수목금토]요일$/);

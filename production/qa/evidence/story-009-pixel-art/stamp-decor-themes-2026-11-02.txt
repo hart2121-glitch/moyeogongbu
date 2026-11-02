@@ -1,0 +1,9 @@
+Reviewed-Content-Hash: tools/art/home-decor.mjs f563b45f03d9088ee38074a9786d67cc9a725fc9
+Reviewed-Content-Hash: tools/art/company-room.mjs 30681e4ff7b400c764e61bb9975b9550b9888ea2
+Reviewed-Content-Hash: tools/art/company-decor.mjs 50929b45ae602de686db3c29e539ac7880762858
+Reviewed-Content-Hash: src/features/lobby/model/homeDecor.ts 31642f10e2e7a37a24df6c9901b42aa033aa412a
+Reviewed-Content-Hash: src/features/lobby/view/HomeRoomArt.tsx 889d78cfbcb0f21cfbc6d424a2861a3a5942c9aa
+Reviewed-Content-Hash: src/features/lobby/view/HomeThumb.tsx 3e2d6ebb1255610998cce06c2fe4d708b51770df
+Reviewed-Content-Hash: src/features/character/view/CharacterPage.tsx c4dcff67bb3cee50aa40b98bf7d386637d23a057
+Reviewed-Content-Hash: src/features/room/view/OwnerTools.tsx efb53f5d1f77836369b01ff2406f2e3f2f386dfd
+Reviewed-Content-Hash: supabase/migrations/20261102100000_decor_themes.sql cc9b3c4a66cf0f0b3888156ac801c18a6b53993b

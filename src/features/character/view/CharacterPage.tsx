@@ -6,12 +6,11 @@ import { characterSprites, WALK_FRAME_MS, WALK_FRAMES } from "../../../study/cha
 import { useProfile } from "../../account/viewmodel/useAccount";
 import { buyBlockReason, isDeskSlot, type ItemSlot, type ShopItem } from "../../shop/model/shop";
 import { useShop } from "../../shop/viewmodel/useShop";
-import { HOME_SLOTS, homeItem, homeSlotOf } from "../../lobby/model/homeDecor";
+import { HOME_SLOTS, HOME_THEMES, homeItem, homeSlotOf } from "../../lobby/model/homeDecor";
 import HomeRoomArt from "../../lobby/view/HomeRoomArt";
 import HomeThumb from "../../lobby/view/HomeThumb";
 import PageFrame from "../../shell/view/PageFrame";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
-import { tryOnNotice } from "../model/look";
 import type { DeskSpot, Look } from "../model/layers";
 import { isWorn, useCustomize, wearItem } from "../viewmodel/useCharacter";
 import DeskPreview from "./DeskPreview";
@@ -106,7 +105,6 @@ export default function CharacterPage() {
   const displayName = useProfile().data?.displayName;
   const tabs = c.firstTime ? TABS.filter((t) => t.id !== "accessory" && t.id !== "desk" && t.id !== "home") : TABS;
   const shown = c.firstTime ? c.items.filter((i) => i.isDefault) : c.items;
-  const trying = c.tryingOn.map((i) => i.name).join(", ");
   const [tab, setTab] = useState<TabId>("hair");
   const active = tabs.find((t) => t.id === tab) ?? tabs[0];
   const [facing, setFacing] = useState<Direction>("down");
@@ -150,11 +148,6 @@ export default function CharacterPage() {
     <PageFrame title="캐릭터 꾸미기">
       <div className="page-intro">
         <h1>{c.firstTime ? "처음 꾸미기" : "오늘은 어떤 모습으로 공부할까?"}</h1>
-        <p>
-          {c.firstTime
-            ? "남녀를 고르면 기본 모습이 바뀌어요. 머리 모양 2종, 머리 색 3종, 눈 색 7종, 의상 3종을 무료로 드려요."
-            : "산 아이템은 바로 적용하고, 사지 않은 아이템은 입어 보거나 책상에 놓아 본 뒤 여기서 바로 살 수 있어요."}
-        </p>
         {!c.firstTime && (
           <p className="customize-balance">
             지금 가진 코인 <strong data-testid="shop-balance">{shop.balance.toLocaleString()}</strong>
@@ -215,7 +208,6 @@ export default function CharacterPage() {
                 </button>
               ))}
             </div>
-            <span className={c.tryingOn.length ? "try-on-note" : ""}>{c.tryingOn.length ? tryOnNotice : c.changed ? "바꾼 모습이에요. 저장하면 적용돼요." : "지금 적용된 모습"}</span>
           </div>
           <div className="wardrobe">
             <div className="wardrobe-tabs" role="tablist" aria-label="꾸밀 곳" onKeyDown={onTabKey}>
@@ -238,6 +230,19 @@ export default function CharacterPage() {
               ))}
             </div>
             <div className="wardrobe-panel" role="tabpanel" id={`wardrobe-panel-${active.id}`} aria-labelledby={`wardrobe-tab-${active.id}`}>
+              {active.id === "home" && (
+                <section className="wardrobe-slot home-themes" aria-label="테마">
+                  <h2>테마</h2>
+                  <div className="theme-options">
+                    {HOME_THEMES.map(({ theme, label }) => (
+                      <button key={theme} type="button" className={`theme-chip theme-${theme}`} onClick={() => c.wearTheme(theme)}>
+                        <span className="theme-swatch" aria-hidden />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
               {active.slots.map(({ slot, label, view, spot }) => {
                 const options = shown.filter((i) => i.slot === slot);
                 const homeSlot = homeSlotOf(slot);
@@ -303,9 +308,6 @@ export default function CharacterPage() {
             </div>
             {c.tryingOn.length > 0 && (
               <section className="try-on-buy" aria-label="입어 보는 아이템 사기">
-                <p>
-                  입어 본 {trying}은(는) 사야 저장할 수 있어요. 산 아이템은 되팔거나 환불할 수 없어요.
-                </p>
                 <ul>
                   {c.tryingOn.map((item) => {
                     const reason = buyBlockReason(item, shop.balance);
