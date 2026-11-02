@@ -91,7 +91,7 @@ test("실제 브라우저 1·3·4·6번 각각 좌우 이동·퇴석·재착석 
           x: Number(e.dataset.x),
           y: Number(e.dataset.y),
         }));
-        // 클릭은 화면 1px 단위다. 방을 1배로 그리면 화면 1px이 원본 2px이므로 허용 오차는 화면 1.5px로 잰다.
+        // 클릭은 화면 1px 단위다. 허용 오차는 화면 1.5px를 무대 너비로 원본 px로 바꿔 잰다 (방 배율은 화면에 맞춘다).
         const miss = Math.hypot((end.x - x) * 1705, (end.y - anchor.y) * 922);
         assert.ok(miss < (1.5 * 1705) / r.width, `${id}번 ${side}: 원본 ${miss.toFixed(2)}px, 무대 ${r.width}`);
         if (side === "right" && (id === 1 || id === 6))

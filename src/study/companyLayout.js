@@ -2,8 +2,24 @@
 export const COMPANY_ORIGINAL = "/assets/company-study-room-final.png";
 export const COMPANY_BACKGROUND =
   "/assets/company-study-room-final-display.png";
-/** Story 009: 화면용 사본의 방 영역(view)을 절반으로 다시 그린 도트 방 672×432 (tools/art/company-room.mjs). 화면에 1배로 그린다. */
+/** Story 009: 화면용 사본의 방 영역(view)을 절반으로 다시 그린 도트 방 672×432 (tools/art/company-room.mjs). */
 export const COMPANY_ROOM_ART = "/assets/rooms/company-room.png";
+/** 도트 방 그림 크기 (1배). */
+export const ROOM_ART_SIZE = { width: 672, height: 432 };
+/** 방 아래에 남기는 여백 (화면 px). */
+export const ROOM_BOTTOM_GAP = 8;
+
+/**
+ * 방 배율 (2026-11-02 사용자 결정: 회사 방은 화면을 거의 다 채운다). 남는 공간에 방 전체가 들어가는 가장 큰 배율이다.
+ * 2배 이상 들어가면 도트가 고르도록 정수로 내리고, 1~2배 사이는 그 배율 그대로 꽉 채운다 (정수 배율 규칙의 예외).
+ * 1배보다 작게 줄이지는 않는다.
+ * @example roomScale(1100, 700) // 1.6203…
+ * @example roomScale(1500, 900) // 2
+ */
+export const roomScale = (availWidth, availHeight) => {
+  const fit = Math.min(availWidth / ROOM_ART_SIZE.width, availHeight / ROOM_ART_SIZE.height);
+  return fit >= 2 ? Math.floor(fit) : Math.max(1, fit);
+};
 export { companyFinalLayout as companyLayout } from "./companyFinalLayout.js";
 
 /**

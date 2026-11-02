@@ -147,16 +147,16 @@ function LiveCompanyRoom({ room, userId, nickname, exit, toRooms }: LiveProps) {
             subscribeMoves={live.subscribeMoves}
           />
         ))}
-        toolbarExtra={
+        toolbarExtra={room.isOwner && <OwnerTools room={room} members={live.members} onChanged={live.notifyMembers} />}
+        side={
           <>
+            <RoomTodos />
             <div className="room-social">
               <RoomInviteButton room={room} />
               <RoomLiveBar connected={live.connected} sendReaction={live.sendReaction} onTaskSaved={live.notifyMembers} />
             </div>
-            {room.isOwner && <OwnerTools room={room} members={live.members} onChanged={live.notifyMembers} />}
           </>
         }
-        side={<RoomTodos />}
         renderSession={({ goLounge, canGoLounge }: { goLounge: () => void; canGoLounge: boolean }) => (
           <StudySessionBar session={session} onGoLounge={goLounge} canGoLounge={canGoLounge} todayCoins={coinsToday} />
         )}

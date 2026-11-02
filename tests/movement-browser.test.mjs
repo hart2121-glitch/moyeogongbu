@@ -100,15 +100,18 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
           width: cell.width,
           box: box.width,
           stage: el.closest(".company-stage").getBoundingClientRect().width,
+          scale: Number(el.closest(".company-viewport").dataset.scale),
           footBottom: cell.bottom - box.bottom,
           pixelated: getComputedStyle(img).imageRendering === "pixelated",
         };
       });
       assert.ok(Math.abs(geometry.ratio - 56 / 72) < 0.001);
       assert.ok(Math.abs(geometry.width - geometry.box) < 0.1);
-      // 도트 방(672×432)과 같은 1배: 칸 56×72가 화면 56px이다 (원본 기준 112 / 1705).
+      // 도트 방(672×432)과 같은 배율: 칸 56×72가 화면 56px × 방 배율이다 (원본 기준 112 / 1705).
+      // 방 배율은 남는 화면에 맞춘다 (2026-11-02 사용자 결정, 1440×900에서 약 1.48배).
       assert.ok(Math.abs(geometry.width / geometry.stage - 112 / 1705) < 0.0001);
-      assert.ok(Math.abs(geometry.width - 56) < 0.01, `캐릭터 폭 ${geometry.width}`);
+      assert.ok(geometry.scale > 1, `방 배율 ${geometry.scale}`);
+      assert.ok(Math.abs(geometry.width - 56 * geometry.scale) < 0.05, `캐릭터 폭 ${geometry.width}, 배율 ${geometry.scale}`);
       assert.ok(Math.abs(geometry.footBottom) < 0.1);
       assert.ok(geometry.pixelated);
     }
@@ -123,7 +126,7 @@ test("바닥 클릭·도중 목적지 변경·4방향 상태·캐릭터 깜빡�
     const final = await p
       .getByTestId("study-character")
       .evaluate((s) => ({ x: Number(s.dataset.x), y: Number(s.dataset.y) }));
-    // 클릭은 화면 1px 단위라 허용 오차는 화면 1.5px (1배 방에서 원본 3px).
+    // 클릭은 화면 1px 단위라 허용 오차는 화면 1.5px (무대 너비로 원본 px로 바꾼다).
     const stageWidth = (await p.getByTestId("company-stage").boundingBox()).width;
     assert.ok(
       Math.hypot((final.x - 0.52) * 1705, (final.y - 0.89) * 922) < (1.5 * 1705) / stageWidth,
