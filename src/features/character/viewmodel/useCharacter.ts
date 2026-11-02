@@ -5,7 +5,7 @@ import { useSession } from "../../account/viewmodel/SessionContext";
 import type { ItemSlot, ShopItem } from "../../shop/model/shop";
 import { shopStore } from "../../shop/model/shopStore";
 import { useShopItems } from "../../shop/viewmodel/useShop";
-import { compactHome, homeSlotOf, unownedHome, type HomeLook } from "../../lobby/model/homeDecor";
+import { compactHome, homeSlotOf, themeLook, unownedHome, type HomeLook, type HomeTheme } from "../../lobby/model/homeDecor";
 import { defaultLook, type DeskSpot, type Look } from "../model/layers";
 import { firstLookSavedMessage, lookSaveErrorMessage, lookSavedMessage } from "../model/look";
 
@@ -137,6 +137,8 @@ export function useCustomize(notify: (text: string) => void) {
       if (homeSlot) setHomeDraft({ ...home, [homeSlot]: item.id });
       else setDraft(wearItem(look, item.slot, item.id));
     },
+    /** 내 방에 테마 아이템을 한 번에 놓아 본다 (테마 없는 자리는 그대로). */
+    wearTheme: (theme: HomeTheme) => setHomeDraft(themeLook(theme, list, home)),
     /** 내 책상 세트의 한 자리에 놓거나, 이미 놓인 것이면 치운다. */
     placeOnDesk: (spot: DeskSpot, item: ShopItem) => setDraft(placeOnDesk(look, spot, item.id)),
     /** 남녀 고르기. 처음 꾸미기에서는 기본 머리 모양과 옷도 바뀐다. */

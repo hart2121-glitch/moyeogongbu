@@ -8,7 +8,7 @@ import { HOME_DECOR } from "./homeDecorLayers";
  * 아이템 목록과 가격은 서버 `shop_items`(slot `home_<자리>`)가, 적용한 꾸밈은 `home_looks`가 정한다. 내 방은 나만 본다.
  */
 
-/** 그림 상자 (방 그림 1배 좌표). */
+/** 그림 상자 (방 그림 1배 좌표). blend가 있으면 아래 그림과 섞는다 (그림자 multiply, 불빛 screen). */
 export interface HomeLayer {
   id: string;
   src: string;
@@ -16,6 +16,7 @@ export interface HomeLayer {
   y: number;
   width: number;
   height: number;
+  blend?: "multiply" | "screen";
 }
 
 interface DecorData {
@@ -23,6 +24,8 @@ interface DecorData {
   scale: number;
   base: string;
   draw: readonly string[];
+  /** 자리 없이 늘 그리는 층 (불빛, 그림자). */
+  fixed: readonly string[];
   layers: Readonly<Record<string, Omit<HomeLayer, "id">>>;
   slots: Readonly<Record<string, readonly string[]>>;
   items: Readonly<Record<string, Readonly<Record<string, Omit<HomeLayer, "id"> | null>>>>;
@@ -91,7 +94,7 @@ export const homeItem = (look: HomeLook, slot: HomeSlot) => look[slot] ?? DEFAUL
 /**
  * 한 자리에 이 아이템을 놓았을 때 그 자리의 층들 (그리는 순서). 기본 아이템은 기본 층 그림, 판매 아이템은 그 그림을 쓰고,
  * 그림이 null인 층은 감춘다 (협탁 위 소품을 바꾸면 원래 작은 병을 감춘다).
- * @example slotLayers("rug", "home-rug-pink")[0].src // "/assets/home/room/decor/home-rug-pink-rug.png"
+ * @example slotLayers("rug", "home-rug-camel")[0].src // "/assets/home/room/decor/home-rug-camel-rug.png"
  */
 export function slotLayers(slot: HomeSlot, itemId: string): HomeLayer[] {
   const art = DATA.items[itemId];
@@ -112,10 +115,42 @@ export function homeLayers(look: HomeLook): HomeLayer[] {
   for (const { slot } of HOME_SLOTS) for (const id of DATA.slots[slot] ?? []) owner.set(id, slot);
   const bySlot = new Map(HOME_SLOTS.map(({ slot }) => [slot, slotLayers(slot, homeItem(look, slot))]));
   return DATA.draw.flatMap((id) => {
+    if (DATA.fixed.includes(id)) return DATA.layers[id] ? [{ id, ...DATA.layers[id] }] : [];
     const slot = owner.get(id);
     const layer = slot ? bySlot.get(slot)?.find((l) => l.id === id) : undefined;
     return layer ? [layer] : [];
   });
+}
+
+/** 벽지와 바닥 선택지는 가구 없이 빈 방에 그 자리만 덮어 보인다 (러그와 가구에 가려 무늬가 안 보이므로). */
+export const BARE_THUMB_SLOTS: ReadonlySet<HomeSlot> = new Set(["wallpaper", "floor"]);
+
+/** 테마 (2026-11-02 사용자 결정): 판매 아이템을 테마로 묶어 한 번에 놓아 보거나 섞어 쓴다. 아이템의 테마는 서버 `shop_items.theme`이 정한다. */
+export type HomeTheme = "brown" | "white" | "black" | "antique";
+export const HOME_THEMES: readonly { theme: HomeTheme; label: string }[] = [
+  { theme: "brown", label: "브라운" },
+  { theme: "white", label: "화이트" },
+  { theme: "black", label: "블랙" },
+  { theme: "antique", label: "앤티크" },
+];
+
+/**
+ * 테마 한 번에 놓기: 테마 아이템이 있는 자리는 그 아이템, 다른 테마만 있는 자리는 기본 아이템으로 놓고,
+ * 테마와 상관없는 자리(침대 인형, 화분, 책상 위, 협탁 위)는 지금 고른 그대로 둔다.
+ * @example themeLook("white", items, {}).wallpaper // "home-wall-white"
+ */
+export function themeLook<T extends { id: string; slot: string; theme?: string | null }>(
+  theme: HomeTheme,
+  items: readonly T[],
+  current: HomeLook,
+): HomeLook {
+  const next: HomeLook = { ...current };
+  for (const { slot } of HOME_SLOTS) {
+    const inSlot = items.filter((i) => homeSlotOf(i.slot) === slot);
+    if (!inSlot.some((i) => i.theme)) continue;
+    next[slot] = inSlot.find((i) => i.theme === theme)?.id ?? DEFAULT_HOME[slot];
+  }
+  return next;
 }
 
 /**
@@ -125,7 +160,7 @@ export function homeLayers(look: HomeLook): HomeLayer[] {
 export const HOME_THUMB = { width: 72, height: 44 } as const;
 const THUMB_AT: Partial<Record<HomeSlot, { x: number; y: number }>> = {
   wallpaper: { x: 30, y: 6 },
-  floor: { x: 176, y: 108 },
+  floor: { x: 92, y: 108 },
   lamps: { x: 22, y: 50 },
   nightstands: { x: 113, y: 84 },
   frames: { x: 0, y: 12 },

@@ -82,10 +82,11 @@
 }
 .desk-scene-art {
   position: relative;
+  isolation: isolate;
   image-rendering: pixelated;
   overflow: hidden;
 }
-/* 내 방: 빈 방 위에 갈아 끼울 수 있는 부품을 얹는다 (tools/art/home-room.mjs). 방과 캐릭터는 같은 정수 배율(--scale)이다. */
+/* 내 방: 빈 방 위에 갈아 끼울 수 있는 층을 얹는다 (tools/art/home-decor.mjs). 방과 캐릭터는 같은 정수 배율(--scale)이다. */
 .home-room-part {
   position: absolute;
   max-width: none;

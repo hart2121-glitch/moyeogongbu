@@ -30,6 +30,21 @@
 - 리본 머리카락, 별 머리핀, 남자 교복 허리: `fix-ribbon-hairpin-boywaist.png`
 - 머그 손잡이: `fix-mug-one-handle.png`
 
+## 꾸밈 아이템 다시 만들기 (2026-11-02, 사용자 지적)
+
+사용자 지적: 책상 색을 바꿔도 책상 위 물건 둘레에 옛 책상 색이 남았다 (아이템 그림에 아래 가구 칸이 섞임). 하늘색 벽지처럼 혼자 튀는 아이템,
+꾸미기 화면의 쓸데없는 안내 문장, 좁은 탭의 줄바꿈도 함께 고쳤다. 스탬프 `stamp-decor-themes-2026-11-02.txt`.
+
+| 내용 | 증거 |
+|---|---|
+| 내 방을 물건별로 다시 떼기 (물건 칸만, 그림자와 불빛은 섞기 층) | `home-object-layers.png` (층마다 다른 색), 테스트 `home-art` (첫 구현 그림에서는 책상과 같은 색 칸 18칸으로 실패) |
+| 흰 책상과 책, 검은 책상과 공책, 흰 협탁과 시계, 검은 협탁과 꽃병 | `fix-desk-top-object-only.png` (왼쪽부터 기본, 바꾼 조합) |
+| 테마 넷 (브라운, 화이트, 블랙, 앤티크)과 섞은 조합, 데코타일, 대리석, 파케이 | `home-themes.png`, `home-themes-mixed.png` |
+| 꾸미기 내 방 탭의 테마 한 번에 놓기 | `home-theme-antique.png`, 테스트 `home-decor` |
+| 로비 내 방 (흰 벽지, 흰 안락의자, 책) | `home-lobby-decorated.png` |
+| 휴게실 테마 러그, 물건 칸만 뗀 기본 쿠션, 탁자 위, 매트 | `room-decor-themed-rugs.png`, `room-decor-member.png`, `room-decor-owner-tools.png`, 테스트 `room-decor` |
+| 안내 문장 지우기, 탭 한 줄 | Story 007 증거 `customize-try-on.png` |
+
 ## 알려진 한계
 
 - 긴소매 옷(후드티, 가디건, 정장)의 옆모습 팔은 옷 그림의 팔을 그대로 쓴다 (팔 흔들림이 몸 그림보다 작다).

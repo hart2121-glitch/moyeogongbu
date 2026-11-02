@@ -26,5 +26,4 @@ export const saveLook = async (client: SupabaseClient, look: Look): Promise<Look
 
 export const lookSavedMessage = "꾸민 모습을 저장했어요!";
 export const firstLookSavedMessage = "반가워요! 이 모습으로 시작할게요.";
-export const tryOnNotice = "입어 보는 중이에요. 사지 않은 아이템은 저장되지 않아요.";
 export const lookSaveErrorMessage = "저장하지 못했어요. 잠시 뒤에 다시 시도해 주세요.";

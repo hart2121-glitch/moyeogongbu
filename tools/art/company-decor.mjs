@@ -3,7 +3,8 @@
 // 자리와 크기는 src/study/companyFinalLayout.js의 decorSlots다. 기본 아이템(고양이 쿠션, 고양이 인형과 간식, 고양이 매트)은
 // tools/art/company-room.mjs가 원본에서 떼어 낸다. 여기서는 파는 아이템을 그린다.
 // - 러그: 그림의 러그는 가구 밑에 깔려 있어 비우지 않는다. 러그 상자 안에서 가구(탁자, 다리, 오토만, 소파, 화분)를 색으로 빼고
-//   남은 러그 칸(그림자 포함)만 다른 색으로 바꾼 덮개 그림을 쓴다.
+//   남은 러그 칸에만 새 러그를 칠한 덮개 그림을 쓴다 (러그 칸만 있다). 2026-11-02 사용자 결정으로 테마(카멜, 아이보리, 차콜,
+//   페르시안) 러그를 팔고, 원래 그림자는 밝기 비율로 곱해 그대로 남긴다.
 // - 쿠션, 매트: 모양을 직접 그리고 외곽선과 빛, 그늘을 자동으로 넣는다 (쿠션은 위왼쪽 빛).
 // 결과: art-src/rooms/lounge/<아이템>.png, public/assets/rooms/lounge/<아이템>.png, art-src/rooms/lounge/preview-decor.png
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -27,23 +28,67 @@ const isRug = (p) => {
   if (c.s >= 0.6 && c.h >= 10 && c.h <= 45) return false; // 탁자 윗면과 다리
   return true;
 };
+/** 칸 (x, y)의 가운데가 다각형 안이면 참 (꼭짓점은 칸 모서리 좌표). */
+const inPoly = (poly, x, y) => {
+  const px = x + 0.5, py = y + 0.5;
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i], [xj, yj] = poly[j];
+    if ((yi > py) !== (yj > py) && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+};
+/** 오토만 (윗면이 러그처럼 채도가 낮은 회보라라 색으로는 못 가른다). 방 그림 10배로 잰 윤곽, 다리 포함. */
+const OTTOMAN = [[37, 174], [42, 170], [49, 166], [61, 166], [66, 170], [72, 174], [72, 192], [70, 195], [67, 195], [60, 197], [57, 200],
+  [53, 200], [52, 197], [45, 195], [42, 197], [39, 197], [37, 193]];
+const rugAt = (x, y) => isRug(at(room, RUG.x + x, RUG.y + y)) && !inPoly(OTTOMAN, RUG.x + x, RUG.y + y);
 const hsvToRgb = (h, s, v) => {
   const f = (n) => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
   return [f(5), f(3), f(1)].map((c) => Math.round(c * 255));
 };
-const rugTint = (hue, sat) => {
+const lum = (p) => 0.3 * p[0] + 0.59 * p[1] + 0.11 * p[2];
+/** 그림 러그의 밝은 바탕 밝기 (그림자 비율의 기준): 러그 칸 밝기 위쪽 40%의 평균. */
+const RUG_LIT = (() => {
+  const list = [];
+  for (let y = 0; y < RUG.height; y++) for (let x = 0; x < RUG.width; x++) {
+    if (rugAt(x, y)) list.push(lum(at(room, RUG.x + x, RUG.y + y)));
+  }
+  list.sort((a, b) => b - a);
+  const top = list.slice(0, Math.max(1, Math.floor(list.length * 0.4)));
+  return top.reduce((a, b) => a + b, 0) / top.length;
+})();
+const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+/** 러그 칸마다 paint(u, v, x, y)의 색에 원래 밝기 비율(그림자)을 곱한다. u는 왼→오, v는 뒤→앞 (0~1). */
+const rugPaint = (paint) => {
   const im = blank(RUG.width, RUG.height);
   for (let y = 0; y < RUG.height; y++) for (let x = 0; x < RUG.width; x++) {
+    if (!rugAt(x, y)) continue;
     const p = at(room, RUG.x + x, RUG.y + y);
-    if (!isRug(p)) continue;
-    const c = hsv(p[0], p[1], p[2]);
-    at(im, x, y).set([...hsvToRgb(hue, Math.min(1, c.s * sat), c.v), 255]);
+    const shade = Math.min(1.06, lum(p) / RUG_LIT);
+    const c = paint(x / (RUG.width - 1), y / (RUG.height - 1), x, y);
+    at(im, x, y).set([...c.map((v) => Math.max(0, Math.min(255, Math.round(v * shade)))), 255]);
   }
   return im;
 };
-items["rug-pink"] = rugTint(345, 1.05);
-items["rug-mint"] = rugTint(150, 0.75);
-items["rug-sky"] = rugTint(205, 0.8);
+/** 러그 테두리 띠: 왼쪽, 오른쪽, 앞쪽 (뒤쪽은 소파 밑이다). */
+const rim = (u, v, t) => u < t || u > 1 - t || v > 1 - t * 2.6;
+const plainRug = (fill, line, edge) => rugPaint((u, v) => (rim(u, v, 0.012) ? hex(edge) : rim(u, v, 0.03) ? hex(line) : hex(fill)));
+items["rug-camel"] = rugPaint((u, v) => (rim(u, v, 0.012) ? hex("#6e4a2c") : rim(u, v, 0.03) ? hex("#8f6239") : rim(u, v, 0.04) ? hex("#e2c9a0") : hex("#c08f5e")));
+items["rug-ivory"] = plainRug("#f1ebdf", "#cfc8ba", "#a8a194");
+items["rug-charcoal"] = rugPaint((u, v) => (rim(u, v, 0.012) ? hex("#26262b") : rim(u, v, 0.035) && !rim(u, v, 0.022) ? hex("#b2b2b6") : hex("#55555c")));
+items["rug-persian"] = rugPaint((u, v, x, y) => {
+  if (rim(u, v, 0.012)) return hex("#3a1418");
+  if (rim(u, v, 0.04)) return (x + y) % 4 === 0 ? hex("#c9a25b") : hex("#2f3a5c");
+  if (rim(u, v, 0.05)) return hex("#c9a25b");
+  const du = Math.abs(u - 0.5) * 2, dv = Math.abs(v - 0.55) * 2;
+  if (du * 1.6 + dv < 0.62) return du * 1.6 + dv < 0.3 ? hex("#2f3a5c") : hex("#c9a25b");
+  if (Math.abs(du * 1.6 + dv - 0.9) < 0.06) return hex("#d8b46c");
+  return (Math.floor(x / 4) + Math.floor(y / 3)) % 7 === 0 ? hex("#8f3a3a") : hex("#7a2b2f");
+});
+// 판매를 멈춘 파스텔 러그 (2026-11-02). 산 방장은 계속 쓰므로 같은 방식으로 그린다.
+items["rug-pink"] = plainRug("#edc6cd", "#d9a7b0", "#b3808a");
+items["rug-mint"] = plainRug("#cbe6da", "#a7d0bf", "#7fa898");
+items["rug-sky"] = plainRug("#cde0ee", "#a7c6de", "#7d9cb7");
 
 // ---- 모양 그리기 ----
 // inside(u, v)는 모양 상자 안 위치(0~1)가 모양 안인지 정한다. 가장자리는 외곽선, 안쪽 위왼쪽 테두리는 빛, 아래오른쪽 테두리는 그늘.
@@ -172,9 +217,10 @@ const scene = (list) => {
 const def = (name) => decodePng(readFileSync(`art-src/rooms/lounge/${name}.png`));
 const rows = [
   [LOUNGE_VIEW, [["cushions", def("cushions-cat")], ["table", def("table-cat")]]],
-  [LOUNGE_VIEW, [["rug", items["rug-pink"]], ["cushions", items["cushions-heart"]]]],
-  [LOUNGE_VIEW, [["rug", items["rug-mint"]], ["cushions", items["cushions-star"]]]],
-  [LOUNGE_VIEW, [["rug", items["rug-sky"]], ["cushions", items["cushions-check"]]]],
+  [LOUNGE_VIEW, [["rug", items["rug-camel"]], ["cushions", items["cushions-heart"]]]],
+  [LOUNGE_VIEW, [["rug", items["rug-ivory"]], ["cushions", items["cushions-star"]]]],
+  [LOUNGE_VIEW, [["rug", items["rug-charcoal"]], ["cushions", items["cushions-check"]]]],
+  [LOUNGE_VIEW, [["rug", items["rug-persian"]], ["cushions", def("cushions-cat")], ["table", def("table-cat")]]],
   [LOUNGE_VIEW, [["cushions", def("cushions-cat")], ["table", items["table-tea"]]]],
   [LOUNGE_VIEW, [["cushions", def("cushions-cat")], ["table", items["table-cake"]]]],
   [LOUNGE_VIEW, [["cushions", def("cushions-cat")], ["table", items["table-flower"]]]],

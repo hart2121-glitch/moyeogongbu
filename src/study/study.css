@@ -683,21 +683,20 @@
   outline: 2px solid #c06a3c;
   outline-offset: -2px;
 }
-/* 아이템 그림은 1배 그대로 가운데만 보인다 (큰 러그는 가장자리가 잘린다) */
+/* 선택지 그림: 휴게실 그림 위 그 자리에 아이템을 1배로 놓은 모습의 가운데 96×44 (기본 러그는 방 그림 그대로) */
 .owner-decor-thumb {
-  display: grid;
-  place-items: center;
+  position: relative;
+  display: block;
   width: 96px;
   height: 44px;
   overflow: hidden;
-  background: #3b3330;
-}
-.owner-decor-thumb img {
-  max-width: none;
+  background-repeat: no-repeat;
   image-rendering: pixelated;
 }
-.owner-decor-thumb-rug:empty {
-  background: #db9872;
+.owner-decor-thumb img {
+  position: absolute;
+  max-width: none;
+  image-rendering: pixelated;
 }
 /* 내 책상 세트 (꾸미기 슬롯 계획 1절): 책상 자리 크기의 투명 그림을 방 그림 위에 1배로. 앉은 사람의 세트는 책상 전경보다 앞이다. */
 .desk-item {

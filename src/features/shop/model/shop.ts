@@ -19,6 +19,8 @@ export interface ShopItem {
   /** 가입하면 무료로 받는 기본 아이템 (상점에 안 나온다). */
   isDefault: boolean;
   owned: boolean;
+  /** 내 방 테마 (브라운, 화이트, 블랙, 앤티크). 테마가 없는 아이템은 null. */
+  theme: "brown" | "white" | "black" | "antique" | null;
 }
 
 export type BuyResult =
@@ -43,6 +45,7 @@ interface ItemRow {
   price: number;
   is_default: boolean;
   owned: boolean;
+  theme?: ShopItem["theme"];
 }
 
 /** 모든 아이템과 내 보유 여부. */
@@ -54,6 +57,7 @@ export const fetchShop = async (client: SupabaseClient): Promise<ShopItem[]> =>
     price: Number(r.price) || 0,
     isDefault: !!r.is_default,
     owned: !!r.owned,
+    theme: r.theme ?? null,
   }));
 
 /** 구매. 코인 차감과 중복 방지는 서버가 한 번에 처리한다. */

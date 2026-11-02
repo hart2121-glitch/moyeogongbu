@@ -102,7 +102,7 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     // 120코인으로 별 머리핀(150)은 이유와 함께 막힌다
     await tab("액세서리");
     await page.getByRole("button", { name: /^별 머리핀/ }).click();
-    await page.getByText("입어 보는 중이에요. 사지 않은 아이템은 저장되지 않아요.").waitFor();
+    await page.getByRole("region", { name: "입어 보는 아이템 사기" }).waitFor();
     assert.equal(await page.getByRole("button", { name: "별 머리핀 구매하기" }).isDisabled(), true);
     await page.locator('.try-on-buy [data-item="acc-hairpin"]').getByText("30코인이 더 모이면 살 수 있어요.").waitFor();
     assert.equal(await page.getByRole("button", { name: "이 모습으로 저장하기" }).isDisabled(), true);
@@ -128,7 +128,7 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
     // 산 리본은 저장할 수 있고, 사지 않은 로즈 옷은 입어 보기만
     await tab("의상");
     await page.getByRole("button", { name: /^로즈 옷/ }).click();
-    await page.getByText("입어 보는 중이에요. 사지 않은 아이템은 저장되지 않아요.").waitFor();
+    await page.getByRole("region", { name: "입어 보는 아이템 사기" }).waitFor();
     assert.equal(await page.getByTestId("character-layers").getAttribute("data-layer-outfit"), "outfit-rose");
     assert.equal(await page.getByRole("button", { name: "이 모습으로 저장하기" }).isDisabled(), true);
     await shot(page, "customize-try-on.png");
@@ -139,7 +139,7 @@ test("환영 선물, 처음 꾸미기, 입어 보기, 구매, 저장 유지, 로
 
     // 꾸미기 주소의 ?try=아이템은 그 아이템을 입힌 그 탭을 연다 (공지나 우편에서 이어 줄 때)
     await page.goto(`${url}character?try=outfit-rose`);
-    await page.getByText("입어 보는 중이에요. 사지 않은 아이템은 저장되지 않아요.").waitFor();
+    await page.getByRole("region", { name: "입어 보는 아이템 사기" }).waitFor();
     assert.equal(await page.locator('.item-options [data-item="outfit-rose"]').getAttribute("aria-pressed"), "true");
 
     // 새로고침 후에도 같은 모습
