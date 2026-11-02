@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import {
   Coffee,
   Armchair,
@@ -7,7 +7,7 @@ import {
   Toilet,
   ArrowLeft,
 } from "@phosphor-icons/react";
-import { COMPANY_ROOM_ART, artBox, companyLayout, foregroundClip, roomArtBox } from "./companyLayout";
+import { COMPANY_ROOM_ART, ROOM_ART_SIZE, ROOM_BOTTOM_GAP, artBox, companyLayout, foregroundClip, roomArtBox, roomScale } from "./companyLayout";
 import { useCharacterMovement } from "./useCharacterMovement";
 import CharacterSprite from "./CharacterSprite";
 import DeskSet from "./DeskSet";
@@ -34,10 +34,38 @@ const stageCropStyle = ({ image, view }) =>
     : {};
 
 /**
+ * 방 배율: 무대와 오른쪽 열이 들어가는 줄(main)의 너비에서 오른쪽 열을 빼고, 창 높이에서 방 윗변 위치와 아래 여백을 뺀 공간에
+ * 방 전체가 들어가는 배율 (`roomScale`). 창 크기나 줄 너비가 바뀌면 다시 잰다.
+ */
+function useRoomScale(mainRef, sideRef) {
+  const [scale, setScale] = useState(1);
+  useLayoutEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+    const measure = () => {
+      const gap = parseFloat(getComputedStyle(main).columnGap) || 0;
+      const side = sideRef.current ? sideRef.current.getBoundingClientRect().width + gap : 0;
+      const top = main.getBoundingClientRect().top + window.scrollY;
+      setScale(roomScale(main.clientWidth - side, window.innerHeight - top - ROOM_BOTTOM_GAP));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(main);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [mainRef, sideRef]);
+  return scale;
+}
+
+/**
  * 회사 스터디룸. `onActivityChange`는 캐릭터 동작이 바뀔 때마다 불리고(공부 세션 입력),
  * `renderSession`은 툴바 아래에 세션 표시를 그린다. 휴게실 이동은 사용자가 누를 때만 일어난다.
  * Story 004: 좌석은 `seatService`(서버 판정)가 정하고, 목적지를 정할 때마다 `onMove`, 멈출 때마다 `onSettle`이 불린다.
- * `overlay`는 무대 안(다른 사람 캐릭터), `toolbarExtra`(반응, 지금 하는 일, 방장 도구)는 무대 바로 아래, `localReaction`은 내 머리 위에 그린다.
+ * `overlay`는 무대 안(다른 사람 캐릭터), `side`(할 일, 반응, 지금 하는 일)는 무대 오른쪽 열, `toolbarExtra`(방장 도구)는 무대 아래,
+ * `localReaction`은 내 머리 위에 그린다. 무대는 남는 화면에 맞춰 키운다 (`roomScale`).
  * `side`는 무대 오른쪽 열(실제 할 일 등)에 그린다. 무대는 `companyLayout.view` 범위만 보이도록 바깥 창이 자른다.
  * @param {{ room: any, nickname: string, seatService: any, onExit: () => void, onActivityChange?: (activity: string) => void, onMove?: (move: { to: any, activity: string, seatId: number | null }) => void, onSettle?: (character: any) => void, overlay?: import("react").ReactNode, toolbarExtra?: import("react").ReactNode, localReaction?: import("react").ReactNode, look?: any, renderSession?: (actions: { goLounge: () => void, canGoLounge: boolean }) => import("react").ReactNode, side?: import("react").ReactNode }} props
  */
@@ -61,6 +89,9 @@ export default function CompanyRoom({
   const occupancy = useSeatOccupancy(seatService);
   const [pending, setPending] = useState(false);
   const pendingRef = useRef(false);
+  const mainRef = useRef(null);
+  const sideRef = useRef(null);
+  const scale = useRoomScale(mainRef, sideRef);
   const [floorTarget, setFloorTarget] = useState(null);
   const [selectedSeat, setSelectedSeat] = useState(null);
   const [error, setError] = useState("");
@@ -301,8 +332,12 @@ export default function CompanyRoom({
         </p>
         {renderSession?.({ goLounge: () => visit(lounge), canGoLounge })}
       </div>
-      <div className="company-main">
-      <div className="company-viewport" style={viewportStyle(companyLayout)}>
+      <div className="company-main" ref={mainRef}>
+      <div
+        className="company-viewport"
+        data-scale={scale}
+        style={{ ...viewportStyle(companyLayout), width: ROOM_ART_SIZE.width * scale, "--room-scale": scale }}
+      >
       <div
         className="company-stage"
         data-testid="company-stage"
@@ -449,7 +484,7 @@ export default function CompanyRoom({
         )}
       </div>
       </div>
-      {side && <aside className="company-side">{side}</aside>}
+      {side && <aside className="company-side" ref={sideRef}>{side}</aside>}
       </div>
       {toolbarExtra}
       {backgroundFailed && (
