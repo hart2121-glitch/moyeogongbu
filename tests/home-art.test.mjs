@@ -1,5 +1,6 @@
 // 내 방 그림 검사 (2026-11-02 사용자 지적: 책상 색을 바꿔도 책상 위 물건 둘레에 옛 책상 색이 남았다).
 // 아이템 그림에는 그 물건 칸만 있어야 하고, 모양이 바뀌는 물건(책상 위, 협탁 위) 밑의 가구는 가려진 자리까지 다 그려져 있어야 한다.
+// 물건은 빈 방 위에 따로 만든 그림을 올린 것이다 (art-src/home/room/objects/src).
 // 브라우저 없이 public/assets의 그림과 src/features/lobby/model/homeDecorLayers.ts만 읽는다.
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -23,7 +24,7 @@ const partsOf = (layerId) => [
   ...Object.entries(data.items).filter(([, parts]) => parts[layerId]).map(([id, parts]) => [id, parts[layerId]]),
 ];
 
-for (const [top, furniture] of [["desk-paper", "desk"], ["nightstand-plant", "nightstand-mid"], ["nightstand-jar", "nightstand-mid"]]) {
+for (const [top, furniture] of [["desk-paper", "desk"], ["nightstand-top", "nightstand"]]) {
   test(`${top} 아이템 칸 밑은 ${furniture} 층이 다 채우고, 아이템에 ${furniture} 칸이 섞이지 않는다`, () => {
     // 준비: 가구 기본 층
     const under = sampler(data.layers[furniture]);
@@ -38,8 +39,8 @@ for (const [top, furniture] of [["desk-paper", "desk"], ["nightstand-plant", "ni
         if (!im.pixels[k + 3]) continue;
         const rim = !(opaque(x + 1, y) && opaque(x - 1, y) && opaque(x, y + 1) && opaque(x, y - 1));
         const u = under(box.x + x, box.y + y);
-        // 가구 윗면 높이(아이템 바닥 쪽 칸)에서만 본다: 그 위는 벽이라 가구가 없는 게 맞다
-        const onTop = top === "desk-paper" || box.y + y >= 92;
+        // 가구 윗면 높이(아이템 바닥 줄)에서만 본다: 그 위는 벽이라 가구가 없는 게 맞다
+        const onTop = box.y + y === box.y + im.height - 1;
         if (!onTop) continue;
         if (!u[3]) holes++;
         else if (rim && u[0] === im.pixels[k] && u[1] === im.pixels[k + 1] && u[2] === im.pixels[k + 2]) copied++;
@@ -51,7 +52,7 @@ for (const [top, furniture] of [["desk-paper", "desk"], ["nightstand-plant", "ni
   });
 }
 
-test("내 방 층 그림: 표에 적힌 그림이 모두 있고 상자 크기와 같으며, 불빛과 그림자 층만 섞기를 쓴다", () => {
+test("내 방 층 그림: 표에 적힌 그림이 모두 있고 상자 크기와 같으며, 그림자 층만 섞기를 쓴다", () => {
   // 준비와 실행: 기본 층과 아이템 그림을 모두 연다
   const boxes = [...Object.values(data.layers), ...Object.values(data.items).flatMap((parts) => Object.values(parts).filter(Boolean))];
   for (const box of boxes) {
@@ -63,7 +64,7 @@ test("내 방 층 그림: 표에 적힌 그림이 모두 있고 상자 크기와
   }
   assert.deepEqual(
     Object.entries(data.layers).filter(([, l]) => l.blend).map(([id, l]) => `${id}:${l.blend}`),
-    ["glow:screen", "shadow:multiply"],
+    ["shadow:multiply"],
   );
-  assert.deepEqual(data.fixed, ["glow", "shadow"]);
+  assert.deepEqual(data.fixed, ["shadow"]);
 });

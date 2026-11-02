@@ -37,13 +37,23 @@
 
 | 내용 | 증거 |
 |---|---|
-| 내 방을 물건별로 다시 떼기 (물건 칸만, 그림자와 불빛은 섞기 층) | `home-object-layers.png` (층마다 다른 색), 테스트 `home-art` (첫 구현 그림에서는 책상과 같은 색 칸 18칸으로 실패) |
-| 흰 책상과 책, 검은 책상과 공책, 흰 협탁과 시계, 검은 협탁과 꽃병 | `fix-desk-top-object-only.png` (왼쪽부터 기본, 바꾼 조합) |
+| 내 방을 물건별로 다시 떼기 (같은 날 저녁 따로 만든 물건으로 바꿈, 아래) | 테스트 `home-art` (첫 구현 그림에서는 책상과 같은 색 칸 18칸으로 실패) |
 | 테마 넷 (브라운, 화이트, 블랙, 앤티크)과 섞은 조합, 데코타일, 대리석, 파케이 | `home-themes.png`, `home-themes-mixed.png` |
 | 꾸미기 내 방 탭의 테마 한 번에 놓기 | `home-theme-antique.png`, 테스트 `home-decor` |
 | 로비 내 방 (흰 벽지, 흰 안락의자, 책) | `home-lobby-decorated.png` |
 | 휴게실 테마 러그, 물건 칸만 뗀 기본 쿠션, 탁자 위, 매트 | `room-decor-themed-rugs.png`, `room-decor-member.png`, `room-decor-owner-tools.png`, 테스트 `room-decor` |
 | 안내 문장 지우기, 탭 한 줄 | Story 007 증거 `customize-try-on.png` |
+
+## 피드백 반영 (2026-11-02 저녁)
+
+| 내용 | 증거 |
+|---|---|
+| 내 방을 빈 방 위에 따로 만든 물건(PixelLab)으로 다시 조립, 테마와 섞은 조합 | `home-themes.png`, `home-themes-mixed.png`, `home-lobby-decorated.png`, `home-theme-antique.png`, 테스트 `home-art`, `home-decor` |
+| 휴게실 기본 소품도 따로 만든 그림 (고양이 쿠션, 다육 화분과 고양이 인형, 고양이 얼굴 매트), 러그 위쪽 줄까지 덮기 | `room-decor-themed-rugs.png`, `room-decor-member.png`, `room-decor-owner-tools.png` |
+| 세이지, 로즈 옷을 교복 색 바꾸기에서 새 옷(멜빵 원피스, 동그란 깃 원피스)으로 | `outfits-sage-rose.png` (교복, 세이지, 로즈 순) |
+| 벽시계 바늘이 실제 시각 | `room-wall-clock.png`, 테스트 `app` |
+| 소파 휴식이 소파 위에 앉는다 | `room-sofa-rest.png`, 테스트 `company-room` |
+| 왼쪽 메뉴 "내 방" 따로, 할 일 바로 쓰기와 취소선 | `lobby-menu-todos.png`, 테스트 `app`, `records-browser` |
 
 ## 회사 방이 화면을 채운다 (2026-11-02, 사용자 결정)
 
