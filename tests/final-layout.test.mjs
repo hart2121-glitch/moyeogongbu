@@ -15,9 +15,10 @@ test("최종 원본 비율·6석 방향별 배열·공간 경로와 주요 가�
     assert.ok(layout.seats[i].label.y < layout.seats[i + 3].label.y);
     if (i < 2) assert.ok(layout.seats[i].label.x < layout.seats[i + 1].label.x);
   }
+  // 좌석과 소파는 앉는 자리가 가구 안이라 다가가는 바닥 지점까지 검사한다.
   const destinations = [
     "entrance",
-    "sofa",
+    "sofaApproach",
     "loungeFloor",
     "restroom",
     ...layout.seats.map((s) => s.approach),

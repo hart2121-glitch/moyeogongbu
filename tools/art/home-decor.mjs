@@ -117,8 +117,9 @@ const OBJECTS = [
   },
   {
     id: "floor-plant", slot: "floor_plant",
-    polys: [[[3, 120], [31, 120], [30, 128], [27, 142], [24, 151], [8, 151], [5, 142], [3, 128]], rect(0, 102, 38, 127)],
-    test: (k, x, y, c) => inPoly([[3, 120], [31, 120], [30, 128], [27, 142], [24, 151], [8, 151], [5, 142], [3, 128]], x, y) || leafy(c),
+    // 화분 윤곽 (14배로 잰 값): 테두리 x 5~27(126~136줄), 몸통 x 7~24, 바닥 149줄. 왼쪽 분홍 칸은 책상 옆판, 오른쪽 갈색은 책상 앞판이다.
+    polys: [[[5, 126], [28, 126], [28, 137], [25, 137], [25, 145], [24, 149], [9, 149], [8, 145], [7, 137], [5, 137]], rect(0, 102, 38, 127)],
+    test: (k, x, y, c) => inPoly([[5, 126], [28, 126], [28, 137], [25, 137], [25, 145], [24, 149], [9, 149], [8, 145], [7, 137], [5, 137]], x, y) || leafy(c),
   },
   {
     id: "armchair", slot: "armchair",
@@ -247,6 +248,28 @@ const fillUnder = (covers, furniture, y0, y1) => {
     for (const x of hidden) f.pixels.set([...fill, 255], (y * W + x) * 4);
   }
 };
+// 베개 무늬 지우기 (사용자 결정: 베개는 무늬 없이). 베개 자리(머리판 안쪽 x 174~222, 78~95줄)에서 분홍, 빨강, 파랑 무늬 칸을
+// 같은 줄의 가장 가까운 무늬 없는 베개 천 칸 색으로 바꾼다. 베개 천은 크림색이라 채도로는 나무와 못 가르므로 자리로 정한다.
+const inPillows = (x, y) => x >= 174 && x <= 222 && y >= 78 && y <= 95;
+// 무늬 색: 분홍과 빨강, 회청색(채도 낮은 회색 선, 청보라), 진한 노랑. 베개 천은 크림(색상 25~50, 채도 0.15~0.35)이다.
+const patternColor = (c) =>
+  c.v > 0.35 &&
+  (((c.h <= 22 || c.h >= 320) && c.s >= 0.18) || (c.s < 0.16 && c.v <= 0.8) || (c.h >= 150 && c.h <= 300 && c.s >= 0.06) ||
+    (c.h >= 40 && c.h <= 65 && c.s >= 0.4));
+const pillowCloth = (c, x, y) => inPillows(x, y) && c.v > 0.55 && c.s < 0.5;
+{
+  const bed = layers.bed;
+  const opaque = (k) => bed.pixels[k * 4 + 3] > 0;
+  for (let y = 78; y <= 95; y++) for (let x = 174; x <= 222; x++) {
+    const k = y * W + x;
+    if (!opaque(k) || !patternColor(colorOf(bed, k))) continue;
+    for (let d = 1; d < 16; d++) {
+      const pick = [x - d, x + d].filter((nx) => nx >= 174 && nx <= 222).map((nx) => y * W + nx)
+        .find((n) => opaque(n) && !patternColor(colorOf(bed, n)) && pillowCloth(colorOf(bed, n), n % W, y));
+      if (pick !== undefined) { bed.pixels.set(bed.pixels.subarray(pick * 4, pick * 4 + 4), k * 4); break; }
+    }
+  }
+}
 fillUnder(["desk-paper"], "desk", 82, 97);
 fillUnder(["nightstand-jar", "nightstand-plant"], "nightstand-mid", 92, 100);
 
@@ -274,11 +297,27 @@ const rugLit = (() => {
 })();
 const shadow = blank(), glow = blank();
 const quant = (v) => Math.round(v / 8) * 8;
+/** 3×3 평균 밝기 (마루 판자 선이 한 칸 어긋나 생기는 줄무늬를 없앤다). 바깥 칸과 물건 칸은 뺀다. */
+const lumAround = (im, x, y) => {
+  let s = 0, n = 0;
+  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+    const nx = x + dx, ny = y + dy, n2 = ny * W + nx;
+    if (nx < 0 || ny < 0 || nx >= W || ny >= H || owner[n2]) continue;
+    s += lum(rgb(im, n2));
+    n++;
+  }
+  return n ? s / n : 0;
+};
+const rugHue = hsv(...rugLit).h;
+/** 원래 러그가 그늘진 칸 (러그와 같은 크림색 계열). 러그 테두리 선과 러그 뒤 마루 줄은 그림자가 아니다 (2026-11-02 사용자 지적). */
+const shadedRug = (k) => { const c = colorOf(G, k); return hueGap(c.h, rugHue) < 25 && c.s < 0.45 && c.v > 0.35; };
 for (let k = 0; k < N; k++) {
   const [x, y] = xy(k);
   if (owner[k] || inCurtains(x, y) || inWindow(x, y)) continue;
-  const g = rgb(G, k), base = inRug(x, y) ? rugLit : rgb(E, k);
-  const ratio = lum(g) / Math.max(1, lum(base));
+  const rug = inRug(x, y);
+  if (rug && !shadedRug(k)) continue;
+  const g = rgb(G, k), base = rug ? rugLit : rgb(E, k);
+  const ratio = rug || !isFloor(x, y) ? lum(g) / Math.max(1, lum(base)) : lumAround(G, x, y) / Math.max(1, lumAround(E, x, y));
   if (ratio < 0.92) {
     const m = quant(ratio * 255);
     shadow.pixels.set([m, Math.max(0, m - 4), Math.max(0, m - 8), 255], k * 4);
@@ -577,7 +616,7 @@ set("home-shelves-black", woodItem(["wall-shelves"], WOOD.black));
 for (const [theme, to] of [["walnut", WOOD.walnut], ["white", WOOD.white], ["black", WOOD.black], ["antique", WOOD.antique]]) {
   set(`home-desk-${theme}`, woodItem(["desk"], to));
   set(`home-nightstand-${theme}`, woodItem(["nightstand-mid", "nightstand-right"], to));
-  set(`home-bed-${theme}`, woodItem(["bed"], to));
+  set(`home-bed-${theme}`, { bed: recolor(layers.bed, (c, x, y) => wood(c) && !pillowCloth(c, x, y), to) });
 }
 // 스탠드: 갓(밝은 노랑 크림)과 받침
 const shadeCloth = (c) => c.h >= 28 && c.h <= 64 && c.s < 0.7 && c.v > 0.7;
@@ -620,8 +659,8 @@ set("home-plush-cheese", { "bed-cat": recolor(layers["bed-cat"], fur, (c) => ({ 
 set("home-plush-black", { "bed-cat": recolor(layers["bed-cat"], fur, (c) => ({ h: 250, s: 0.12, v: c.v * 0.34 })) });
 set("home-plush-gray", { "bed-cat": recolor(layers["bed-cat"], fur, (c) => ({ h: 220, s: 0.06, v: c.v * 0.7 })) });
 // 바닥 화분
-const POT = [[3, 120], [31, 120], [30, 128], [27, 142], [24, 151], [8, 151], [5, 142], [3, 128]];
-const leaf = (c, x, y) => !inPoly(POT, x, y) && c.h >= 55 && c.h <= 170 && c.s > 0.18;
+const POT = [[5, 126], [28, 126], [28, 137], [25, 137], [25, 145], [24, 149], [9, 149], [8, 145], [7, 137], [5, 137]];
+const leaf = (c) => c.h >= 55 && c.h <= 170 && c.s > 0.18; // 화분 둘레(흙 위)로 내려온 잎까지
 const potClay = (c, x, y) => inPoly(POT, x, y) && c.h <= 35 && c.s > 0.3 && c.v > 0.3;
 set("home-plant-maple", { "floor-plant": recolor(layers["floor-plant"], leaf, (c) => ({ h: 14 + (c.v - 0.4) * 30, s: Math.min(1, c.s * 1.25), v: c.v * 1.05 })) });
 set("home-plant-whitepot", { "floor-plant": recolor(layers["floor-plant"], potClay, (c) => ({ h: c.h, s: c.s * 0.12, v: 0.55 + 0.45 * c.v })) });

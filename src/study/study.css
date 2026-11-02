@@ -245,7 +245,7 @@
   border-radius: 0;
   background: #fffbe9;
 }
-.room-todos-empty {
+.room-todos .desk-empty {
   padding: 8px 0;
   font-size: 14px;
   line-height: 1.6;
@@ -650,6 +650,12 @@
   padding: 1px 4px;
 }
 /* 휴게실 공용 꾸밈 (꾸미기 슬롯 계획 2절): 방 그림 바로 위, 캐릭터와 표지판보다 뒤에 1배로 */
+/* 벽시계 바늘 (실제 시각): 1배 캔버스를 방과 같이 키운다 */
+.wall-clock-hands {
+  position: absolute;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
 .room-decor {
   position: absolute;
   max-width: none;

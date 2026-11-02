@@ -61,7 +61,7 @@ export const HOME_DECOR = {
       "x": 0,
       "y": 26,
       "width": 252,
-      "height": 126,
+      "height": 125,
       "src": "/assets/home/room/decor/shadow.png",
       "blend": "multiply"
     },
@@ -188,7 +188,7 @@ export const HOME_DECOR = {
       "x": 1,
       "y": 106,
       "width": 34,
-      "height": 45,
+      "height": 43,
       "src": "/assets/home/room/decor/floor-plant.png"
     }
   },
@@ -847,7 +847,7 @@ export const HOME_DECOR = {
         "x": 1,
         "y": 106,
         "width": 34,
-        "height": 45
+        "height": 43
       }
     },
     "home-plant-whitepot": {
@@ -856,7 +856,7 @@ export const HOME_DECOR = {
         "x": 1,
         "y": 106,
         "width": 34,
-        "height": 45
+        "height": 43
       }
     },
     "home-desktop-book": {

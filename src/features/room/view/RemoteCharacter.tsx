@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import FriendRequestAction from "../../friends/view/FriendRequestAction";
 import CharacterSprite from "../../../study/CharacterSprite";
-import DeskSet from "../../../study/DeskSet";
-import { defaultLook } from "../../character/model/layers";
+import DeskSet, { EMPTY_DESK } from "../../../study/DeskSet";
 import { COMPANY_ROOM_ART, companyLayout, foregroundClip, roomArtBox } from "../../../study/companyLayout";
 import { useCharacterMovement } from "../../../study/useCharacterMovement";
 import type { MemberStatus } from "../model/room";
@@ -96,7 +95,7 @@ export default function RemoteCharacter({ meta, status, reaction, subscribeMoves
           style={{ ...roomArtBox(companyLayout), clipPath: foregroundClip(rect, companyLayout) }}
         />
       )}
-      {deskSeat && <DeskSet seat={deskSeat} look={status?.look ?? defaultLook()} front={!!rect} owner={meta.userId} />}
+      {deskSeat && <DeskSet seat={deskSeat} look={status?.look ?? EMPTY_DESK} front={!!rect} owner={meta.userId} />}
     </>
   );
 }

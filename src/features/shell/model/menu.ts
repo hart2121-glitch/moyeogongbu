@@ -2,6 +2,7 @@ import { ROUTES, THEME_ROOM_BASE } from "./paths";
 
 export type MenuIcon =
   | "house"
+  | "office"
   | "coffee"
   | "tshirt"
   | "tote"
@@ -15,9 +16,10 @@ export interface MenuItem {
   icon: MenuIcon;
 }
 
-/** 사이드바 메뉴. 순서가 화면 순서다. */
+/** 사이드바 메뉴. 순서가 화면 순서다. 로비는 집(내 방)이라 스터디룸과 따로 둔다 (2026-11-02 사용자 결정). */
 export const MENU_ITEMS: readonly MenuItem[] = [
-  { label: "스터디룸", path: ROUTES.rooms, icon: "house" },
+  { label: "내 방", path: ROUTES.lobby, icon: "house" },
+  { label: "스터디룸", path: ROUTES.rooms, icon: "office" },
   { label: "공용 스터디카페", path: ROUTES.cafe, icon: "coffee" },
   { label: "캐릭터 꾸미기", path: ROUTES.character, icon: "tshirt" },
   { label: "공부 기록", path: ROUTES.records, icon: "clipboard" },
@@ -28,16 +30,15 @@ export const MENU_ITEMS: readonly MenuItem[] = [
 /**
  * 현재 주소에서 메뉴 항목의 강조 상태를 구한다.
  * `active`는 강조 표시, `current`는 aria-current 표시다.
- * 스터디룸 항목은 로비와 회사 스터디룸에서도 강조되지만 aria-current는 갖지 않는다.
- * @example menuState("/lobby", "/rooms") // { active: true, current: false }
+ * 스터디룸 항목은 방 목록과 테마 방에서 current이고, 들어간 회사 스터디룸(/rooms/아이디)에서는 강조만 된다.
+ * 로비(내 방)에서는 내 방 항목만 강조된다.
+ * @example menuState("/lobby", "/rooms") // { active: false, current: false }
+ * @example menuState("/rooms/abc", "/rooms") // { active: true, current: false }
  */
 export function menuState(pathname: string, path: string) {
   const isRoomsPage =
     pathname === ROUTES.rooms || pathname.startsWith(`${THEME_ROOM_BASE}/`);
   const current = path === ROUTES.rooms ? isRoomsPage : pathname === path;
-  const active =
-    current ||
-    (path === ROUTES.rooms &&
-      (pathname === ROUTES.lobby || pathname.startsWith(`${ROUTES.rooms}/`)));
+  const active = current || (path === ROUTES.rooms && pathname.startsWith(`${ROUTES.rooms}/`));
   return { active, current };
 }

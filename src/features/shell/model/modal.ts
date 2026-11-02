@@ -4,7 +4,6 @@ import { dayLabel } from "../../todos/model/studyDay";
 /** 열려 있는 모달. 닫혀 있으면 null. */
 export type ModalState =
   | null
-  | "task"
   | "profile"
   | "mail"
   | "notifications"
@@ -20,7 +19,6 @@ export type ModalState =
 type OpenModal = NonNullable<ModalState>;
 
 const STRING_MODAL_TITLES = {
-  task: "오늘의 할 일 추가",
   profile: "프로필 수정",
   mail: "우편함",
   notifications: "알림",

@@ -229,13 +229,13 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
       return window.movementTrace;
     });
     assert.ok(trace.length > 50);
+    // 소파 휴식(resting)은 좌석처럼 소파 위에 앉으므로 바닥 검사에서 뺀다 (2026-11-02, 소파 앞 러그가 아니라 소파에 앉는다).
     for (const point of trace) {
       if (
         [
           "walking",
           "exiting",
           "idle",
-          "resting",
           "lounge",
           "restroom",
         ].includes(point.activity)
@@ -264,9 +264,10 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
 });
 
 test("6개 좌석 접근점과 휴게실·화장실·출입구 바닥 경로의 충돌 검사", () => {
+  // 좌석과 소파는 다가가는 바닥 지점까지 검사한다 (앉는 자리는 가구 안이다).
   const names = [
     "entrance",
-    "sofa",
+    "sofaApproach",
     "restroom",
     "loungeFloor",
     ...companyLayout.seats.map((s) => s.approach),

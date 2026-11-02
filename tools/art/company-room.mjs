@@ -242,6 +242,54 @@ const MAT = slot("mat"), FILL_FROM = MAT.y + MAT.height, FILL_ROWS = 9;
 for (let y = MAT.y; y < MAT.y + MAT.height; y++) for (let x = MAT.x; x < MAT.x + MAT.width; x++)
   at(room, x, y).set(at(room, x, FILL_FROM + ((y - MAT.y) % FILL_ROWS)).slice());
 
+// 오른쪽 위 벽시계 (2026-11-02 사용자 지적: 변환 그림의 시계가 바늘 대신 선이 뻗어 이상했다). 같은 자리, 같은 크기(지름 37칸)로
+// 손으로 다시 찍는다: 짙은 테두리, 위왼쪽이 밝은 은색 테, 크림색 판, 열두 눈금(3, 6, 9, 12는 굵게).
+{
+  const CX = 640, CY = 33, R = 18;
+  const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const put = (x, y, c) => at(room, x, y).set([...hex(c), 255]);
+  // 옛 시계 자리(반지름 22칸)를 둘레 벽의 가운데 색으로 먼저 지운다 (왼쪽 주황 문틀 x 616 앞은 건드리지 않는다).
+  const ring = [];
+  for (let y = CY - 27; y <= CY + 27; y++) for (let x = 617; x <= CX + 27; x++) {
+    const r = Math.hypot(x - CX, y - CY);
+    if (r >= 23 && r <= 27 && y > 6) ring.push([...at(room, x, y).slice(0, 3)]);
+  }
+  ring.sort((a, b) => a[0] + a[1] + a[2] - (b[0] + b[1] + b[2]));
+  const wall = ring[Math.floor(ring.length / 2)];
+  for (let y = CY - 22; y <= CY + 22; y++) for (let x = 617; x <= CX + 22; x++)
+    if (Math.hypot(x - CX, y - CY) <= 22 && y > 6) at(room, x, y).set([...wall, 255]);
+  for (let y = CY - R - 1; y <= CY + R + 1; y++) for (let x = CX - R - 1; x <= CX + R + 1; x++) {
+    const dx = x - CX, dy = y - CY, r = Math.hypot(dx, dy);
+    if (r > R + 0.5) continue;
+    const lit = (-dx - dy) / (r || 1); // 위왼쪽 1, 아래오른쪽 -1
+    if (r > R - 0.7) put(x, y, "#2e2a30");
+    else if (r > R - 3.2) put(x, y, lit > 0.45 ? "#e4e0e6" : lit > -0.35 ? "#b9b4bd" : "#8a8490");
+    else if (r > R - 4.2) put(x, y, "#5b5560");
+    else put(x, y, r > R - 6 && lit < -0.3 ? "#e8decf" : "#f6efe3");
+  }
+  // 그림자: 오른쪽 아래 벽에 한 칸
+  for (let y = CY - R; y <= CY + R + 2; y++) for (let x = CX - R; x <= CX + R + 2; x++) {
+    const r = Math.hypot(x - CX, y - CY), r2 = Math.hypot(x - CX - 1, y - CY - 1);
+    if (r > R + 0.5 && r2 <= R + 0.5) {
+      const p = at(room, x, y);
+      p.set([Math.round(p[0] * 0.7), Math.round(p[1] * 0.7), Math.round(p[2] * 0.72), 255]);
+    }
+  }
+  // 눈금
+  for (let h = 0; h < 12; h++) {
+    const a = (h / 12) * Math.PI * 2, sx = Math.sin(a), sy = -Math.cos(a);
+    if (h % 3 === 0) {
+      for (const d of [R - 7, R - 6]) {
+        const x = Math.round(CX + sx * d), y = Math.round(CY + sy * d);
+        put(x, y, "#2e2a30");
+        if (h % 6 === 0) put(x + (h === 0 ? -1 : 1) * 0 + (sy !== 0 ? 1 : 0), y, "#2e2a30");
+        else put(x, y + 1, "#2e2a30");
+      }
+    } else put(Math.round(CX + sx * (R - 6)), Math.round(CY + sy * (R - 6)), "#6f6874");
+  }
+  // 바늘은 그림에 넣지 않는다 (2026-11-02 사용자 결정: 실제 시각). 화면이 src/study/WallClock.jsx로 시침, 분침, 가운데 점을 그린다.
+}
+
 mkdirSync("public/assets/rooms", { recursive: true });
 const png = encodePng(room);
 writeFileSync("art-src/rooms/company-room.png", png);
