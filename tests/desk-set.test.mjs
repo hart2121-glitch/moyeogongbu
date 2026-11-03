@@ -90,13 +90,13 @@ test("책상 세트: 사서 책상 탭에서 놓고 저장하면 내 자리에 �
     const saved = server.looks.get(FAKE_USER_ID);
     assert.deepEqual([saved.desk_left, saved.desk_right, saved.desk_front], ["desk-lamp", "desk-cat", "sticker-star"]);
 
-    // 실행과 확인: 회사 방 2번에 앉으면 내 세트가 책상 전경보다 앞에, 나머지 다섯 자리는 기본 세트
+    // 실행과 확인: 회사 방 2번에 앉으면 내 세트가 책상 전경보다 앞에, 나머지 다섯 자리는 소품 없이 비어 있다
+    // (2026-11-02 사용자 결정: 아무도 없는 자리에는 소품을 두지 않는다)
     await page.goto(`${url}rooms/${SEED_ROOM.id}`);
     await page.locator(".company-toolbar").getByText(SEED_ROOM.name).waitFor();
     await sit(page, 2);
     const mine = ["2:front:sticker-star:me:true", "2:left:desk-lamp:me:true", "2:right:desk-cat:me:true"];
-    const defaults = [1, 3, 4, 5, 6].flatMap((s) => [`${s}:left:desk-lamp::false`, `${s}:right:desk-plant::false`]);
-    assert.deepEqual(await deskItems(page), [...mine, ...defaults].sort());
+    assert.deepEqual(await deskItems(page), [...mine].sort());
 
     // 실행과 확인: 같은 방 멤버가 5번에 앉으면 그 사람의 세트가 5번 책상에 보인다
     server.addMember(SEED_ROOM.id, COMEMBER, "로아");
@@ -114,7 +114,7 @@ test("책상 세트: 사서 책상 탭에서 놓고 저장하면 내 자리에 �
     const theirs = [`5:front:sticker-cat:${COMEMBER}:true`, `5:right:desk-globe:${COMEMBER}:true`];
     assert.deepEqual(
       await deskItems(page),
-      [...mine, ...defaults.filter((d) => !d.startsWith("5:")), ...theirs].sort(),
+      [...mine, ...theirs].sort(),
     );
     await shot(page, "desk-room.png", page.locator(".company-viewport"));
     assert.deepEqual(errors, []);

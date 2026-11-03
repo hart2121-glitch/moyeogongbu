@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  Buildings,
   ClipboardText,
   Coffee,
   Flower,
@@ -14,6 +15,7 @@ import { MENU_ITEMS, menuState, type MenuIcon } from "../model/menu";
 
 const MENU_ICONS: Record<MenuIcon, Icon> = {
   house: House,
+  office: Buildings,
   coffee: Coffee,
   tshirt: TShirt,
   tote: Tote,

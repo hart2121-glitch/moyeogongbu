@@ -1,7 +1,7 @@
 // 사용법: node tools/art/company-decor.mjs
 // 회사 방 휴게실 공용 꾸밈 아이템을 그린다 (꾸미기 슬롯 계획 2절, 2026-11-01 사용자 결정: 방장이 고른다).
-// 자리와 크기는 src/study/companyFinalLayout.js의 decorSlots다. 기본 아이템(고양이 쿠션, 고양이 인형과 간식, 고양이 매트)은
-// tools/art/company-room.mjs가 원본에서 떼어 낸다. 여기서는 파는 아이템을 그린다.
+// 자리와 크기는 src/study/companyFinalLayout.js의 decorSlots다. 기본 아이템(고양이 쿠션, 다육 화분과 고양이 인형, 고양이 매트)도
+// 여기서 따로 만든 그림으로 그린다 (2026-11-02 사용자 결정: 원래 그림에서 떼지 않는다).
 // - 러그: 그림의 러그는 가구 밑에 깔려 있어 비우지 않는다. 러그 상자 안에서 가구(탁자, 다리, 오토만, 소파, 화분)를 색으로 빼고
 //   남은 러그 칸에만 새 러그를 칠한 덮개 그림을 쓴다 (러그 칸만 있다). 2026-11-02 사용자 결정으로 테마(카멜, 아이보리, 차콜,
 //   페르시안) 러그를 팔고, 원래 그림자는 밝기 비율로 곱해 그대로 남긴다.
@@ -196,6 +196,60 @@ const onTable = (file, bottom = 54) => {
 items["table-tea"] = onTable("gen-tea-notable", 54);
 items["table-cake"] = onTable("gen-cake-small", 54);
 items["table-flower"] = onTable("gen-flower", 53);
+
+// ---- 기본 아이템 (2026-11-02 사용자 결정: 원래 그림에서 떼지 않고 따로 만든 그림을 올린다) ----
+// 고양이 쿠션과 탁자 위 다육 화분, 고양이 인형은 내 방 물건과 같은 PixelLab 그림(art-src/home/room/objects/src)이다.
+const OBJ = "art-src/home/room/objects/src";
+const trimmed = (name, mirror = false) => {
+  const im = decodePng(readFileSync(`${OBJ}/${name}.png`));
+  let x0 = im.width, x1 = -1, y0 = im.height, y1 = -1;
+  for (let y = 0; y < im.height; y++) for (let x = 0; x < im.width; x++)
+    if (at(im, x, y)[3]) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  const out = blank(x1 - x0 + 1, y1 - y0 + 1);
+  for (let y = 0; y < out.height; y++) for (let x = 0; x < out.width; x++) {
+    const p = at(im, mirror ? x1 - x : x0 + x, y0 + y);
+    if (p[3]) at(out, x, y).set([p[0], p[1], p[2], 255]);
+  }
+  return out;
+};
+/** 그림 spr를 im의 왼쪽 x, 바닥 줄 bottom에 놓는다. */
+const putSprite = (im, spr, x, bottom) => {
+  for (let y = 0; y < spr.height; y++) for (let sx = 0; sx < spr.width; sx++) {
+    const p = at(spr, sx, y), X = x + sx, Y = bottom - spr.height + 1 + y;
+    if (p[3] && X >= 0 && Y >= 0 && X < im.width && Y < im.height) at(im, X, Y).set(p);
+  }
+  return im;
+};
+// 소파 쿠션: 왼쪽 두 개(작은 것이 바깥)와 오른쪽 두 개(큰 것이 바깥). 원래 고양이 쿠션 자리와 같은 높이.
+{
+  const pair = trimmed("cushions"), mirrored = trimmed("cushions", true);
+  const im = blank(CUSHION.width, CUSHION.height);
+  putSprite(im, mirrored, 0, 21);
+  putSprite(im, pair, CUSHION.width - pair.width - 2, 27);
+  items["cushions-cat"] = im;
+}
+// 탁자 위: 다육 화분과 고양이 인형 (다른 탁자 아이템처럼 탁자 윗면 앞쪽 54줄에 바닥을 둔다)
+{
+  const im = blank(TABLE.width, TABLE.height), plant = trimmed("succulent"), cat = trimmed("cat");
+  putSprite(im, plant, 20 - Math.round(plant.width / 2), 53);
+  putSprite(im, cat, 42 - Math.round(cat.width / 2), 54);
+  items["table-cat"] = im;
+}
+// 출입구 매트: 다른 매트와 같은 틀에 고양이 얼굴 무늬 (얼굴 테, 귀, 눈, 코)
+{
+  const cx = 41, cy = 20;
+  const catFace = (x, y) => {
+    const d = Math.hypot((x - cx) / 13, (y - cy) / 9);
+    if (Math.abs(d - 1) < 0.11) return true;
+    const ear = (ex, dir) => y >= cy - 15 && y <= cy - 7 && Math.abs(x - ex) <= (y - (cy - 15)) * 0.5 && (dir < 0 ? x <= ex + 1 : x >= ex - 1);
+    if (ear(cx - 8, -1) || ear(cx + 8, 1)) return !(y > cy - 9 && Math.abs(x - cx) < 6);
+    if ((y === cy - 1 || y === cy) && (x === cx - 5 || x === cx + 5)) return true;
+    if (y === cy + 2 && Math.abs(x - cx) <= 1) return true;
+    if ((y === cy + 1 || y === cy + 3) && (Math.abs(x - cx) >= 15 && Math.abs(x - cx) <= 19)) return true;
+    return false;
+  };
+  items["mat-cat"] = matBase({ outline: [84, 56, 44], fill: [176, 128, 96], pattern: [240, 214, 178], shadow: MAT_SHADOW }, catFace);
+}
 
 mkdirSync("art-src/rooms/lounge", { recursive: true });
 mkdirSync("public/assets/rooms/lounge", { recursive: true });

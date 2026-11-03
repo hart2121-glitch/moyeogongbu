@@ -4,7 +4,6 @@ import NotificationList from "../../notifications/view/NotificationList";
 import FriendDetail from "../../friends/view/FriendDetail";
 import NoticeDetail from "../../lobby/view/NoticeDetail";
 import NoticeList from "../../lobby/view/NoticeList";
-import TaskForm from "../../lobby/view/TaskForm";
 import DayDetail from "../../records/view/DayDetail";
 import CarryOverForm from "../../todos/view/CarryOverForm";
 import SettingsPanel from "../../account/view/SettingsPanel";
@@ -15,7 +14,6 @@ import { useAppState } from "../viewmodel/AppStateContext";
 function ModalBody() {
   const { modal: modalState } = useAppState();
   const { modal, closeModal } = modalState;
-  if (modal === "task") return <TaskForm />;
   if (modal === "profile") return <ProfileForm />;
   if (modal === "notices") return <NoticeList />;
   if (modal === "carry") return <CarryOverForm onDone={closeModal} />;

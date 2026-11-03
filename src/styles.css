@@ -158,7 +158,7 @@ button:active {
   flex-direction: column;
   justify-content: center;
   width: 100%;
-  min-height: 102px;
+  min-height: 92px;
   border: 2px solid transparent;
   border-radius: 4px;
   gap: 6px;
@@ -281,6 +281,48 @@ button:active {
 }
 .task-list li:last-child {
   border: 0;
+}
+/* 완료한 할 일: 취소선과 흐린 글자 */
+.task-list li.done span {
+  color: #8a7c6a;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+/* 할 일 바로 쓰기: 목록 끝 입력 줄 (Enter로 넣고 다음 줄을 이어 쓴다) */
+.task-add-row form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+}
+.task-add-row input {
+  flex: 1;
+  min-width: 0;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 2px solid #86735e;
+  border-radius: 0;
+  background: #fffbe9;
+  color: #24231f;
+  font-size: 15px;
+}
+.task-add-row button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid #5d6c52;
+  border-radius: 0;
+  background: #6c7b61;
+  color: #fff8e8;
+}
+.task-add-row button:disabled {
+  opacity: 0.45;
+}
+.task-add-row .muted {
+  padding-bottom: 6px;
+  font-size: 13px;
 }
 .task-list label {
   display: flex;
@@ -1251,11 +1293,13 @@ button:active {
   image-rendering: pixelated;
 }
 /* 캐릭터 꾸미기 (Story 009): 왼쪽은 마루 위에 선 큰 미리보기, 오른쪽은 머리, 눈, 의상, 액세서리 탭 */
+/* 선택지 그림의 층 순서(z-index)가 우편함, 설정 같은 창 위로 새지 않게 꾸미기 화면 안에 가둔다. */
 .customizer {
   display: grid;
   grid-template-columns: 292px 1fr;
   gap: 32px;
   align-items: start;
+  isolation: isolate;
 }
 .avatar-preview {
   position: sticky;

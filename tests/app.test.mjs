@@ -29,7 +29,7 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
     await page.waitForFunction(() =>
       [...document.querySelectorAll(".desk-character img")].some((img) => img.naturalWidth > 0),
     );
-    // 로비는 집, 내 방이다. 256×152 도트 방(빈 방 위에 불빛, 러그, 그림자와 물건 층 18개, 꾸미기 슬롯 계획 3절)과 캐릭터를 같은 3배로 그린다
+    // 로비는 집, 내 방이다. 256×152 도트 방(빈 방 위에 러그, 그림자와 따로 만든 물건 층 15개, 꾸미기 슬롯 계획 3절)과 캐릭터를 같은 3배로 그린다
     // (회사 사무실 그림은 쓰지 않는다).
     await page.waitForFunction(() => [...document.querySelectorAll(".home-room-part")].every((img) => img.complete && img.naturalWidth > 0));
     assert.deepEqual(
@@ -45,9 +45,13 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
           height: box.height,
         };
       }),
-      { base: 768, parts: 21, character: 168, office: false, width: 768, height: 456 },
+      { base: 768, parts: 17, character: 168, office: false, width: 768, height: 456 },
     );
     assert.equal(await page.getByRole("heading", { name: "오늘 어디로 갈까" }).count(), 1);
+    // 로비는 내 방이다: 왼쪽 메뉴에서 "내 방"만 켜지고 스터디룸은 꺼져 있다 (2026-11-02 사용자 결정).
+    const nav = page.getByRole("navigation");
+    assert.equal(await nav.getByRole("button", { name: "내 방", exact: true }).getAttribute("aria-current"), "page");
+    assert.equal(await nav.getByRole("button", { name: "스터디룸", exact: true }).evaluate((b) => b.classList.contains("active")), false);
     assert.match(await page.locator(".desk-date").innerText(), /^\d+월 \d+일 [일월화수목금토]요일$/);
     await page.screenshot({
       path: "/tmp/moyeogongbu-lobby.png",
@@ -55,7 +59,10 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
     });
     await page.getByRole("button", { name: "할 일 추가", exact: true }).click();
     await page.getByLabel("오늘 하고 싶은 일").fill("React 공부하기");
-    await page.getByRole("button", { name: "추가하기", exact: true }).click();
+    await page.getByLabel("오늘 하고 싶은 일").press("Enter");
+    // 입력 줄은 비워진 채 남아 다음 할 일을 바로 쓴다
+    assert.equal(await page.getByLabel("오늘 하고 싶은 일").inputValue(), "");
+    await page.getByLabel("오늘 하고 싶은 일").press("Escape");
     await page.getByLabel("React 공부하기").check();
     assert.equal(await page.getByLabel("React 공부하기").isChecked(), true);
     // 할 일 완료는 서버가 코인을 준다 (가짜 서버: 잔액 340 + 2).
@@ -65,6 +72,11 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
       .getByRole("button", { name: "함께하는 회사 방으로 출근", exact: true })
       .click();
     await page.getByText("회사 테마 스터디룸", { exact: true }).waitFor();
+    // 오른쪽 위 벽시계 바늘은 지금 시각이다 (분이 바뀌는 사이면 1분 차이까지).
+    const clock = await page.locator(".wall-clock-hands").getAttribute("data-time");
+    const [h, m] = clock.split(":").map(Number);
+    const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+    assert.ok(Math.abs(h * 60 + m - nowMinutes) <= 1 || Math.abs(h * 60 + m - nowMinutes) === 1439, `벽시계 ${clock}`);
     await page.getByRole("button", { name: "모여공부 로비" }).click();
     for (const label of [
       "공용 스터디카페",

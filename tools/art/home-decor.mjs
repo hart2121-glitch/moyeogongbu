@@ -1,15 +1,10 @@
 // 사용법: node tools/art/home-decor.mjs
-// 로비 "내 방" 꾸밈 (꾸미기 슬롯 계획 3절). 2026-11-02 사용자 결정: 아이템 그림에는 그 물건 픽셀만 넣고(아래 가구, 벽, 바닥 금지),
-// 판매 아이템은 브라운, 화이트, 블랙, 앤티크 테마로 묶어 서로 조합되게 하며, 바닥에 데코타일과 대리석을 더한다.
-//
-// 원재료: art-src/home/room/src/generated.png (가구가 다 있는 방), empty.png (같은 방의 빈 방: 벽, 몰딩, 걸레받이, 창문, 마루).
-// 1. 바탕은 빈 방 그대로다.
-// 2. 물건 떼기: 물건마다 픽셀 경계를 따라 그린 다각형 안에서, 빈 방과 다르고 벽의 그림자나 불빛이 아닌 칸만 그 물건으로 본다.
-//    앞에 있는 물건부터 차지한다. 모양이 바뀌는 자리(책상 위, 협탁 위) 밑의 가구 윗면은 같은 줄의 가구 칸으로 메운다.
-// 3. 어느 물건도 아닌 칸의 차이는 그림자(곱하기 층)와 불빛(스크린 층)으로 따로 둔다. 벽지, 바닥, 러그를 바꿔도 그대로 얹힌다.
-// 4. 러그와 커튼 천은 새로 그린다 (원래 러그는 의자와 침대에 가려 조각나 있고, 커튼은 창과 벽이 비치는 망사라 물건만 뗄 수 없다).
-// 5. 벽지와 바닥 아이템은 빈 방의 벽지 칸, 마루 칸만 덮는다. 데코타일, 대리석, 파케이는 마루와 같은 원근(소실점 126, 17)으로 그린다.
-// 6. 가구 아이템은 같은 층에서 재질 칸만 테마 색으로 바꾼다 (모양이 같아 가려진 자리를 새로 그리지 않는다).
+// 로비 "내 방" 꾸밈 (꾸미기 슬롯 계획 3절). 2026-11-02 사용자 결정:
+// - 완성된 방 그림에서 물건을 떼지 않는다. 물건 없는 빈 방(art-src/home/room/src/empty.png) 위에 물건마다 따로 만든 그림
+//   (art-src/home/room/objects/src/, PixelLab)을 정한 자리에 올린다. 아이템 그림에는 그 물건 픽셀만 있다.
+// - 판매 아이템은 브라운, 화이트, 블랙, 앤티크 테마로 묶어 서로 조합되게 하고, 바닥에 데코타일과 대리석, 파케이를 더한다.
+// 그림자는 바닥에 닿는 물건 밑의 납작한 타원(곱하기 층)으로 그린다. 러그, 커튼 천, 커튼 봉은 새로 그린다.
+// 가구 아이템은 같은 물건 그림에서 재질 칸(나무, 천, 갓, 받침, 쿠션, 다리)만 테마 색으로 바꾼다.
 // 결과: art-src/home/room/decor/<층>.png, <아이템>-<층>.png, 같은 파일을 public/assets/home/room/decor/에,
 //   층 좌표와 아이템 그림 표는 src/features/lobby/model/homeDecorLayers.ts에, 미리보기는 art-src/home/room/decor/preview-*.png.
 import { mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
@@ -21,9 +16,8 @@ const OUT = "art-src/home/room/decor";
 const PUBLIC = "public/assets/home/room/decor";
 const LAYOUT = "src/features/lobby/model/homeDecorLayers.ts";
 const read = (file) => decodePng(readFileSync(file));
-const G = read(join(SRC, "generated.png"));
 const E = read(join(SRC, "empty.png"));
-const W = G.width, H = G.height;
+const W = E.width, H = E.height;
 const N = W * H;
 const xy = (k) => [k % W, Math.floor(k / W)];
 
@@ -57,202 +51,119 @@ const inWindow = (x, y) => x >= 99 && x <= 165 && y >= 12 && y <= 80;
 /** 벽지 칸: 몰딩 아래부터 걸레받이 위까지, 모서리 선과 창을 뺀다. */
 const isWall = (x, y) => y >= 2 && y < floorStart(x) - 7 && x !== 36 && x !== 223 && !inWindow(x, y);
 
-// ---- 다각형 ----
-/** 칸 (x, y)의 가운데가 다각형 안이면 참. 꼭짓점은 칸 모서리 좌표다. */
-const inPoly = (poly, x, y) => {
-  const px = x + 0.5, py = y + 0.5;
-  let inside = false;
-  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const [xi, yi] = poly[i], [xj, yj] = poly[j];
-    if ((yi > py) !== (yj > py) && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) inside = !inside;
+// ---- 물건 그림 (따로 만든 그림을 빈 방에 올린다) ----
+const OBJ = "art-src/home/room/objects/src";
+/** 투명 둘레를 자른 물건 그림. clean이면 그 칸을 지운다 (협탁 바닥 그림자 줄). */
+const sprite = (name, clean = () => false) => {
+  const im = read(join(OBJ, `${name}.png`));
+  let x0 = im.width, x1 = -1, y0 = im.height, y1 = -1;
+  for (let y = 0; y < im.height; y++) for (let x = 0; x < im.width; x++) {
+    const k = (y * im.width + x) * 4;
+    if (!im.pixels[k + 3]) continue;
+    if (clean(im.pixels.subarray(k, k + 4), x, y, im)) { im.pixels.fill(0, k, k + 4); continue; }
   }
-  return inside;
+  for (let y = 0; y < im.height; y++) for (let x = 0; x < im.width; x++)
+    if (im.pixels[(y * im.width + x) * 4 + 3]) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  const w = x1 - x0 + 1, h = y1 - y0 + 1, out = { width: w, height: h, pixels: new Uint8Array(w * h * 4) };
+  for (let y = 0; y < h; y++) out.pixels.set(im.pixels.subarray(((y0 + y) * im.width + x0) * 4, ((y0 + y) * im.width + x1 + 1) * 4), y * w * 4);
+  // 반투명 칸은 불투명으로 (그림 규칙: 반투명은 실루엣 가장자리만인데, 만든 그림은 가장자리도 불투명이다)
+  for (let k = 0; k < w * h; k++) if (out.pixels[k * 4 + 3]) out.pixels[k * 4 + 3] = 255;
+  return out;
 };
-/** x0..x1, y0..y1 칸을 모두 담는 사각형. */
-const rect = (x0, y0, x1, y1) => [[x0, y0], [x1 + 1, y0], [x1 + 1, y1 + 1], [x0, y1 + 1]];
-
-// ---- 물건 칸 판정 ----
-const gap = (k) => { const a = rgb(G, k), b = rgb(E, k); return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]); };
-/**
- * 벽지 위의 그림자나 불빛: 빈 방 색에 세 채널이 비슷한 비율로 어두워지거나(그림자) 흰색 쪽으로 비슷하게 밝아졌다(불빛).
- * 나무나 천은 채널마다 비율이 크게 달라 걸리지 않는다.
- */
-const wallEffect = (k) => {
-  const a = rgb(G, k), b = rgb(E, k);
-  const dark = [0, 1, 2].map((i) => a[i] / Math.max(1, b[i]));
-  const light = [0, 1, 2].map((i) => (255 - a[i]) / Math.max(1, 255 - b[i]));
-  const spread = (r) => Math.max(...r) - Math.min(...r);
-  return (Math.max(...dark) <= 1.02 && Math.min(...dark) >= 0.6 && spread(dark) < 0.2) ||
-    (Math.max(...light) <= 1.02 && spread(light) < 0.3);
+const nearBlack = (p) => p[0] + p[1] + p[2] < 45;
+const SPRITES = {
+  desk: sprite("desk"),
+  armchair: sprite("armchair"),
+  nightstand: sprite("nightstand", (p, x, y, im) => nearBlack(p) && y >= 36), // 바닥 그림자 줄
+  bed: sprite("bed"),
+  plant: sprite("plant"),
+  lamp: sprite("lamp"),
+  frames: sprite("frames"),
+  shelves: sprite("shelves"),
+  cat: sprite("cat"),
+  succulent: sprite("succulent"),
+  clock: sprite("clock"),
+  vase: sprite("vase"),
+  book: sprite("book"),
+  notebook: sprite("notebook"),
+  paper: sprite("paper"),
 };
-/** 기본 판정: 빈 방과 다르고, 벽지 칸이면 그림자나 불빛도 아니다. */
-const differs = (k, x, y) => gap(k) > 18 && !(isWall(x, y) && wallEffect(k));
-const solid = () => true;
-const leafy = (c) => (c.h >= 55 && c.h <= 170 && c.s > 0.18) || (c.v < 0.3 && c.h >= 50 && c.h <= 180 && c.s > 0.2);
-const sage = (c) => (c.h >= 45 && c.h <= 130 && c.s > 0.1) || (c.v < 0.45 && c.h >= 40 && c.h <= 180 && c.s > 0.08);
-
+/** 방 크기 그림에 물건을 놓는다: 왼쪽 x, 바닥 줄 bottom(그 줄에 물건 맨 아래 칸이 온다). */
+const placeAt = (spr, x, bottom) => {
+  const out = blank(), top = bottom - spr.height + 1;
+  for (let y = 0; y < spr.height; y++) for (let sx = 0; sx < spr.width; sx++) {
+    const k = (y * spr.width + sx) * 4, X = x + sx, Y = top + y;
+    if (!spr.pixels[k + 3] || X < 0 || Y < 0 || X >= W || Y >= H) continue;
+    out.pixels.set(spr.pixels.subarray(k, k + 4), (Y * W + X) * 4);
+  }
+  return out;
+};
 /**
- * 물건 (앞에 있는 것부터). id는 층 이름, slot은 꾸밈 자리. polys 안에서 test가 참인 칸이 그 물건이다.
- * 경계는 generated.png를 8~12배로 키워 잰 값이다.
+ * 물건 자리 (방 그림 1배 칸): 왼쪽 x와 바닥 줄. 옆벽 앞 물건은 그 x의 마루 시작 줄보다 아래에 바닥이 오게 한다.
+ * 책상 위 물건은 책상 윗면(책상 그림 47~50줄), 협탁 위 물건은 협탁 윗면(협탁 그림 0~3줄)에 놓는다.
  */
-const OBJECTS = [
-  {
-    id: "bed-cat", slot: "plush", polys: [rect(187, 97, 205, 111)],
-    test: (k, x, y, c) => (c.s < 0.32 && c.v > 0.55) || (c.h >= 60 && c.h <= 140 && c.s > 0.48) || (c.v < 0.36 && !sage(c)),
-  },
-  {
-    id: "bed-blanket", slot: "blanket",
-    polys: [[[164, 88], [241, 88], [241, 114], [226, 114], [226, 135], [186, 135], [181, 151], [171, 151], [163, 112]]],
-    test: (k, x, y, c) => sage(c),
-  },
-  {
-    id: "lamp-right", slot: "lamps",
-    polys: [[[229, 85], [252, 85], [252, 100], [249, 100], [250, 118], [235, 118], [236, 100], [229, 100]]],
-    test: (k, x, y, c) => differs(k, x, y) && !(y >= 112 && c.v > 0.66 && c.h < 40),
-  },
-  {
-    id: "nightstand-right", slot: "nightstands",
-    polys: [[[225, 110], [241, 110], [246, 104], [256, 104], [256, 152], [225, 152]]],
-    test: (k, x, y, c) => (y >= 112 ? true : differs(k, x, y) && c.v < 0.8),
-  },
-  {
-    id: "floor-plant", slot: "floor_plant",
-    polys: [[[3, 120], [31, 120], [30, 128], [27, 142], [24, 151], [8, 151], [5, 142], [3, 128]], rect(0, 102, 38, 127)],
-    test: (k, x, y, c) => inPoly([[3, 120], [31, 120], [30, 128], [27, 142], [24, 151], [8, 151], [5, 142], [3, 128]], x, y) || leafy(c),
-  },
-  {
-    id: "armchair", slot: "armchair",
-    polys: [
-      [[86, 76], [88, 74], [109, 74], [113, 78], [113, 119], [73, 119], [73, 98], [79, 94], [86, 92]],
-      rect(72, 117, 76, 130), rect(89, 117, 94, 136), rect(104, 117, 108, 129),
-    ],
-    test: (k, x, y, c) => y < 117 || c.v < 0.5,
-  },
-  {
-    id: "desk-lamp", slot: "lamps",
-    polys: [[[46, 56], [62, 56], [62, 75], [61, 75], [61, 86], [50, 86], [50, 75], [46, 75]]],
-    test: differs,
-  },
-  {
-    id: "desk-paper", slot: "desk_top",
-    // 종이 윗변 88줄(x 44~58), 왼쪽 변은 한 줄에 한 칸씩 (38, 95)까지, 앞쪽 두께 96줄까지. 16배로 잰 값이다.
-    polys: [[[45, 88], [59, 88], [60, 89], [60, 96], [58, 96], [58, 97], [37, 97], [37, 96], [38, 95]]],
-    test: solid,
-  },
-  {
-    id: "desk", slot: "desk",
-    polys: [[
-      [8, 62], [9, 58], [11, 55], [13, 52], [15, 50], [17, 49], [37, 49], [40, 50], [42, 53], [43, 56], [44, 60], [44, 82],
-      [74, 81], [77, 84], [77, 92], [73, 96], [73, 128], [62, 129], [57, 131], [56, 144], [7, 144], [7, 104], [8, 96],
-    ]],
-    test: (k, x, y, c) => (y < 82 ? differs(k, x, y) : true),
-  },
-  { id: "nightstand-jar", slot: "nightstand_top", polys: [rect(141, 88, 147, 94)], test: solid },
-  {
-    id: "nightstand-plant", slot: "nightstand_top",
-    // 화분: 테두리 x 149~161(86~89줄), 몸통 x 150~160(90~95줄). 그 위는 잎만.
-    polys: [rect(143, 71, 167, 85), rect(149, 86, 161, 89), rect(150, 90, 160, 94), rect(150, 95, 159, 95)],
-    test: (k, x, y, c) => (y >= 86 && x >= 149 && x <= 161 ? true : leafy(c)),
-  },
-  {
-    id: "nightstand-mid", slot: "nightstands",
-    polys: [[[138, 92], [166, 92], [167, 93], [167, 101], [165, 101], [165, 122], [139, 122], [139, 101], [138, 101]]],
-    test: solid,
-  },
-  {
-    id: "bed", slot: "bed",
-    polys: [[
-      [165, 62], [233, 62], [233, 112], [225, 112], [225, 138], [186, 138], [183, 152], [174, 152], [172, 144], [169, 136],
-      [166, 128], [163, 120], [161, 112], [160, 104], [165, 99],
-    ]],
-    // 머리판 안쪽(베개)은 벽과 색이 비슷해 다각형 그대로, 나머지 벽 쪽은 벽과 다른 칸만.
-    test: (k, x, y, c) => (x >= 173 && x <= 221 && y >= 74 && y <= 95) || !isWall(x, y) || differs(k, x, y),
-  },
-  { id: "frames-left", slot: "frames", polys: [rect(3, 18, 18, 49), rect(20, 17, 34, 47), rect(51, 21, 72, 43)], test: differs },
-  { id: "frames-right", slot: "frames", polys: [rect(227, 16, 242, 69), rect(239, 25, 255, 73)], test: differs },
-  { id: "wall-shelves", slot: "shelves", polys: [rect(180, 14, 219, 63)], test: differs },
-  { id: "curtain-rod", slot: "curtains", polys: [rect(82, 4, 178, 13)], test: (k, x, y) => differs(k, x, y) && y <= 12 },
-];
-
-// ---- 칸 주인 ----
-const owner = new Array(N).fill(null);
+const SPOT = {
+  desk: { x: 22, bottom: 131 },
+  armchair: { x: 82, bottom: 140 },
+  nightstand: { x: 130, bottom: 124 },
+  bed: { x: 166, bottom: 150 },
+  plant: { x: 0, bottom: 150 },
+  frames: { x: 46, bottom: 44 },
+  shelves: { x: 188, bottom: 58 },
+};
+const deskTop = { y: SPOT.desk.bottom - SPRITES.desk.height + 1 + 49, x0: SPOT.desk.x + 3, x1: SPOT.desk.x + 52 };
+const standTop = { y: SPOT.nightstand.bottom - SPRITES.nightstand.height + 1 + 2, x0: SPOT.nightstand.x, x1: SPOT.nightstand.x + SPRITES.nightstand.width - 1 };
+/** 윗면 위 물건: 가운데 x를 cx에, 바닥을 윗면 줄에. */
+const onTop = (spr, cx, y) => placeAt(spr, Math.round(cx - spr.width / 2), y);
+const layers = {
+  desk: placeAt(SPRITES.desk, SPOT.desk.x, SPOT.desk.bottom),
+  "desk-paper": onTop(SPRITES.paper, deskTop.x0 + 14, deskTop.y),
+  "desk-lamp": onTop(SPRITES.lamp, deskTop.x1 - 9, deskTop.y),
+  armchair: placeAt(SPRITES.armchair, SPOT.armchair.x, SPOT.armchair.bottom),
+  nightstand: placeAt(SPRITES.nightstand, SPOT.nightstand.x, SPOT.nightstand.bottom),
+  "nightstand-top": onTop(SPRITES.succulent, standTop.x0 + 10, standTop.y),
+  "lamp-right": onTop(SPRITES.lamp, standTop.x1 - 9, standTop.y),
+  bed: placeAt(SPRITES.bed, SPOT.bed.x, SPOT.bed.bottom),
+  "floor-plant": placeAt(SPRITES.plant, SPOT.plant.x, SPOT.plant.bottom),
+  "frames-left": placeAt(SPRITES.frames, SPOT.frames.x, SPOT.frames.bottom),
+  "wall-shelves": placeAt(SPRITES.shelves, SPOT.shelves.x, SPOT.shelves.bottom),
+};
+// 침대 그림의 이불(초록 칸)은 이불 자리 층으로 나눈다 (같은 그림을 색으로 나눌 뿐이라 남는 칸이 없다).
+const sage = (c) => c.h >= 60 && c.h <= 170 && c.s > 0.12;
+layers["bed-blanket"] = blank();
 for (let k = 0; k < N; k++) {
-  const [x, y] = xy(k), c = colorOf(G, k);
-  for (const o of OBJECTS) {
-    if (!o.polys.some((p) => inPoly(p, x, y))) continue;
-    if (o.test(k, x, y, c)) { owner[k] = o.id; break; }
-  }
+  if (!layers.bed.pixels[k * 4 + 3] || !sage(colorOf(layers.bed, k))) continue;
+  layers["bed-blanket"].pixels.set(layers.bed.pixels.subarray(k * 4, k * 4 + 4), k * 4);
+  layers.bed.pixels.fill(0, k * 4, k * 4 + 4);
 }
-// 외톨이 칸 걷기: 상하좌우에 같은 주인이 하나도 없는 칸은 물건이 아니다 (그림자 부스러기).
-for (let pass = 0; pass < 2; pass++) for (let k = 0; k < N; k++) {
-  if (!owner[k]) continue;
-  const [x, y] = xy(k);
-  const same = [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dx, dy]) => {
-    const nx = x + dx, ny = y + dy;
-    return nx >= 0 && ny >= 0 && nx < W && ny < H && owner[ny * W + nx] === owner[k];
-  }).length;
-  if (same === 0) owner[k] = null;
-}
-
-// 물건 안에 갇힌 빈 칸(액자 그림, 손잡이 빛, 베개 무늬가 벽처럼 보여 빠진 칸)은 그 물건으로 채운다:
-// 물건 상자 테두리에서 그 물건이 아닌 칸을 따라 퍼져 닿지 않는 칸이 갇힌 칸이다.
-for (const o of OBJECTS) {
+// 침대 인형은 이불 위 오른쪽 (이불 윗면 가운데 높이)
+const blanketBox = (() => {
   let x0 = W, x1 = -1, y0 = H, y1 = -1;
-  for (let k = 0; k < N; k++) if (owner[k] === o.id) { const [x, y] = xy(k); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
-  if (x1 < 0) continue;
-  const reach = new Uint8Array(N), stack = [];
-  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
-    const k = y * W + x;
-    if ((x === x0 || x === x1 || y === y0 || y === y1) && owner[k] !== o.id) { reach[k] = 1; stack.push(k); }
-  }
-  while (stack.length) {
-    const [x, y] = xy(stack.pop());
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-      const nx = x + dx, ny = y + dy, n = ny * W + nx;
-      if (nx < x0 || ny < y0 || nx > x1 || ny > y1 || reach[n] || owner[n] === o.id) continue;
-      reach[n] = 1;
-      stack.push(n);
-    }
-  }
-  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
-    const k = y * W + x;
-    if (!reach[k] && !owner[k] && o.polys.some((p) => inPoly(p, x, y))) owner[k] = o.id;
-  }
+  for (let k = 0; k < N; k++) if (layers["bed-blanket"].pixels[k * 4 + 3]) { const [x, y] = xy(k); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  return { x0, x1, y0, y1 };
+})();
+layers["bed-cat"] = placeAt(SPRITES.cat, blanketBox.x1 - SPRITES.cat.width - 10, blanketBox.y0 + 16);
+
+// ---- 그림자: 바닥에 닿는 물건 밑에 납작한 타원 두 겹 (곱하기 층) ----
+const shadow = blank();
+const SHADOWS = [
+  { cx: SPOT.desk.x + 28, cy: SPOT.desk.bottom, rx: 30, ry: 4 },
+  { cx: SPOT.armchair.x + 24, cy: SPOT.armchair.bottom, rx: 25, ry: 4 },
+  { cx: SPOT.nightstand.x + 18, cy: SPOT.nightstand.bottom, rx: 19, ry: 3 },
+  { cx: SPOT.bed.x + 42, cy: SPOT.bed.bottom - 1, rx: 44, ry: 5 },
+  { cx: SPOT.plant.x + 18, cy: SPOT.plant.bottom, rx: 16, ry: 3 },
+];
+for (const { cx, cy, rx, ry } of SHADOWS) for (let y = cy - ry; y <= cy + ry; y++) for (let x = cx - rx; x <= cx + rx; x++) {
+  if (x < 0 || y < 0 || x >= W || y >= H) continue;
+  const d = ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2;
+  if (d > 1) continue;
+  const m = d < 0.45 ? 178 : 208;
+  const k = (y * W + x) * 4;
+  const prev = shadow.pixels[k + 3] ? shadow.pixels[k] : 255;
+  shadow.pixels.set([Math.min(prev, m), Math.min(prev, m) - 4, Math.min(prev, m) - 8, 255], k);
 }
+layers.shadow = shadow;
 
-const layers = {};
-for (const o of OBJECTS) layers[o.id] = blank();
-for (let k = 0; k < N; k++) if (owner[k]) layers[owner[k]].pixels.set([...rgb(G, k), 255], k * 4);
-
-/**
- * 모양이 바뀌는 자리 밑 가구 윗면: 가린 물건 칸을 같은 줄 가구 윗면의 바탕색(그 줄 가구 칸에서 가장 흔한 밝은 색)으로 메운다.
- * 이웃 칸을 그대로 옮기면 물건 그림자나 테두리 색까지 옮겨 와 물건을 바꿨을 때 자국이 남는다.
- */
-const fillUnder = (covers, furniture, y0, y1) => {
-  const f = layers[furniture];
-  for (let y = y0; y <= y1; y++) {
-    const hidden = [];
-    for (let x = 0; x < W; x++) if (covers.includes(owner[y * W + x])) hidden.push(x);
-    if (!hidden.length) continue;
-    const from = Math.min(...hidden) - 12, to = Math.max(...hidden) + 12;
-    const count = new Map();
-    for (let x = Math.max(0, from); x <= Math.min(W - 1, to); x++) {
-      const k = y * W + x;
-      if (owner[k] !== furniture || colorOf(G, k).v < 0.4) continue;
-      const key = rgb(G, k).join(",");
-      count.set(key, (count.get(key) ?? 0) + 1);
-    }
-    if (!count.size) continue;
-    const fill = [...count.entries()].sort((a, b) => b[1] - a[1])[0][0].split(",").map(Number);
-    for (const x of hidden) f.pixels.set([...fill, 255], (y * W + x) * 4);
-  }
-};
-fillUnder(["desk-paper"], "desk", 82, 97);
-fillUnder(["nightstand-jar", "nightstand-plant"], "nightstand-mid", 92, 100);
-
-// ---- 그림자와 불빛 ----
-// 커튼 자리(망사 너머로 창과 벽이 비친다)는 커튼을 새로 그리므로 차이를 쓰지 않는다.
-const inCurtains = (x, y) => x >= 82 && x <= 180 && y >= 4 && y <= 104;
 // 마루 원근: 판자 선이 (126, 17)로 모인다. Z는 깊이(맨 앞 줄 151이 1), X는 가로 (같은 단위).
 const VP = { x: 126, y: 17 }, FOCAL = 284, DEPTH = 134;
 const floorZ = (y) => DEPTH / (y - VP.y);
@@ -265,65 +176,6 @@ const inRug = (x, y) => {
   return X >= RUG.x0 && X <= RUG.x1 && Z <= RUG.zBack && Z >= RUG.zFront;
 };
 // 원래 러그의 밝은 바탕색 (그림자 비율의 기준).
-const rugLit = (() => {
-  const list = [];
-  for (let k = 0; k < N; k++) { const [x, y] = xy(k); if (!owner[k] && inRug(x, y)) list.push(rgb(G, k)); }
-  list.sort((a, b) => lum(b) - lum(a));
-  const top = list.slice(0, Math.max(1, Math.floor(list.length * 0.4)));
-  return [0, 1, 2].map((i) => top.reduce((s, c) => s + c[i], 0) / top.length);
-})();
-const shadow = blank(), glow = blank();
-const quant = (v) => Math.round(v / 8) * 8;
-for (let k = 0; k < N; k++) {
-  const [x, y] = xy(k);
-  if (owner[k] || inCurtains(x, y) || inWindow(x, y)) continue;
-  const g = rgb(G, k), base = inRug(x, y) ? rugLit : rgb(E, k);
-  const ratio = lum(g) / Math.max(1, lum(base));
-  if (ratio < 0.92) {
-    const m = quant(ratio * 255);
-    shadow.pixels.set([m, Math.max(0, m - 4), Math.max(0, m - 8), 255], k * 4);
-  } else if (ratio > 1.06 && !inRug(x, y) && !isFloor(x, y)) {
-    const c = [0, 1, 2].map((i) => (base[i] >= 255 ? 0 : Math.max(0, 1 - (255 - g[i]) / (255 - base[i]))));
-    glow.pixels.set([...c.map((v) => quant(v * 255)), 255], k * 4);
-  }
-}
-// 판자 선과 벽지 무늬가 한 칸 어긋나 생긴 가는 줄과 점은 지운다: 여덟 이웃 가운데 넷 미만이 효과 칸이면 지우고,
-// 그래도 남은 8칸 미만 덩어리도 지운다. 그림자와 불빛은 넓은 면만 남는다.
-for (const im of [shadow, glow]) {
-  for (let pass = 0; pass < 2; pass++) {
-    const keep = new Uint8Array(N);
-    for (let k = 0; k < N; k++) {
-      if (!im.pixels[k * 4 + 3]) continue;
-      const [x, y] = xy(k);
-      let near = 0;
-      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-        const nx = x + dx, ny = y + dy;
-        if ((dx || dy) && nx >= 0 && ny >= 0 && nx < W && ny < H && im.pixels[(ny * W + nx) * 4 + 3]) near++;
-      }
-      keep[k] = near >= 4 ? 1 : 0;
-    }
-    for (let k = 0; k < N; k++) if (!keep[k]) im.pixels.fill(0, k * 4, k * 4 + 4);
-  }
-  const seen = new Uint8Array(N);
-  for (let k = 0; k < N; k++) {
-    if (seen[k] || !im.pixels[k * 4 + 3]) continue;
-    const group = [k], stack = [k];
-    seen[k] = 1;
-    while (stack.length) {
-      const [x, y] = xy(stack.pop());
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-        const nx = x + dx, ny = y + dy, n = ny * W + nx;
-        if (nx < 0 || ny < 0 || nx >= W || ny >= H || seen[n] || !im.pixels[n * 4 + 3]) continue;
-        seen[n] = 1;
-        stack.push(n);
-        group.push(n);
-      }
-    }
-    if (group.length < 8) for (const n of group) im.pixels.fill(0, n * 4, n * 4 + 4);
-  }
-}
-layers.shadow = shadow;
-layers.glow = glow;
 
 // ---- 새로 그리는 것: 러그, 커튼 천 ----
 /** 러그 그림: 바닥 원근으로 사각형을 채운다. paint(u, v, edge)는 러그 안 위치(u 왼→오 0~1, v 뒤→앞 0~1)의 색. */
@@ -534,11 +386,32 @@ const WOOD = {
   antique: (c) => ({ h: 4, s: Math.min(0.85, c.s * 1.05 + 0.1), v: c.v * 0.58 }),
   gold: (c) => ({ h: 42, s: 0.55 + 0.2 * c.s, v: 0.3 + 0.62 * c.v }),
 };
-const woodItem = (ids, to) => Object.fromEntries(ids.map((id) => [id, recolor(layers[id], wood, to)]));
-
 const items = {}; // 아이템 id → { 층 id: 방 전체 크기 그림 | null }
 const set = (id, parts) => (items[id] = parts);
 const defaults = {}; // 기본 아이템의 새로 그린 층
+
+// 커튼 봉: 창 위 6~9줄, 양 끝에 둥근 꼭지, 커튼 고리. 색은 테마 나무색 [밝은, 가운데, 어두운, 외곽선].
+const ROD = { x0: 84, x1: 179, y: 7 };
+const RODS = {
+  wood: ["#c08a5a", "#94643c", "#6e4529", "#3e2618"],
+  walnut: ["#8a6040", "#64402a", "#48291a", "#26150c"],
+  black: ["#5a5a62", "#3a3a40", "#26262b", "#141417"],
+  gold: ["#f2d488", "#c9a25b", "#9a7638", "#5a4018"],
+};
+const drawRod = (ramp) => {
+  const [l, m, d, o] = ramp.map(hex), out = blank();
+  const put = (x, y, c) => out.pixels.set([...c, 255], (y * W + x) * 4);
+  for (let x = ROD.x0 + 3; x <= ROD.x1 - 3; x++) { put(x, ROD.y - 1, o); put(x, ROD.y, l); put(x, ROD.y + 1, d); put(x, ROD.y + 2, o); }
+  for (const cx of [ROD.x0 + 1, ROD.x1 - 1]) for (let y = ROD.y - 3; y <= ROD.y + 4; y++) for (let x = cx - 3; x <= cx + 3; x++) {
+    const r = Math.hypot(x - cx, (y - ROD.y - 0.5) * 1.1);
+    if (r > 3.4) continue;
+    put(x, y, r > 2.5 ? o : x - cx + y - ROD.y < -1 ? l : x - cx + y - ROD.y > 1.5 ? d : m);
+  }
+  // 고리: 커튼 폭마다 4칸 간격
+  for (const { x0, x1 } of CURTAIN_PANELS) for (let x = x0 + 1; x <= x1; x += 4) { put(x, ROD.y + 3, o); put(x, ROD.y + 4, m); }
+  return out;
+};
+defaults["curtain-rod"] = drawRod(RODS.wood);
 
 // 벽지 (기본: 빈 방의 분홍 점 벽지)
 set("home-wall-stripe", { wall: drawWall(WALLS.stripe) });
@@ -559,28 +432,46 @@ set("home-rug-charcoal", { rug: drawRug(RUGS.charcoal) });
 set("home-rug-persian", { rug: drawRug(RUGS.persian) });
 // 커튼: 천과 봉
 defaults.curtains = drawCurtains(CURTAINS.ivory);
-set("home-curtain-linen", { curtains: drawCurtains(CURTAINS.linen), "curtain-rod": recolor(layers["curtain-rod"], wood, WOOD.walnut) });
-set("home-curtain-charcoal", { curtains: drawCurtains(CURTAINS.charcoal), "curtain-rod": recolor(layers["curtain-rod"], wood, WOOD.black) });
-set("home-curtain-burgundy", {
-  curtains: drawCurtains(CURTAINS.burgundy, hex("#c9a25b")),
-  "curtain-rod": recolor(layers["curtain-rod"], wood, WOOD.gold),
-});
-// 액자, 선반
-set("home-frames-walnut", woodItem(["frames-left", "frames-right"], WOOD.walnut));
-set("home-frames-white", woodItem(["frames-left", "frames-right"], WOOD.white));
-set("home-frames-black", woodItem(["frames-left", "frames-right"], WOOD.black));
-set("home-frames-gold", woodItem(["frames-left", "frames-right"], WOOD.gold));
-set("home-shelves-walnut", woodItem(["wall-shelves"], WOOD.walnut));
-set("home-shelves-white", woodItem(["wall-shelves"], WOOD.white));
-set("home-shelves-black", woodItem(["wall-shelves"], WOOD.black));
-// 나무 가구
-for (const [theme, to] of [["walnut", WOOD.walnut], ["white", WOOD.white], ["black", WOOD.black], ["antique", WOOD.antique]]) {
-  set(`home-desk-${theme}`, woodItem(["desk"], to));
-  set(`home-nightstand-${theme}`, woodItem(["nightstand-mid", "nightstand-right"], to));
-  set(`home-bed-${theme}`, woodItem(["bed"], to));
+set("home-curtain-linen", { curtains: drawCurtains(CURTAINS.linen), "curtain-rod": drawRod(RODS.walnut) });
+set("home-curtain-charcoal", { curtains: drawCurtains(CURTAINS.charcoal), "curtain-rod": drawRod(RODS.black) });
+set("home-curtain-burgundy", { curtains: drawCurtains(CURTAINS.burgundy, hex("#c9a25b")), "curtain-rod": drawRod(RODS.gold) });
+/** 투명 칸에서 n칸 안 (액자 테두리). */
+const nearEdge = (im, n) => (c, x, y) => {
+  for (let dy = -n; dy <= n; dy++) for (let dx = -n; dx <= n; dx++) {
+    const nx = x + dx, ny = y + dy;
+    if (nx < 0 || ny < 0 || nx >= W || ny >= H || !im.pixels[(ny * W + nx) * 4 + 3]) return true;
+  }
+  return false;
+};
+// 액자: 나무 테두리만 (그림은 그대로)
+const frameWood = (c, x, y) => wood(c) && nearEdge(layers["frames-left"], 3)(c, x, y);
+const frameItem = (to) => ({ "frames-left": recolor(layers["frames-left"], frameWood, to) });
+set("home-frames-walnut", frameItem(WOOD.walnut));
+set("home-frames-white", frameItem(WOOD.white));
+set("home-frames-black", frameItem(WOOD.black));
+set("home-frames-gold", frameItem(WOOD.gold));
+// 선반: 판자 줄(나무 칸이 20칸 넘게 이어진 줄)만 (화분과 책은 그대로)
+const boardRows = new Set();
+for (let y = 0; y < H; y++) {
+  let n = 0;
+  for (let x = 0; x < W; x++) { const k = y * W + x; if (layers["wall-shelves"].pixels[k * 4 + 3] && wood(colorOf(layers["wall-shelves"], k))) n++; }
+  if (n >= 20) { boardRows.add(y); boardRows.add(y + 1); boardRows.add(y + 2); }
 }
-// 스탠드: 갓(밝은 노랑 크림)과 받침
-const shadeCloth = (c) => c.h >= 28 && c.h <= 64 && c.s < 0.7 && c.v > 0.7;
+const shelfWood = (c, x, y) => wood(c) && boardRows.has(y);
+const shelfItem = (to) => ({ "wall-shelves": recolor(layers["wall-shelves"], shelfWood, to) });
+set("home-shelves-walnut", shelfItem(WOOD.walnut));
+set("home-shelves-white", shelfItem(WOOD.white));
+set("home-shelves-black", shelfItem(WOOD.black));
+// 나무 가구: 책장의 책(아주 진한 색)과 베개(밝은 크림)는 그대로
+const deskWood = (c) => wood(c) && c.s <= 0.78;
+const bedWood = (c) => wood(c) && c.v < 0.86;
+for (const [theme, to] of [["walnut", WOOD.walnut], ["white", WOOD.white], ["black", WOOD.black], ["antique", WOOD.antique]]) {
+  set(`home-desk-${theme}`, { desk: recolor(layers.desk, deskWood, to) });
+  set(`home-nightstand-${theme}`, { nightstand: recolor(layers.nightstand, wood, to) });
+  set(`home-bed-${theme}`, { bed: recolor(layers.bed, bedWood, to) });
+}
+// 스탠드: 갓(밝은 크림 노랑)과 받침(갈색)
+const shadeCloth = (c) => c.h >= 28 && c.h <= 64 && c.s < 0.7 && c.v > 0.72;
 const lampBase = (c) => !shadeCloth(c) && c.s >= 0.2 && c.v >= 0.18 && (c.h <= 45 || c.h >= 330);
 const lampItem = (shadeTo, baseTo) =>
   Object.fromEntries(["desk-lamp", "lamp-right"].map((id) => {
@@ -590,28 +481,29 @@ const lampItem = (shadeTo, baseTo) =>
 set("home-lamps-white", lampItem((c) => ({ h: 40, s: 0.05, v: 0.84 + 0.16 * c.v }), (c) => ({ h: 35, s: 0.05, v: 0.55 + 0.45 * c.v })));
 set("home-lamps-black", lampItem((c) => ({ h: 40, s: 0.08, v: 0.8 + 0.2 * c.v }), (c) => ({ h: 230, s: 0.08, v: 0.08 + 0.3 * c.v })));
 set("home-lamps-brass", lampItem((c, x) => ({ h: 38, s: x % 2 ? 0.34 : 0.26, v: (x % 2 ? 0.86 : 0.94) * (0.85 + 0.15 * c.v) }), (c) => ({ h: 42, s: 0.68, v: 0.32 + 0.62 * c.v })));
-// 안락의자: 천, 쿠션, 다리
-const CHAIR_BOTTOM = 117;
-const cushion = (c, x, y) => y < 112 && (c.h >= 330 || c.h <= 18) && c.s > 0.3 && c.v > 0.4;
-const chairCloth = (c, x, y) => y < CHAIR_BOTTOM && !cushion(c, x, y) && c.s < 0.36 && c.v > 0.42;
-const legs = (c, x, y) => y >= CHAIR_BOTTOM && wood(c);
-const chairItem = (clothTo, cushionTo, legsTo) => {
-  let im = recolor(layers.armchair, chairCloth, clothTo);
-  if (cushionTo) im = recolor(im, cushion, cushionTo);
-  if (legsTo) im = recolor(im, legs, legsTo);
-  return { armchair: im };
-};
-set("home-chair-sage", chairItem((c) => ({ h: 100, s: Math.max(0.16, c.s * 1.7), v: c.v * 0.96 })));
-set("home-chair-mustard", chairItem((c) => ({ h: 42, s: Math.max(0.34, c.s * 2.6), v: c.v * 0.97 })));
+// 안락의자: 크림 천, 분홍 쿠션, 나무 다리
+const cushion = (c) => (c.h >= 320 || c.h <= 15) && c.s > 0.18 && c.v > 0.45;
+const chairCloth = (c) => !cushion(c) && c.s < 0.32 && c.v > 0.62;
+const legs = (c) => !cushion(c) && c.v < 0.55 && (c.h <= 30 || c.h >= 330) && c.s > 0.25;
+/** 천, 쿠션, 다리를 원래 색으로 가른 뒤 한 번에 바꾼다 (바꾼 천이 다시 쿠션으로 잡히지 않게). */
+const chairItem = (clothTo, cushionTo, legsTo) => ({
+  armchair: recolor(
+    layers.armchair,
+    (c) => chairCloth(c) || (cushionTo && cushion(c)) || (legsTo && legs(c)),
+    (c, x, y) => (cushion(c) ? cushionTo(c, x, y) : legs(c) ? legsTo(c, x, y) : clothTo(c, x, y)),
+  ),
+});
+set("home-chair-sage", chairItem((c) => ({ h: 100, s: Math.max(0.18, c.s * 1.8), v: c.v * 0.94 })));
+set("home-chair-mustard", chairItem((c) => ({ h: 42, s: Math.max(0.4, c.s * 2.8), v: c.v * 0.96 })));
 set("home-chair-leather", chairItem((c) => ({ h: 24, s: 0.5 + 0.2 * (1 - c.v), v: c.v * 0.7 }), (c) => ({ h: 40, s: 0.18, v: Math.min(1, c.v * 1.08) }), WOOD.walnut));
-set("home-chair-white", chairItem((c) => ({ h: 40, s: 0.03, v: 0.6 + 0.4 * c.v }), (c) => ({ h: 30, s: 0.28, v: c.v }), WOOD.white));
+set("home-chair-white", chairItem((c) => ({ h: 40, s: 0.03, v: 0.62 + 0.38 * c.v }), (c) => ({ h: 30, s: 0.28, v: c.v }), WOOD.white));
 set("home-chair-charcoal", chairItem((c) => ({ h: 230, s: 0.06, v: 0.16 + 0.42 * c.v }), (c) => ({ h: 42, s: 0.6, v: c.v }), WOOD.black));
 set("home-chair-velvet", chairItem((c) => ({ h: 350, s: 0.62, v: c.v * 0.66 }), (c) => ({ h: 43, s: 0.6, v: c.v }), WOOD.antique));
 // 이불
 const blanketItem = (to) => ({ "bed-blanket": recolor(layers["bed-blanket"], sage, to) });
-set("home-blanket-yellow", blanketItem((c) => ({ h: 46, s: Math.max(0.3, c.s * 1.7), v: c.v * 1.2 })));
-set("home-blanket-camel", blanketItem((c) => ({ h: 28, s: Math.min(1, c.s * 1.5 + 0.1), v: c.v })));
-set("home-blanket-white", blanketItem((c) => ({ h: 40, s: 0.04, v: 0.5 + 0.5 * c.v })));
+set("home-blanket-yellow", blanketItem((c) => ({ h: 46, s: Math.max(0.32, c.s * 1.6), v: Math.min(1, c.v * 1.15) })));
+set("home-blanket-camel", blanketItem((c) => ({ h: 28, s: Math.min(1, c.s * 1.4 + 0.1), v: c.v })));
+set("home-blanket-white", blanketItem((c) => ({ h: 40, s: 0.04, v: 0.55 + 0.45 * c.v })));
 set("home-blanket-charcoal", blanketItem((c) => ({ h: 230, s: 0.08, v: c.v * 0.55 })));
 set("home-blanket-burgundy", blanketItem((c) => ({ h: 352, s: Math.min(1, c.s * 1.6 + 0.15), v: c.v * 0.78 })));
 // 침대 인형
@@ -619,74 +511,16 @@ const fur = (c) => c.s < 0.2 && c.v > 0.6;
 set("home-plush-cheese", { "bed-cat": recolor(layers["bed-cat"], fur, (c) => ({ h: 32, s: 0.5, v: c.v })) });
 set("home-plush-black", { "bed-cat": recolor(layers["bed-cat"], fur, (c) => ({ h: 250, s: 0.12, v: c.v * 0.34 })) });
 set("home-plush-gray", { "bed-cat": recolor(layers["bed-cat"], fur, (c) => ({ h: 220, s: 0.06, v: c.v * 0.7 })) });
-// 바닥 화분
-const POT = [[3, 120], [31, 120], [30, 128], [27, 142], [24, 151], [8, 151], [5, 142], [3, 128]];
-const leaf = (c, x, y) => !inPoly(POT, x, y) && c.h >= 55 && c.h <= 170 && c.s > 0.18;
-const potClay = (c, x, y) => inPoly(POT, x, y) && c.h <= 35 && c.s > 0.3 && c.v > 0.3;
+// 바닥 화분: 잎 색, 화분 색
+const leaf = (c) => c.h >= 55 && c.h <= 170 && c.s > 0.18;
+const potClay = (c) => c.h <= 35 && c.s > 0.3 && c.v > 0.3;
 set("home-plant-maple", { "floor-plant": recolor(layers["floor-plant"], leaf, (c) => ({ h: 14 + (c.v - 0.4) * 30, s: Math.min(1, c.s * 1.25), v: c.v * 1.05 })) });
 set("home-plant-whitepot", { "floor-plant": recolor(layers["floor-plant"], potClay, (c) => ({ h: c.h, s: c.s * 0.12, v: 0.55 + 0.45 * c.v })) });
-
-// 책상 위: 종이 자리에 놓는 펼친 책과 공책 (책상 윗면 원근을 따른 평행사변형, 물건 칸만)
-const paperBox = (() => {
-  let x0 = W, x1 = -1, y0 = H, y1 = -1;
-  for (let k = 0; k < N; k++) if (owner[k] === "desk-paper") { const [x, y] = xy(k); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
-  return { x0, x1, y0, y1 };
-})();
-/** 종이와 같은 평행사변형 (윗변이 오른쪽으로 밀린 모양) 안을 칠한다. */
-const onDesk = (draw, inset = 0) => {
-  const out = blank();
-  const { x0, x1, y0, y1 } = paperBox, h = y1 - y0;
-  for (let y = y0 + inset; y <= y1; y++) {
-    const shift = Math.round(((y1 - y) / h) * 5);
-    const left = x0 + shift + inset, right = x1 - 5 + shift - inset;
-    for (let x = left; x <= right; x++) {
-      const edge = x === left || x === right || y === y0 + inset || y === y1;
-      out.pixels.set([...draw(x - left, y - y0 - inset, right - left, y1 - y0 - inset, edge), 255], (y * W + x) * 4);
-    }
-  }
-  return out;
-};
-set("home-desktop-book", {
-  "desk-paper": onDesk((x, y, w, h, edge) => {
-    const mid = Math.round(w / 2);
-    if (edge) return y === h ? hex("#7a3b32") : hex("#6b4a36");
-    if (x === mid) return hex("#b39a7c");
-    if (y % 3 === 1 && Math.abs(x - mid) > 2 && x > 2 && x < w - 2) return hex("#c9bba6");
-    return x < mid ? hex("#f4ecdc") : hex("#ebe1cd");
-  }),
-});
-set("home-desktop-notebook", {
-  "desk-paper": onDesk((x, y, w, h, edge) => {
-    if (edge) return hex("#2f3d52");
-    if (x <= 2 && y % 2 === 0) return hex("#c9c9c4");
-    if (y >= 3 && y <= 5 && x >= w / 2 - 4 && x <= w / 2 + 4) return hex("#efe9dc");
-    return hex("#4a5d78");
-  }, 1),
-});
-
-// 협탁 위: 직접 찍은 소품. 그림 바닥 가운데를 협탁 윗면 가운데(x 151, 96줄)에 놓고 원래 화분과 병은 감춘다.
-const DOT = {
-  o: "#3e2a28", r: "#a8443e", R: "#7a2e2c", b: "#5b7aa6", B: "#3e5a86", p: "#f4ead6", m: "#e8dcc0", M: "#b8a582",
-  w: "#fcfaf2", k: "#382c2c", g: "#d8b460", P: "#e47092", q: "#fcb6ca", s: "#609c54", L: "#c8dce6", l: "#e6f0f4",
-};
-const CLOCK = [
-  "...gg......gg....", "..goo......oog...", "....ooooooooo....", "...oMmmmmmmmMo...", "..oMmwwwwwwwmMo..", "..oMwwwwkwwwwMo..",
-  "..oMwwwwkwwwwMo..", "..oMwwwwkkkwwMo..", "..oMmwwwwwwwmMo..", "...oMMmmmmmMMo...", "..ooooooooooooo..", ".obbbbbbbbbbbbBo.",
-  ".oppppppppppppBo.", ".oooooooooooooo..", ".orrrrrrrrrrrrRo.", ".oppppppppppppRo.", ".oRRRRRRRRRRRRRo.", "..ooooooooooooo..",
-];
-const VASE = [
-  "..ooo.....ooo..", ".oPqPo...oPqPo.", ".oPPPo.o.oPPPo.", ".oPPPooPooPPPo.", "..ooooPqPooooo.", "...s.oPPPo.s...", "...s..ooo..s...",
-  "....s..s..s....", ".....s.s.s.....", "....ooooooo....", "...oLlwllLLo...", "..oLlwlllllLo..", "..oLlwsssllLo..", "..oLllssslLLo..",
-  "..oLLlllllLLo..", "...oLLLLLLLo...", "....ooooooo....",
-];
-const dots = (rows) => {
-  const out = blank();
-  const ox = 151 - Math.floor(rows[0].length / 2), oy = 97 - rows.length + 1;
-  rows.forEach((row, y) => [...row].forEach((ch, x) => { if (DOT[ch]) out.pixels.set([...hex(DOT[ch]), 255], ((oy + y) * W + ox + x) * 4); }));
-  return out;
-};
-set("home-nighttop-clock", { "nightstand-plant": dots(CLOCK), "nightstand-jar": null });
-set("home-nighttop-vase", { "nightstand-plant": dots(VASE), "nightstand-jar": null });
+// 책상 위, 협탁 위: 따로 만든 소품을 같은 자리에 (밑의 책상과 협탁은 온전한 그림이다)
+set("home-desktop-book", { "desk-paper": onTop(SPRITES.book, deskTop.x0 + 14, deskTop.y) });
+set("home-desktop-notebook", { "desk-paper": onTop(SPRITES.notebook, deskTop.x0 + 14, deskTop.y) });
+set("home-nighttop-clock", { "nightstand-top": onTop(SPRITES.clock, standTop.x0 + 10, standTop.y) });
+set("home-nighttop-vase", { "nightstand-top": onTop(SPRITES.vase, standTop.x0 + 10, standTop.y) });
 
 // 판매를 멈춘 아이템 (2026-11-02: 테마와 어울리지 않는 파스텔). 이미 산 사람은 계속 쓰므로 그림은 만든다.
 const tint = (h, sMul = 1, sMin = 0, vMul = 1) => (c) => ({ h, s: Math.max(sMin, c.s * sMul), v: c.v * vMul });
@@ -699,7 +533,7 @@ set("home-curtain-mint", { curtains: drawCurtains(["#5e8e80", "#a2ccbc", "#bcdcc
 set("home-curtain-yellow", { curtains: drawCurtains(["#a08848", "#dcc272", "#ead48c", "#f6e6ae"]) });
 set("home-lamps-mint", lampItem(tint(150, 1.1, 0.25)));
 set("home-lamps-pink", lampItem(tint(345, 1.1, 0.25)));
-set("home-chair-sky", chairItem(tint(205, 1.7, 0.16)));
+set("home-chair-sky", chairItem(tint(205, 1.8, 0.18)));
 set("home-blanket-pink", blanketItem(tint(345, 1.15)));
 set("home-blanket-sky", blanketItem(tint(205, 1.1)));
 const pastelRug = (fill, line, edge) => (u, v, e) => (e ? hex(edge) : band(u, v, 0.05) ? hex(line) : hex(fill));
@@ -729,12 +563,17 @@ const write = (name, image) => {
 const baseSrc = write("room-base", E);
 // 그리는 순서: 벽지, 바닥 덮개, 불빛, 러그, 그림자, 그다음 물건 (뒤에서 앞으로).
 const DRAW = [
-  "wall", "floor", "glow", "rug", "shadow", "frames-right", "frames-left", "wall-shelves", "curtains", "curtain-rod",
-  "desk", "desk-paper", "desk-lamp", "nightstand-mid", "nightstand-jar", "nightstand-plant", "bed", "bed-cat", "bed-blanket",
-  "nightstand-right", "lamp-right", "armchair", "floor-plant",
+  "wall", "floor", "rug", "shadow", "frames-left", "wall-shelves", "curtains", "curtain-rod",
+  "desk", "desk-paper", "desk-lamp", "nightstand", "nightstand-top", "lamp-right", "bed", "bed-blanket", "bed-cat",
+  "armchair", "floor-plant",
 ];
-const BLEND = { glow: "screen", shadow: "multiply" };
-const SLOT_OF = Object.fromEntries([...OBJECTS.map((o) => [o.id, o.slot]), ["rug", "rug"], ["curtains", "curtains"], ["wall", "wallpaper"], ["floor", "floor"]]);
+const BLEND = { shadow: "multiply" };
+const SLOT_OF = {
+  wall: "wallpaper", floor: "floor", rug: "rug", curtains: "curtains", "curtain-rod": "curtains", "frames-left": "frames",
+  "wall-shelves": "shelves", desk: "desk", "desk-paper": "desk_top", "desk-lamp": "lamps", "lamp-right": "lamps",
+  nightstand: "nightstands", "nightstand-top": "nightstand_top", bed: "bed", "bed-blanket": "blanket", "bed-cat": "plush",
+  armchair: "armchair", "floor-plant": "floor_plant",
+};
 const boxes = {};
 for (const id of DRAW) {
   const im = defaults[id] ?? layers[id];
@@ -758,7 +597,7 @@ const data = {
   scale: 3,
   base: baseSrc,
   draw: DRAW.filter((id) => id === "wall" || id === "floor" || boxes[id]),
-  fixed: ["glow", "shadow"],
+  fixed: ["shadow"],
   layers: boxes,
   slots,
   items: art,
@@ -769,7 +608,7 @@ writeFileSync(LAYOUT, [
   " * 로비 \"내 방\"을 꾸밈 자리별 층으로 나눈 그림 (꾸미기 슬롯 계획 3절). 바탕(빈 방) 위에 draw 순서로 층을 얹는다.",
   " * layers는 기본 아이템의 층(1배 좌표), slots는 자리마다 바뀌는 층, items는 판매 아이템이 층마다 쓰는 그림이다",
   " * (null이면 그 층을 감춘다). wall, floor 층은 기본 그림이 없고 판매 아이템만 바탕 위에 덮는다.",
-  " * fixed 층(불빛, 그림자)은 자리 없이 늘 그리고, blend로 아래 그림과 섞는다 (불빛은 screen, 그림자는 multiply).",
+  " * fixed 층(그림자)은 자리 없이 늘 그리고, blend로 아래 그림과 섞는다 (multiply).",
   " */",
   `export const HOME_DECOR = ${JSON.stringify(data, null, 2)} as const;`,
   "",
@@ -826,8 +665,4 @@ const previews = {
   ],
 };
 for (const [name, list] of Object.entries(previews)) writeFileSync(join(OUT, `preview-${name}.png`), encodePng(sheet(list.map(compose))));
-const count = {};
-for (const o of OBJECTS) count[o.id] = 0;
-for (let k = 0; k < N; k++) if (owner[k]) count[owner[k]]++;
-console.log("물건 칸:", Object.entries(count).map(([id, n]) => `${id} ${n}`).join(", "));
-console.log(`판매 아이템 ${Object.keys(items).length}개, 층 ${Object.keys(boxes).length}개`);
+console.log(`물건 ${Object.keys(SPRITES).length}개, 판매 아이템 ${Object.keys(items).length}개, 층 ${Object.keys(boxes).length}개`);

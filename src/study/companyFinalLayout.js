@@ -34,8 +34,10 @@ export const companyFinalLayout = {
     loungeThreshold: { x: 0.278, y: 0.495 },
     loungeInner: { x: 0.225, y: 0.505 },
     loungeFloor: { x: 0.205, y: 0.505 },
-    sofaApproach: { x: 0.225, y: 0.505 },
-    sofa: { x: 0.21, y: 0.49 },
+    // 소파 휴식 (2026-11-02 고침): 탁자 오른쪽 러그(그림 칸 167, 186)까지 걸어가 소파 오른쪽 긴 의자 앞쪽(167, 168)에 앉는다.
+    // 앉는 자리는 좌석처럼 소파 충돌 영역 안이고, 마지막 한 걸음은 바닥 검사 없이 간선으로만 간다.
+    sofaApproach: { x: 334 / 1705, y: 430 / 922 },
+    sofa: { x: 334 / 1705, y: 394 / 922 },
     upperApproach: { x: 0.348, y: 0.455 },
     upperTurn: { x: 0.317, y: 0.455 },
     upperLeft: { x: 0.348, y: 0.424 },
@@ -112,9 +114,11 @@ export const companyFinalLayout = {
   decorSlots: [
     { id: "cushions", name: "소파 쿠션", box: { x: 95, y: 120, width: 94, height: 29 } },
     { id: "table", name: "탁자 위", box: { x: 82, y: 118, width: 65, height: 59 } },
-    { id: "rug", name: "휴게실 러그", box: { x: 33, y: 150, width: 161, height: 61 } },
+    { id: "rug", name: "휴게실 러그", box: { x: 33, y: 146, width: 161, height: 65 } },
     { id: "mat", name: "출입구 매트", box: { x: 399, y: 367, width: 87, height: 40 } },
   ],
+  // 오른쪽 위 벽시계: 시계판은 그림(tools/art/company-room.mjs), 바늘은 화면이 실제 시각으로 그린다 (그림 칸, 가운데와 바늘 길이).
+  wallClock: { center: { x: 640, y: 33 }, radius: 18, hourHand: 6, minuteHand: 10 },
   areas: [
     {
       id: "lounge",
@@ -127,6 +131,8 @@ export const companyFinalLayout = {
     {
       id: "sofa",
       node: "sofa",
+      approach: "sofaApproach",
+      entryBlocker: "휴게실 소파",
       activity: "resting",
       label: "휴식하기",
       marker: "소파 휴식",

@@ -155,16 +155,16 @@ export function themeLook<T extends { id: string; slot: string; theme?: string |
 
 /**
  * 꾸미기 선택지 그림에서 보일 방 부분 (1배 72×44 창의 왼쪽 위). 자리의 기본 층 가운데다. 벽지와 바닥은 빈 벽과 빈 마루,
- * 양쪽으로 떨어진 두 물건(스탠드, 협탁, 액자)은 가운데가 엉뚱한 곳이라 왼쪽 물건 둘레를, 침대는 칠이 보이는 머리판을 보인다.
+ * 두 곳에 놓인 스탠드는 책상 스탠드 둘레를, 침대는 칠이 보이는 머리판을 보인다.
  */
 export const HOME_THUMB = { width: 72, height: 44 } as const;
 const THUMB_AT: Partial<Record<HomeSlot, { x: number; y: number }>> = {
   wallpaper: { x: 30, y: 6 },
   floor: { x: 92, y: 108 },
-  lamps: { x: 22, y: 50 },
-  nightstands: { x: 113, y: 84 },
-  frames: { x: 0, y: 12 },
-  bed: { x: 162, y: 58 },
+  lamps: { x: 29, y: 62 },
+  nightstands: { x: 111, y: 89 },
+  frames: { x: 30, y: 15 },
+  bed: { x: 172, y: 70 },
 };
 export function homeThumbOrigin(slot: HomeSlot): { x: number; y: number } {
   const fixed = THUMB_AT[slot];

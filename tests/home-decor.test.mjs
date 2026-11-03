@@ -51,12 +51,12 @@ test("내 방 꾸밈: 내 방 탭에서 벽지, 안락의자, 책상 위를 놓�
     await page.goto(`${url}character`);
     await page.getByRole("tab", { name: "내 방" }).click();
 
-    // 확인: 미리보기는 기본 내 방(층 21개: 불빛, 러그, 그림자, 물건 18개)이고, 테마 줄과 열여섯 자리가 있으며 선택지 그림이
+    // 확인: 미리보기는 기본 내 방(층 17개: 러그, 그림자, 물건 15개)이고, 테마 줄과 열여섯 자리가 있으며 선택지 그림이
     // 모두 불러와진다. 판매를 멈춘 파스텔 아이템 14개는 보이지 않는다 (91개 가운데 77개). 성별 단추는 감춘다.
     const preview = '[data-testid="home-preview"]';
     await imagesLoaded(page, `${preview} img`);
     const defaults = await layers(page, preview);
-    assert.equal(defaults.length, 21);
+    assert.equal(defaults.length, 17);
     assert.equal(defaults.every(isDefaultLayer), true);
     const rows = await page.locator(".wardrobe-slot").evaluateAll((s) => s.map((x) => x.getAttribute("aria-label")));
     assert.deepEqual(rows, [
@@ -91,11 +91,11 @@ test("내 방 꾸밈: 내 방 탭에서 벽지, 안락의자, 책상 위를 놓�
       wallpaper: "home-wall-white", armchair: "home-chair-white", desk_top: "home-desktop-book",
     });
 
-    // 확인: 로비 내 방에 같은 층이 3배로 그려진다 (기본 21개에 벽지 덮개 하나가 더해진다)
+    // 확인: 로비 내 방에 같은 층이 3배로 그려진다 (기본 17개에 벽지 덮개 하나가 더해진다)
     await page.goto(`${url}lobby`);
     await imagesLoaded(page, ".desk-scene-art img.home-room-part");
     const lobby = await layers(page, ".desk-scene-art");
-    assert.equal(lobby.length, 22);
+    assert.equal(lobby.length, 18);
     assert.deepEqual(
       lobby.filter((l) => !isDefaultLayer(l)),
       ["wall:home-wall-white-wall.png", "desk-paper:home-desktop-book-desk-paper.png", "armchair:home-chair-white-armchair.png"],

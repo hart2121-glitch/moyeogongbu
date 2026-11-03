@@ -1,6 +1,9 @@
 import { DESK_ITEM_ART, DESK_MONITOR_ART, deskItemFlipped } from "../config/shop";
 import { companyLayout, deskBox, deskSpotBox } from "./companyLayout";
 
+/** 빈 책상: 소품 없이 모니터만 (2026-11-02 사용자 결정: 아무도 없는 자리에는 소품을 두지 않는다). */
+export const EMPTY_DESK = { desk_left: null, desk_right: null, desk_front: null };
+
 const SPOTS = [
   ["left", "desk_left"],
   ["right", "desk_right"],

@@ -10,7 +10,8 @@ import {
 import { COMPANY_ROOM_ART, ROOM_ART_SIZE, ROOM_BOTTOM_GAP, artBox, companyLayout, foregroundClip, roomArtBox, roomScale } from "./companyLayout";
 import { useCharacterMovement } from "./useCharacterMovement";
 import CharacterSprite from "./CharacterSprite";
-import DeskSet from "./DeskSet";
+import DeskSet, { EMPTY_DESK } from "./DeskSet";
+import WallClock from "./WallClock";
 import { defaultLook } from "../features/character/model/layers";
 import { DECOR_DRAW_ORDER, DECOR_ITEM_ART, DEFAULT_DECOR } from "../config/roomDecor";
 import { useSeatOccupancy } from "./useSeatOccupancy";
@@ -112,7 +113,7 @@ export default function CompanyRoom({
         (character.activity === "seated" ? character.seatId : null)),
   );
   const rect = foregroundSeat?.foreground;
-  // 내 책상 세트는 내가 앉았거나 차지한 자리에, 아무도 없는 자리는 기본 세트다. 다른 사람 자리는 RemoteCharacter가 그린다.
+  // 내 책상 세트는 내가 앉았거나 차지한 자리에, 아무도 없는 자리는 소품 없이 모니터만 둔다. 다른 사람 자리는 RemoteCharacter가 그린다.
   const mySeat =
     foregroundSeat ?? seats.find((seat) => seat.occupantId && seat.occupantId === occupancy.ownerId);
   const go = (destination, options) => {
@@ -377,8 +378,9 @@ export default function CompanyRoom({
             {seats
               .filter((seat) => !seat.occupantId && seat.id !== mySeat?.id)
               .map((seat) => (
-                <DeskSet key={seat.id} seat={seat} look={defaultLook()} />
+                <DeskSet key={seat.id} seat={seat} look={EMPTY_DESK} />
               ))}
+            <WallClock />
             {companyLayout.signs.map((sign) => (
               <span
                 key={sign.id}
