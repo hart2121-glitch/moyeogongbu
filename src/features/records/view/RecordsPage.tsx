@@ -16,7 +16,6 @@ export default function RecordsPage() {
     <PageFrame title="공부 기록">
       <div className="page-intro">
         <h1>작은 하루가 모여 큰 걸음으로</h1>
-        <p>이 기록은 나만 볼 수 있어요. 하루는 한국 시간 오전 5시에 바뀌어요.</p>
       </div>
       <div className="record-grid record-today" data-testid="records-today">
         <div>
@@ -45,12 +44,10 @@ export default function RecordsPage() {
         <>
           <section className="records-section" aria-labelledby="records-week">
             <h2 id="records-week">최근 7일</h2>
-            <p className="muted">막대를 누르면 그날 기록을 볼 수 있어요.</p>
             <WeekBars days={records.week} today={records.todayKey} onPick={openDay} />
           </section>
           <section className="records-section" aria-labelledby="records-year">
             <h2 id="records-year">1년 공부 달력</h2>
-            <p className="muted">칸을 누르면 그날 기록을 볼 수 있어요.</p>
             <YearCalendar days={records.year} today={records.todayKey} onPick={openDay} />
           </section>
         </>

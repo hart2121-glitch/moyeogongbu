@@ -390,20 +390,6 @@
   padding: 3px;
   font-size: 12px;
 }
-.company-help {
-  font-size: 13px;
-  line-height: 1.9;
-  color: #50483f;
-  padding: 13px 5px 0;
-  max-width: 72ch;
-}
-.company-help p {
-  margin: 5px 0;
-}
-.company-help summary {
-  cursor: pointer;
-  text-decoration: underline;
-}
 @media (max-width: 1180px) {
   .company-toolbar {
     flex-wrap: wrap;
@@ -621,26 +607,6 @@
 .room-live-note {
   margin: 0;
 }
-.room-owner-tools {
-  margin: 6px 0;
-}
-.room-owner-tools form,
-.room-owner-tools li {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 4px 0;
-}
-.room-owner-tools ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.room-owner-tools h2 {
-  font-size: 13px;
-  margin: 8px 0 2px;
-}
-
 .study-character.is-remote.is-open .character-card {
   display: flex;
 }
@@ -662,49 +628,6 @@
   image-rendering: pixelated;
   pointer-events: none;
   user-select: none;
-}
-.owner-board {
-  flex-wrap: wrap;
-}
-.owner-board label {
-  width: 100%;
-  font-size: 12px;
-}
-.owner-board textarea {
-  width: 14em;
-  resize: none;
-  font: inherit;
-  line-height: 1.4;
-}
-.owner-decor-row {
-  border: 0;
-  padding: 0;
-  margin: 6px 0;
-}
-.owner-decor-row legend {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 0;
-  margin-bottom: 4px;
-}
-.owner-decor-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.owner-decor-option {
-  display: grid;
-  justify-items: center;
-  gap: 2px;
-  width: 104px;
-  padding: 4px;
-  font-size: 12px;
-  line-height: 1.3;
-  word-break: keep-all;
-}
-.owner-decor-option[aria-pressed="true"] {
-  outline: 2px solid #c06a3c;
-  outline-offset: -2px;
 }
 /* 선택지 그림: 휴게실 그림 위 그 자리에 아이템을 1배로 놓은 모습의 가운데 96×44 (기본 러그는 방 그림 그대로) */
 .owner-decor-thumb {

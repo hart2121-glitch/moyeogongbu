@@ -147,12 +147,12 @@ function LiveCompanyRoom({ room, userId, nickname, exit, toRooms }: LiveProps) {
             subscribeMoves={live.subscribeMoves}
           />
         ))}
-        toolbarExtra={room.isOwner && <OwnerTools room={room} members={live.members} onChanged={live.notifyMembers} />}
         side={
           <>
             <RoomTodos />
             <div className="room-social">
               <RoomInviteButton room={room} />
+              {room.isOwner && <OwnerTools room={room} members={live.members} onChanged={live.notifyMembers} />}
               <RoomLiveBar connected={live.connected} sendReaction={live.sendReaction} onTaskSaved={live.notifyMembers} />
             </div>
           </>
@@ -161,7 +161,7 @@ function LiveCompanyRoom({ room, userId, nickname, exit, toRooms }: LiveProps) {
           <StudySessionBar session={session} onGoLounge={goLounge} canGoLounge={canGoLounge} todayCoins={coinsToday} />
         )}
       />
-      {card && <SettlementCard title="오늘의 정산" summary={card} actionLabel="로비로 가기" onClose={exit} />}
+      {card && <SettlementCard title="오늘의 정산" summary={card} actionLabel="내 방으로 가기" onClose={exit} />}
     </>
   );
 }

@@ -422,20 +422,10 @@
   background: #3a4a55;
   filter: none;
 }
-.monitor-places button:disabled {
-  opacity: 1;
-  color: #c9d6d2;
-  background: transparent;
-  box-shadow: inset 0 0 0 1px #3a4a55;
-}
 .monitor-places svg {
   width: 20px;
   height: 20px;
   color: #f1c27d;
-}
-.monitor-places span {
-  font-size: 13px;
-  color: #c9d6d2;
 }
 .monitor-create {
   display: inline-flex;

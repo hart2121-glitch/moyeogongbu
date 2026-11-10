@@ -59,7 +59,7 @@ export default function PrivacyPage() {
         className="back-button"
         onClick={() => navigate(signedIn ? ROUTES.lobby : ROUTES.login)}
       >
-        <ArrowLeft /> {signedIn ? "로비로 돌아가기" : "로그인으로 돌아가기"}
+        <ArrowLeft /> {signedIn ? "내 방으로 돌아가기" : "로그인으로 돌아가기"}
       </button>
       <Panel title={PRIVACY_POLICY.title} className="content-panel">
         <Blocks blocks={PRIVACY_POLICY.intro} />

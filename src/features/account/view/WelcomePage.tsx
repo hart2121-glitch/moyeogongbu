@@ -28,6 +28,7 @@ export default function WelcomePage() {
         <DisplayNameField value={form.nameInput} onChange={form.setNameInput} />
         <label className="check-row">
           <input
+            className="pixel-check"
             type="checkbox"
             required
             checked={isOver14}
@@ -42,18 +43,9 @@ export default function WelcomePage() {
         {form.failed && (
           <p role="alert">저장하지 못했어요. 다시 시도해 주세요.</p>
         )}
-        <button
-          className="primary"
-          disabled={!form.valid || !isOver14 || form.saving}
-          aria-describedby="welcome-hint"
-        >
+        <button className="primary" disabled={!form.valid || !isOver14 || form.saving}>
           시작하기
         </button>
-        {(!form.valid || !isOver14) && (
-          <p className="muted" id="welcome-hint" role="status">
-            {!form.valid ? "화면 이름을 적으면 시작할 수 있어요." : "만 14세 이상인지 확인해 주시면 시작할 수 있어요."}
-          </p>
-        )}
       </form>
     </AuthFrame>
   );

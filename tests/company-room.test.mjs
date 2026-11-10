@@ -219,7 +219,7 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
     // 출입구에 도착하면 오늘의 정산 카드를 한 번 보여 주고 로비로 간다 (Story 003).
     const card = page.getByRole("dialog", { name: "오늘의 정산" });
     await card.waitFor({ timeout: 20000 });
-    await card.getByRole("button", { name: "로비로 가기", exact: true }).click();
+    await card.getByRole("button", { name: "내 방으로 가기", exact: true }).click();
     await page
       .getByRole("heading", { name: "밍구", exact: true })
       .waitFor({ timeout: 20000 });

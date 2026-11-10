@@ -435,7 +435,9 @@ function socialRpc(server, me, name, args, credit) {
           const state = !study || study === "left" ? "offline" : study;
           const room = [...server.presence].find(([, map]) => [...map.values()].some((x) => x.userId === u))?.[0] ?? null;
           const member = room && server.members.get(room)?.has(me);
-          return { user_id: u, display_name: nameOf(u), state, in_room: !!room, room_id: member ? room : null, room_name: member ? server.rooms.get(room)?.name : null };
+          // 서버 list_friends처럼 친구가 저장한 꾸밈을 함께 준다 (20261111110000_friend_looks.sql).
+          const look = server.looks.get(u) ?? null;
+          return { user_id: u, display_name: nameOf(u), state, in_room: !!room, room_id: member ? room : null, room_name: member ? server.rooms.get(room)?.name : null, look };
         });
     case "invite_to_room": {
       if (!server.members.get(args.p_room)?.has(me)) fail("not_member");

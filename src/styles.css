@@ -394,58 +394,6 @@ button:active {
   border-radius: 4px;
   display: inline-block;
 }
-.friend-list {
-  display: flex;
-  flex-direction: column;
-}
-.friend {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  width: 100%;
-  padding: 5px 0;
-  border-bottom: 1px solid #e7d3bf;
-  text-align: left;
-  min-width: 0;
-  font-size: 14px;
-}
-.friend:last-child {
-  border: 0;
-}
-.friend-avatar {
-  width: 43px;
-  height: 43px;
-  object-fit: cover;
-  border-radius: 50%;
-  image-rendering: pixelated;
-}
-.avatar-1 {
-  filter: hue-rotate(330deg);
-}
-.avatar-2 {
-  filter: hue-rotate(75deg);
-}
-.presence {
-  height: 10px;
-  width: 10px;
-  background: #6a8d64;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-left: 2px;
-}
-.presence.away {
-  background: #dca34d;
-}
-.friend-status {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 13px;
-}
-.friend > svg {
-  color: #5c5c4b;
-}
 .page-area {
   padding: 25px 4%;
   max-width: 1150px;
@@ -680,21 +628,6 @@ button:active {
   color: #8a755e;
   line-height: 1.8;
 }
-.content-panel .friend {
-  font-size: 19px;
-  padding: 17px 0;
-  gap: 18px;
-}
-.content-panel .friend-avatar {
-  width: 65px;
-  height: 65px;
-}
-.content-panel .friend-status {
-  font-size: 16px;
-}
-.content-panel .friend-list {
-  margin-bottom: 30px;
-}
 .guide h1 {
   font-size: 28px;
   margin-bottom: 30px;
@@ -814,16 +747,6 @@ button:active {
   font-size: 13px;
   color: #8c745b;
 }
-.friend-detail {
-  text-align: center;
-}
-.friend-detail img {
-  width: 100px;
-  height: 100px;
-  image-rendering: pixelated;
-  border-radius: 50%;
-  margin-bottom: 15px;
-}
 @media (min-width: 1450px) {
   .task-list label {
     min-height: 47px;
@@ -833,9 +756,6 @@ button:active {
   }
   .notices button {
     font-size: 14px;
-  }
-  .friend {
-    min-height: 52px;
   }
   .panel-heading {
     height: 44px;
@@ -872,13 +792,6 @@ button:active {
   .tag {
     min-width: 50px;
     font-size: 11px;
-  }
-  .friend {
-    gap: 7px;
-    font-size: 13px;
-  }
-  .friend-status {
-    font-size: 12px;
   }
   .shop-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1200,25 +1113,7 @@ button:active {
   color: #34312c;
 }
 
-/* Story 006: 친구, 우편함, 알림 */
-.presence.offline {
-  background: #a49a8a;
-}
-.friend-tools {
-  display: grid;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-.friend-add {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 8px;
-}
-.friend-add label {
-  display: grid;
-  gap: 2px;
-}
+/* Story 006: 우편함, 알림 (친구 목록과 친구 화면은 friends/view/friends.css) */
 .mail-list,
 .notification-list {
   display: grid;
@@ -1250,19 +1145,6 @@ button:active {
 }
 .notification-item.unread span {
   font-weight: 700;
-}
-.block-list {
-  margin-top: 12px;
-}
-.block-list h3 {
-  font-size: 15px;
-  margin: 0 0 4px;
-}
-.block-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
 }
 .room-invite {
   display: flex;

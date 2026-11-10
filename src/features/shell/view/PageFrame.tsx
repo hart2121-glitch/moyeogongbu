@@ -20,7 +20,7 @@ export default function PageFrame({
   return (
     <div className="page-area">
       <button className="back-button" onClick={() => navigate(ROUTES.lobby)}>
-        <ArrowLeft /> 로비로 돌아가기
+        <ArrowLeft /> 내 방으로 돌아가기
       </button>
       <Panel title={title} className="content-panel">
         {children}

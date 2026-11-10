@@ -65,10 +65,10 @@ function useRoomScale(mainRef, sideRef) {
  * 회사 스터디룸. `onActivityChange`는 캐릭터 동작이 바뀔 때마다 불리고(공부 세션 입력),
  * `renderSession`은 툴바 아래에 세션 표시를 그린다. 휴게실 이동은 사용자가 누를 때만 일어난다.
  * Story 004: 좌석은 `seatService`(서버 판정)가 정하고, 목적지를 정할 때마다 `onMove`, 멈출 때마다 `onSettle`이 불린다.
- * `overlay`는 무대 안(다른 사람 캐릭터), `side`(할 일, 반응, 지금 하는 일)는 무대 오른쪽 열, `toolbarExtra`(방장 도구)는 무대 아래,
+ * `overlay`는 무대 안(다른 사람 캐릭터), `side`(할 일, 초대, 방장 도구, 반응, 지금 하는 일)는 무대 오른쪽 열,
  * `localReaction`은 내 머리 위에 그린다. 무대는 남는 화면에 맞춰 키운다 (`roomScale`).
- * `side`는 무대 오른쪽 열(실제 할 일 등)에 그린다. 무대는 `companyLayout.view` 범위만 보이도록 바깥 창이 자른다.
- * @param {{ room: any, nickname: string, seatService: any, onExit: () => void, onActivityChange?: (activity: string) => void, onMove?: (move: { to: any, activity: string, seatId: number | null }) => void, onSettle?: (character: any) => void, overlay?: import("react").ReactNode, toolbarExtra?: import("react").ReactNode, localReaction?: import("react").ReactNode, look?: any, renderSession?: (actions: { goLounge: () => void, canGoLounge: boolean }) => import("react").ReactNode, side?: import("react").ReactNode }} props
+ * 무대는 `companyLayout.view` 범위만 보이도록 바깥 창이 자른다.
+ * @param {{ room: any, nickname: string, seatService: any, onExit: () => void, onActivityChange?: (activity: string) => void, onMove?: (move: { to: any, activity: string, seatId: number | null }) => void, onSettle?: (character: any) => void, overlay?: import("react").ReactNode, localReaction?: import("react").ReactNode, look?: any, renderSession?: (actions: { goLounge: () => void, canGoLounge: boolean }) => import("react").ReactNode, side?: import("react").ReactNode }} props
  */
 export default function CompanyRoom({
   room,
@@ -79,7 +79,6 @@ export default function CompanyRoom({
   onMove,
   onSettle,
   overlay,
-  toolbarExtra,
   localReaction,
   renderSession,
   side,
@@ -488,11 +487,10 @@ export default function CompanyRoom({
       </div>
       {side && <aside className="company-side" ref={sideRef}>{side}</aside>}
       </div>
-      {toolbarExtra}
       {backgroundFailed && (
         <div className="room-error" role="alert">
           회사 원본 이미지를 불러오지 못했어요. 좌석 이동을 중단했습니다.
-          <button onClick={onExit}> 로비로 돌아가기</button>
+          <button onClick={onExit}> 내 방으로 돌아가기</button>
         </div>
       )}
       {occupancy.error && (
@@ -505,16 +503,6 @@ export default function CompanyRoom({
           {error || movementError}
         </p>
       )}
-      <details className="company-help">
-        <summary>이동 도움말</summary>
-        <p>
-          바닥을 클릭하면 이동합니다. 1~3번은 위쪽, 4~6번은 아래쪽 좌석입니다.
-        </p>
-        <p>
-          좌석은 서버가 정해요. 같은 자리를 동시에 눌러도 한 명만 앉고, 연결이
-          2분 넘게 끊기면 자리가 풀려요.
-        </p>
-      </details>
     </div>
   );
 }

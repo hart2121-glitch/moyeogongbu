@@ -1,0 +1,223 @@
+/* 방장 도구 창 (OwnerTools.tsx): 묶음마다 크림 카드, 줄마다 이름, 값, 단추. 종이 층 (DESIGN.md). */
+.owner-tools-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #fff8e8;
+  border: 2px solid #b6a084;
+  border-radius: 6px;
+  color: #49533f;
+  font-size: 14px;
+}
+.owner-tools-open svg {
+  width: 18px;
+  height: 18px;
+  color: #f1b854;
+}
+.owner-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.owner-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  background: #f1e2c8;
+  border: 2px solid #b6a084;
+  border-radius: 6px;
+}
+.owner-group h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #24231f;
+}
+.owner-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.owner-balance {
+  font-size: 14px;
+  color: #75624e;
+}
+/* .modal form(세로 쌓기)보다 앞서도록 .owner-tools를 붙인다 */
+.owner-tools .owner-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.owner-line label,
+.owner-label {
+  flex: none;
+  width: 72px;
+  font-size: 14px;
+  color: #75624e;
+}
+.owner-tools .owner-line input,
+.owner-board textarea {
+  flex: 1;
+  width: auto;
+  min-width: 160px;
+  padding: 8px 10px;
+  border: 2px solid #b6a084;
+  border-radius: 4px;
+  background: #fff8e8;
+  color: #24231f;
+  font: inherit;
+}
+.owner-tools .owner-board {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.owner-board > label {
+  font-size: 13px;
+  color: #75624e;
+}
+.owner-board textarea {
+  max-width: 260px;
+  resize: none;
+  line-height: 1.4;
+}
+.owner-code {
+  font-size: 18px;
+  letter-spacing: 3px;
+  color: #24231f;
+}
+.owner-tools .primary,
+.owner-tools .secondary-button {
+  margin: 0;
+  padding: 7px 14px;
+  white-space: nowrap;
+}
+
+/* 휴게실 꾸미기 선택지 (그림 창은 study.css .owner-decor-thumb) */
+.owner-decor-row {
+  margin: 4px 0 0;
+  padding: 0;
+  border: 0;
+}
+.owner-decor-row legend {
+  margin-bottom: 6px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+.owner-decor-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.owner-decor-option {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: 112px;
+  padding: 6px 6px 8px;
+  background: #fff8e8;
+  border: 2px solid #b6a084;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.3;
+  word-break: keep-all;
+}
+.owner-decor-option:hover:not(:disabled) {
+  border-color: #86735e;
+}
+.owner-decor-option[aria-pressed="true"] {
+  border-color: #6c7b61;
+  box-shadow: inset 0 0 0 2px #aeb29a;
+}
+.owner-decor-thumb {
+  border: 1px solid #b6a084;
+}
+.owner-decor-state {
+  font-size: 12px;
+  color: #75624e;
+}
+.owner-decor-option[aria-pressed="true"] .owner-decor-state {
+  color: #49533f;
+  font-weight: 700;
+}
+/* 구매 확인: 크림 상자 안에 문구 두 줄, 그 아래 제 너비 단추 */
+.owner-tools .buy-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  max-width: 600px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #fff8e8;
+  border: 2px solid #b6a084;
+  border-radius: 6px;
+}
+.owner-tools .buy-confirm p {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #24231f;
+}
+.owner-tools .buy-confirm .primary,
+.owner-tools .buy-confirm .secondary-button {
+  width: auto;
+  padding: 7px 14px;
+}
+
+/* 멤버와 강퇴한 사람 */
+.owner-members {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.owner-members li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+}
+.owner-members strong {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.owner-badge {
+  padding: 2px 8px;
+  background: #f1b854;
+  border-radius: 4px;
+  color: #3b2c22;
+  font-size: 13px;
+}
+.owner-kick-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+/* 결과 문구: 창의 보이는 아래 끝에 붙는 띠. 좌우와 아래 여백(.modal .panel-body 23px)까지 덮는다. */
+.owner-message {
+  position: sticky;
+  bottom: 0;
+  margin: 0 -23px -23px;
+  padding: 10px 23px;
+  background: #dae1ca;
+  border-top: 2px solid #8b9b72;
+  color: #24231f;
+}
+.owner-message.is-error {
+  background: #f1d7c8;
+  border-top-color: #b57764;
+  color: #7e4031;
+}

@@ -1,0 +1,72 @@
+/* 설정 모달: 묶음마다 크림 카드, 줄마다 이름, 값, 단추 (종이 층, DESIGN.md). */
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: min(440px, 80vw);
+}
+.settings > h2 {
+  margin: 0;
+}
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background: #f1e2c8;
+  border: 2px solid #b6a084;
+  border-radius: 6px;
+}
+.settings-group h3 {
+  margin: 0 0 2px;
+  font-size: 14px;
+  color: #75624e;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+}
+.settings-row > span {
+  flex: none;
+  width: 92px;
+  font-size: 14px;
+  color: #75624e;
+}
+.settings-row > strong {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.settings-code {
+  letter-spacing: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.settings .secondary-button,
+.settings .primary {
+  margin: 0;
+  padding: 7px 14px;
+  white-space: nowrap;
+}
+.settings .muted {
+  margin: 0;
+}
+.settings-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 2px;
+}
+.settings-foot > div,
+.settings .settings-actions {
+  display: flex;
+  gap: 10px;
+}
+.settings [role="alert"] {
+  margin: 0;
+  color: #7e4031;
+}

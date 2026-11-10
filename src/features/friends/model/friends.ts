@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { toLook, type Look } from "../../character/model/layers";
 import { socialRpc } from "./socialError";
 
 /**
@@ -19,6 +20,8 @@ export interface Friend {
   /** 내가 그 방 멤버일 때만 채워진다. */
   roomId: string | null;
   roomName: string | null;
+  /** 친구가 저장한 꾸밈. 처음 꾸미기 전이면 null (기본 모습으로 그린다). */
+  look: Look | null;
 }
 
 export interface BlockedUser {
@@ -37,6 +40,7 @@ interface FriendRow {
   in_room: boolean;
   room_id: string | null;
   room_name: string | null;
+  look?: unknown;
 }
 
 const toFriend = (row: FriendRow): Friend => ({
@@ -46,6 +50,7 @@ const toFriend = (row: FriendRow): Friend => ({
   inRoom: !!row.in_room,
   roomId: row.room_id ?? null,
   roomName: row.room_name ?? null,
+  look: toLook(row.look),
 });
 
 /** 친구 목록과 상태. @example const friends = await fetchFriends(supabase); */
