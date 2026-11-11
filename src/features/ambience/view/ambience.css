@@ -1,0 +1,67 @@
+/* 공부방 "소리" 단추와 작은 창 (Story 012). 단추 모양은 .company-controls button을 따르고,
+   마지막 단추를 붉게 칠하는 .company-controls button:last-child보다 앞서도록 .ambience를 한 번 더 건다. */
+.ambience {
+  position: relative;
+}
+.company-controls .ambience .ambience-toggle {
+  background: #e3d2b8;
+}
+.company-controls .ambience .ambience-toggle.is-on {
+  background: #dae1ca;
+  border-color: #7f8f66;
+}
+.ambience[data-waiting] .ambience-toggle {
+  opacity: 0.7;
+}
+.ambience-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 15;
+  width: 248px;
+  padding: 12px;
+  background: #fff8e8;
+  border: 2px solid #8a7258;
+  border-radius: 6px;
+  box-shadow: 4px 4px 0 #8a725833;
+}
+.ambience-sounds {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.company-controls .ambience .ambience-sounds button {
+  justify-content: center;
+  padding: 8px 6px;
+  background: #f1e6d2;
+  border-color: #b6a084;
+}
+.company-controls .ambience .ambience-sounds button[aria-pressed="true"] {
+  background: #dae1ca;
+  border-color: #7f8f66;
+  color: #2f3a24;
+  font-weight: 700;
+}
+.ambience-volume {
+  display: grid;
+  grid-template-columns: auto 1fr 2.5em;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 14px;
+  color: #4a3b2c;
+}
+.ambience-volume input {
+  width: 100%;
+  accent-color: #6f8458;
+}
+.ambience-volume output {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #75624e;
+}
+.ambience-panel p {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #7e4031;
+}

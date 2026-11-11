@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Bell, Coin, DoorOpen, Timer } from "@phosphor-icons/react";
 import { SESSION_CONFIG } from "../model/sessionConfig";
 import { validCustomMinutes } from "../model/sessionMachine";
@@ -38,12 +38,14 @@ interface Props {
   /** 오늘 받은 코인 (서버 값과 지금 공부 시간으로 계산). 아직 모르면 null. */
   todayCoins: number | null;
   words?: SessionWords;
+  /** 뽀모도로 단추 옆에 붙는 단추 (방 소리). */
+  extra?: ReactNode;
 }
 
 /**
  * 회사 방의 공부 세션 툴바 (Story 002). 방 그림 속 타이머와 음악 패널은 정적 그림이고, 실제 시간은 여기에만 표시한다.
  */
-export default function StudySessionBar({ session, onGoLounge, canGoLounge, todayCoins, words = COMPANY_WORDS }: Props) {
+export default function StudySessionBar({ session, onGoLounge, canGoLounge, todayCoins, words = COMPANY_WORDS, extra }: Props) {
   const [picking, setPicking] = useState(false);
   const [custom, setCustom] = useState(String(SESSION_CONFIG.customStudyMinutes.min));
   const { min, max } = SESSION_CONFIG.customStudyMinutes;
@@ -98,6 +100,7 @@ export default function StudySessionBar({ session, onGoLounge, canGoLounge, toda
             <Timer /> 뽀모도로
           </button>
         )}
+        {extra}
         {session.notificationPermission === "default" && (
           <button onClick={() => void session.requestNotifications()}>
             <Bell /> 알림 받기

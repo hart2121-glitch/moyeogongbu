@@ -15,6 +15,7 @@ import RoomTodos from "../../room/view/RoomTodos";
 import { useRoomLive, type RoomPhase } from "../../room/viewmodel/useRoomLive";
 import StudySessionBar from "../../session/view/StudySessionBar";
 import { useStudySession } from "../../session/viewmodel/useStudySession";
+import AmbienceControl from "../../ambience/view/AmbienceControl";
 import { useMyLook } from "../../character/viewmodel/useCharacter";
 import RoomNotice from "./RoomNotice";
 
@@ -164,6 +165,7 @@ export default function LiveStudyRoom({ room, userId, nickname, scene, exit, blo
             canGoLounge={canGoLounge}
             todayCoins={coinsToday}
             words={scene.words}
+            extra={<AmbienceControl />}
           />
         )}
       />
