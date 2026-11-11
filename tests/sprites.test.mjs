@@ -7,6 +7,7 @@ import {
   characterSprites,
   frameIndex,
   resolvePose,
+  SETTLE_FRAMES,
   SHEET_FRAME,
   spriteFootCenterX,
   spriteFootPadding,
@@ -23,11 +24,18 @@ test("걷기는 방향마다 4칸씩 이어지고 프레임은 4로 돈다", () 
   assert.equal(frameIndex("walk", "left", 6), frameIndex("walk", "left", 2));
 });
 
-test("의자 앉기는 정면과 뒷모습 칸, 소파 휴식은 마지막 칸", () => {
+test("의자 앉기는 정면과 뒷모습 칸, 소파 휴식은 휴식 칸", () => {
   assert.equal(frameIndex("sit", "down"), 21);
   assert.equal(frameIndex("sit", "up"), 20);
   assert.equal(frameIndex("rest", "left"), 22);
-  assert.equal(frameIndex("rest", "down"), SHEET_FRAME.count - 1);
+  assert.equal(frameIndex("rest", "down"), 22);
+});
+
+test("앉는 사이 칸은 휴식 칸 뒤에 의자 둘, 소파 둘이고 시트 끝까지 채운다", () => {
+  assert.deepEqual(SETTLE_FRAMES, { sit: [23, 24], rest: [25, 26] });
+  assert.equal(Math.max(...SETTLE_FRAMES.sit, ...SETTLE_FRAMES.rest), SHEET_FRAME.count - 1);
+  assert.equal(resolvePose("idle").action in SETTLE_FRAMES, false);
+  assert.equal(resolvePose("walking").action in SETTLE_FRAMES, false);
 });
 
 test("활동을 시트 동작으로 바꾼다 (출구로 나가는 중은 걷기)", () => {
@@ -39,6 +47,12 @@ test("활동을 시트 동작으로 바꾼다 (출구로 나가는 중은 걷기
   assert.equal(resolvePose("idle").action, "idle");
 });
 
+test("소파 같은 구역으로 들어가 앉는 한 걸음은 소파 휴식 자세다", () => {
+  assert.equal(resolvePose("sitting", { intoArea: true }).action, "rest");
+  assert.equal(resolvePose("sitting", { intoArea: false }).action, "sit");
+  assert.equal(resolvePose("seated", { intoArea: true }).action, "sit");
+});
+
 test("발 기준점은 모든 방향에서 칸 맨 아래 줄 가운데", () => {
   for (const d of ["down", "up", "left", "right"]) {
     assert.equal(spriteFootCenterX[d], (SHEET_FRAME.width - 1) / 2);
@@ -47,7 +61,7 @@ test("발 기준점은 모든 방향에서 칸 맨 아래 줄 가운데", () => 
   }
 });
 
-test("공개 폴더의 몸 시트가 23칸 크기다", () => {
+test("공개 폴더의 몸 시트가 27칸 크기다", () => {
   const file = `public${BODY_SHEET}`;
   assert.ok(existsSync(file));
   const image = decodePng(readFileSync(file));

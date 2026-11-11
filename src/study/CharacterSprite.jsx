@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { frameIndex, resolvePose, WALK_FRAME_MS } from "./characterSprites";
+import { useEffect, useRef, useState } from "react";
+import { frameIndex, resolvePose, SETTLE_FRAME_MS, SETTLE_FRAMES, WALK_FRAME_MS } from "./characterSprites";
 import { useRoomScene } from "./roomScene";
 import { composeLayers, defaultLook } from "../features/character/model/layers";
 import SheetFrame from "../features/character/view/SheetFrame";
@@ -17,19 +17,34 @@ export default function CharacterSprite({ character, nickname, look = undefined,
   const { layout } = useRoomScene();
   const [frame, setFrame] = useState(0);
   const [failed, setFailed] = useState(false);
-  const { action, frames } = resolvePose(character.activity);
+  // 좌석이 없는 "sitting"은 소파 같은 구역으로 들어가 앉는 한 걸음이다.
+  const { action, frames } = resolvePose(character.activity, { intoArea: !character.occlusionSeatId });
   // 의자 착석과 소파 휴식은 지금 게임처럼 출입구를 바라보는 정면이다.
   const facing = action === "sit" || action === "rest" ? "down" : character.direction;
+  const pose = `${action}.${facing}`;
+  // 앉는 사이 칸 순번은 자세마다 센다. 처음 그릴 때 이미 앉아 있던 사람은 사이 칸 없이 앉은 칸부터 보인다.
+  const [settled, setSettled] = useState({ pose, step: Infinity });
+  const settleStep = settled.pose === pose ? settled.step : 0;
+  const shownPose = useRef(pose);
   useEffect(() => {
+    if (shownPose.current === pose) return;
+    shownPose.current = pose;
     setFrame(0);
-  }, [action, facing]);
+    setSettled({ pose, step: 0 });
+  }, [pose]);
+  const settle = SETTLE_FRAMES[action];
+  useEffect(() => {
+    if (!settle || settleStep >= settle.length) return;
+    const timer = setTimeout(() => setSettled((s) => (s.pose === pose ? { pose, step: s.step + 1 } : s)), SETTLE_FRAME_MS);
+    return () => clearTimeout(timer);
+  }, [settle, settleStep, pose]);
   useEffect(() => {
     if (frames < 2) return;
     // 다음 프레임은 현재 프레임이 커밋된 뒤 예약하여 지연 시 갱신이 뭉치지 않게 합니다.
     const timer = setTimeout(() => setFrame((f) => (f + 1) % frames), WALK_FRAME_MS);
     return () => clearTimeout(timer);
   }, [frames, frame]);
-  const index = frameIndex(action, facing, frame);
+  const index = settle && settleStep < settle.length ? settle[settleStep] : frameIndex(action, facing, frame);
   const layers = composeLayers(look ?? defaultLook());
   return (
     <div

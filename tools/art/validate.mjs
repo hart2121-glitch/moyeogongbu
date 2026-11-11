@@ -1,6 +1,6 @@
 // 사용법: node tools/art/validate.mjs [art-src 경로]
 // characters/와 rooms/의 그림을 모두 검사한다. 위반이 있으면 종료 코드 1.
-// preview로 시작하는 파일과 draft로 시작하는 시안은 검사하지 않는다.
+// preview로 시작하는 파일과 draft로 시작하는 시안, 예전 23칸으로 남겨 둔 N1 시안 시트(sheet-로 시작)는 검사하지 않는다.
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { checkImage, decodePng, ROOM, SHEET } from "./pixelArt.mjs";
@@ -19,7 +19,7 @@ export function validateArtDir(root) {
     const folder = join(root, dir);
     if (!existsSync(folder)) continue;
     const names = readdirSync(folder).filter(
-      (n) => n.endsWith(".png") && !n.startsWith("preview") && !n.startsWith("draft"),
+      (n) => n.endsWith(".png") && !n.startsWith("preview") && !n.startsWith("draft") && !n.startsWith("sheet-"),
     );
     for (const name of names) {
       const file = join(folder, name);

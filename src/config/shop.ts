@@ -2,7 +2,7 @@
  * 캐릭터 아이템 id별 그림 레이어 표 (Story 007, Story 009). 이 파일만 바꾸면 새 도트 그림으로 바꿔 끼울 수 있다.
  * 아이템 목록, 이름, 가격은 서버 `shop_items` 표가 정한다. 여기에는 가격을 두지 않는다.
  *
- * 레이어 그림은 `tools/art/build-character.mjs`가 만든 23칸 시트(칸 56×72)다. 모든 레이어가 같은 칸 구성이라
+ * 레이어 그림은 `tools/art/build-character.mjs`가 만든 27칸 시트(칸 56×72)다. 모든 레이어가 같은 칸 구성이라
  * 같은 칸 번호(src/study/characterSprites.js의 frameIndex)로 겹치면 모든 동작에서 맞는다.
  *
  * placeholder: true 인 항목은 전용 도트 그림이 아직 없어 그리지 않거나 임시 색상만 입힌 것이다.

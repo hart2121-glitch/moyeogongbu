@@ -29,8 +29,8 @@ export const CAFE_TABLES = [
 /** 탁자 칸 안 자리 (회사 책상과 같은 칸): 발 위치, 다가가는 지점, 번호 판, 탁자 앞면이 시작하는 줄. */
 export const TABLE_SEAT = { x: 59, y: 37, approachY: -2, labelY: 68, topY: 26 };
 
-/** 소파: 그림 칸 상자와 앉는 자리 (tools/art/cafe-room.mjs가 같은 상자에 소파를 놓는다). */
-export const CAFE_SOFA = { left: 22, top: 302, right: 126, bottom: 352, seatX: 74, seatY: 340, approachY: 362 };
+/** 소파: 그림 칸 상자와 앉는 자리 (tools/art/cafe-room.mjs가 같은 상자에 소파를 놓는다). 앉는 자리는 무릎을 굽힌 휴식 칸의 발 위치다. */
+export const CAFE_SOFA = { left: 22, top: 302, right: 126, bottom: 352, seatX: 74, seatY: 344, approachY: 362 };
 
 const rows = [
   { name: "창가 탁자", y: 148 },

@@ -1,5 +1,5 @@
 // 사용법: node tools/art/build-character.mjs
-// art-src/characters/src/의 기본 몸과 부품 원재료로 23프레임 시트를 만든다 (Story 009).
+// art-src/characters/src/의 기본 몸과 부품 원재료로 27칸 시트를 만든다 (Story 009).
 // 출력: art-src/characters/body-basic.png, face-<id>.png, hair-<모양>-<색>-front.png, hair-<모양>-<색>-back.png, outfit-<id>.png, 색 바꾸기 변형
 // 게임은 뒷머리 → 몸 → 옷 → 얼굴 → 앞머리 순서로 같은 칸을 겹친다.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -7,9 +7,14 @@ import { join } from "node:path";
 import { decodePng, encodePng, FRAME } from "./pixelArt.mjs";
 import { coverBaldPeeks, cropCell, plainEyes, eraseFace, extractFace, extractPart, feetAlignment, fitWalkFrame, mirror, NECK, placeHeadPart, shift, SIT_DROP, symmetricEyes, toSheet } from "./characterParts.mjs";
 import { emptyLike, hsv } from "./rigImage.mjs";
-import { restFrame, sitFrame } from "./rigidRig.mjs";
+import { restFrame, SIT_STEPS, sitFrame } from "./rigidRig.mjs";
 
 const SRC = "art-src/characters/src", OUT = "art-src/characters";
+/**
+ * 소파 앉기에 쓰는 생성 프레임 번호 (base/sit/south/<번호>.png, PixelLab skeleton-v3 sit_seat 8프레임).
+ * steps는 앉는 사이 칸(25, 26), held는 앉은 칸(22)이다.
+ */
+const SEAT_FRAMES = { steps: [2, 3], held: 7 };
 /** 시트의 방향 순서 (Story 009). 동쪽은 서쪽 반전. */
 const DIRS = ["south", "north", "west", "east"];
 const load = (p) => decodePng(readFileSync(p));
@@ -39,12 +44,28 @@ function loadBase() {
     }
     base[dir] = { stand, walk, align };
   }
+  // 소파 앉기 (정면): 걷기처럼 머리 위치로 가로를, 발바닥으로 세로를 맞춰 자른다. 머리 높이(headDy)는 칸마다 다르다.
+  const seatDir = join(SRC, "base/sit/south");
+  base.south.seat = existsSync(seatDir)
+    ? [...SEAT_FRAMES.steps, SEAT_FRAMES.held].map((source) => ({ source, ...fitWalkFrame(base.south.stand, load(join(seatDir, `${source}.png`))) }))
+    : null;
   return base;
 }
 
-/** 서기 4, 걷기 16(남, 북, 서, 동 순), 앉기(뒷모습, 정면), 휴식 순서의 23칸. */
+/** 서기 4, 걷기 16(남, 북, 서, 동 순), 앉기(뒷모습, 정면), 휴식, 의자에 앉는 사이 2, 소파에 앉는 사이 2 순서의 27칸. */
 function frameOrder(per) {
-  return [...DIRS.map((d) => per[d].stand), ...DIRS.flatMap((d) => per[d].walk), per.north.sitUp, per.south.sitDown, per.south.rest];
+  return [...DIRS.map((d) => per[d].stand), ...DIRS.flatMap((d) => per[d].walk), per.north.sitUp, per.south.sitDown, per.south.rest, ...per.south.sitSteps, ...per.south.restSteps];
+}
+
+/** 소파 칸들(사이 칸 2개, 앉은 칸)의 머리 높이. 생성 앉기가 없으면 예전 휴식 칸처럼 SIT_DROP이다. */
+const seatDys = (base) => (base.south.seat ? base.south.seat.map((s) => s.headDy) : [SIT_DROP, SIT_DROP, SIT_DROP]);
+
+/** 머리 부품의 앉는 칸들: 의자 사이 칸은 윗몸을 내린 만큼, 소파 칸은 생성 앉기의 머리 높이만큼 내린다. seatPart(i)는 소파 칸 i의 부품. */
+function seatHeadCells(per, parts, base, which, seatPart = () => parts.south) {
+  per.south.sitSteps = SIT_STEPS.map((d) => placeHeadPart(parts.south, d, which));
+  const cells = seatDys(base).map((dy, i) => placeHeadPart(seatPart(i), dy, which));
+  per.south.restSteps = cells.slice(0, -1);
+  per.south.rest = cells.at(-1);
 }
 
 /** 기본 몸은 눈과 입을 지운 맨 얼굴이다 (눈과 입은 얼굴 레이어). */
@@ -53,7 +74,10 @@ function buildBody(base) {
   for (const dir of DIRS) per[dir] = { stand: eraseFace(base[dir].stand), walk: base[dir].walk.map((w) => eraseFace(w.cell, w.headDy)) };
   per.north.sitUp = sitFrame(per.north.stand);
   per.south.sitDown = sitFrame(per.south.stand);
-  per.south.rest = restFrame(per.south.stand);
+  per.south.sitSteps = SIT_STEPS.map((d) => sitFrame(per.south.stand, d));
+  const seated = base.south.seat ? base.south.seat.map((s) => eraseFace(s.cell, s.headDy)) : [0, 1, 2].map(() => restFrame(per.south.stand));
+  per.south.restSteps = seated.slice(0, -1);
+  per.south.rest = seated.at(-1);
   return toSheet(frameOrder(per));
 }
 
@@ -64,7 +88,7 @@ function headSheet(parts, base, which) {
     per[dir] = { stand: placeHeadPart(parts[dir], 0, which), walk: base[dir].walk.map((w) => placeHeadPart(parts[dir], w.headDy, which)) };
   per.north.sitUp = placeHeadPart(parts.north, SIT_DROP, which);
   per.south.sitDown = placeHeadPart(parts.south, SIT_DROP, which);
-  per.south.rest = placeHeadPart(parts.south, SIT_DROP, which);
+  seatHeadCells(per, parts, base, which);
   return toSheet(frameOrder(per));
 }
 
@@ -80,13 +104,15 @@ function buildHair(id, base) {
   const walkParts = {};
   for (const dir of DIRS)
     walkParts[dir] = base[dir].walk.map((w) => (w.placeholder ? parts[dir] : coverBaldPeeks(parts[dir], dressed[dir], shift(w.cell, 0, -w.headDy))));
+  // 소파 앉기 칸도 걷기처럼 칸마다 대머리가 비치는 자리를 덮는다.
+  const seatParts = (base.south.seat ?? []).map((s) => coverBaldPeeks(parts.south, dressed.south, shift(s.cell, 0, -s.headDy)));
   const sheet = (which) => {
     const per = {};
     for (const dir of DIRS)
       per[dir] = { stand: placeHeadPart(parts[dir], 0, which), walk: base[dir].walk.map((w, i) => placeHeadPart(walkParts[dir][i], w.headDy, which)) };
     per.north.sitUp = placeHeadPart(parts.north, SIT_DROP, which);
     per.south.sitDown = placeHeadPart(parts.south, SIT_DROP, which);
-    per.south.rest = placeHeadPart(parts.south, SIT_DROP, which);
+    seatHeadCells(per, parts, base, which, (i) => seatParts[i] ?? parts.south);
     return toSheet(frameOrder(per));
   };
   return { front: sheet("front"), back: sheet("back") };
@@ -182,8 +208,40 @@ function buildOutfit(id, base) {
   }
   per.north.sitUp = sitFrame(per.north.standPart);
   per.south.sitDown = sitFrame(per.south.standPart);
-  per.south.rest = restFrame(per.south.standPart);
+  per.south.sitSteps = SIT_STEPS.map((d) => sitFrame(per.south.standPart, d));
+  let seated = seatOutfit(id, base);
+  if (!seated) {
+    if (base.south.seat) report.push(`(outfit-${id}: 소파 앉기 생성 없음, 예전 휴식 칸)`);
+    seated = [0, 1, 2].map(() => restFrame(per.south.standPart));
+  }
+  per.south.restSteps = seated.slice(0, -1);
+  per.south.rest = seated.at(-1);
   return toSheet(frameOrder(per));
+}
+
+/**
+ * 소파 앉기 옷 칸: "기본 몸 + 옷" 상태에 기본 몸과 같은 동작으로 생성한 앉기(outfit/<id>/sit/south)를 기본 몸 칸과 같은 자리에서 자른다.
+ * 앉으면 팔다리가 기본 몸과 1~2칸씩 어긋나 차이로 떼면 살색 찌꺼기가 남는다. 그래서 목 줄 아래는 옷 그림을 통째로 쓰고
+ * (팔다리도 옷 레이어가 그린다, 피부색은 하나다), 목 줄 바로 위 두 줄(옷깃, 후드)만 기본 몸과의 차이로 뗀다.
+ */
+function seatOutfit(id, base) {
+  const dir = join(SRC, "outfit", id, "sit", "south");
+  if (!base.south.seat || !existsSync(dir)) return null;
+  return base.south.seat.map((s) => {
+    const dressed = cropCell(load(join(dir, `${s.source}.png`)), s.origin.x, s.origin.y);
+    const collar = extractPart(dressed, s.cell, "body");
+    const neck = NECK + s.headDy;
+    const out = emptyLike(dressed);
+    // 목 위 두 줄은 옷감만: 옷 그림의 머리가 기본 몸과 1칸쯤 달라 생긴 볼, 귀의 살색과 외곽선은 버린다.
+    const cloth = (p) => { const c = hsv(p[0], p[1], p[2]); return c.v >= 0.3 && !(c.h >= 5 && c.h <= 40 && c.s >= 0.12 && c.s <= 0.6 && c.v >= 0.72); };
+    for (let y = Math.max(0, neck - 2); y < FRAME.height; y++)
+      for (let x = 0; x < FRAME.width; x++) {
+        const i = (y * FRAME.width + x) * 4, src = y >= neck ? dressed : collar;
+        if (!src.pixels[i + 3] || (y < neck && !cloth(src.pixels.subarray(i, i + 3)))) continue;
+        out.pixels.set(src.pixels.subarray(i, i + 4), i);
+      }
+    return out;
+  });
 }
 
 /**

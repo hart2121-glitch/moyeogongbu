@@ -1,4 +1,4 @@
-// 머리 고정 리그 (Story 009): 4방향 서기 그림 4장에서 23프레임 시트를 만든다.
+// 머리 고정 리그 (Story 009): 4방향 서기 그림 4장에서 27칸 시트를 만든다.
 // 머리와 윗몸은 서기 그림을 그대로 쓰고, 다리와 손만 프레임마다 옮긴다.
 // 그래서 머리에 붙는 부품(머리카락, 얼굴, 액세서리)은 방향당 1장으로 모든 프레임에 맞는다.
 // 사용법: node tools/art/rigidRig.mjs <down.png> <up.png> <left.png> <right.png> <출력 시트.png>
@@ -16,6 +16,8 @@ const WALK = [[0, 0, 0, 0], [2, 0, 1, 1], [0, 0, 0, 0], [0, 2, 1, -1]];
 const STRIDE = 2;
 /** 앉으면 윗몸을 내리는 양(픽셀). */
 const SIT_DROP = 6;
+/** 의자에 앉는 사이 칸(23, 24)에서 윗몸을 내리는 양. 마지막 칸(21)은 SIT_DROP이다. */
+export const SIT_STEPS = [2, 4];
 
 const isSkin = (r, g, b) => { const c = hsv(r, g, b); return c.h < 40 && c.s > 0.12 && c.v > 0.6; };
 
@@ -96,13 +98,13 @@ export function walkFrames(stand, { side = false, facing = 1 } = {}) {
   });
 }
 
-/** 의자 앉기: 다리를 빼고 윗몸을 내린다 (하체는 책상 전경이 가린다). */
-export function sitFrame(stand) {
+/** 의자 앉기: 다리를 빼고 윗몸을 drop만큼 내린다 (하체는 책상 전경이 가린다). 앉는 사이 칸은 덜 내린다. */
+export function sitFrame(stand, drop = SIT_DROP) {
   const out = emptyLike(stand);
   for (let y = 0; y < LEG_TOP; y++)
     for (let x = 0; x < stand.width; x++) {
       const i = pixelIndex(stand, x, y);
-      if (stand.pixels[i + 3]) put(out, x, y + SIT_DROP, stand, i);
+      if (stand.pixels[i + 3]) put(out, x, y + drop, stand, i);
     }
   return out;
 }
@@ -121,12 +123,13 @@ export function restFrame(stand) {
   return out;
 }
 
-/** Story 009 순서의 23프레임: 서기 4, 걷기 아래/위/왼/오 각 4, 앉기(뒷모습), 앉기(정면), 휴식. */
+/** Story 009 순서의 27칸: 서기 4, 걷기 아래/위/왼/오 각 4, 앉기(뒷모습), 앉기(정면), 휴식, 의자 사이 2, 소파 사이 2. */
 export function buildSheet({ down, up, left, right }) {
   const frames = [down, up, left, right,
     ...walkFrames(down), ...walkFrames(up),
     ...walkFrames(left, { side: true, facing: -1 }), ...walkFrames(right, { side: true, facing: 1 }),
-    sitFrame(up), sitFrame(down), restFrame(down)];
+    sitFrame(up), sitFrame(down), restFrame(down),
+    ...SIT_STEPS.map((d) => sitFrame(down, d)), restFrame(down), restFrame(down)];
   const sheet = { width: FRAME.width * FRAME.count, height: FRAME.height, pixels: new Uint8Array(FRAME.width * FRAME.count * FRAME.height * 4) };
   frames.forEach((f, n) => {
     for (let y = 0; y < f.height; y++)
