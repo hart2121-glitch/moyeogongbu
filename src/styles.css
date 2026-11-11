@@ -212,7 +212,8 @@ button:active {
 .scene {
   position: relative;
   flex: 1;
-  background: #746c66 url("/assets/study-room.png") center center/cover;
+  /* 화면마다 자기 바탕을 깐다 (로비 벽, 종이 화면 책상, 공부방 바닥). 예전 배경 그림(study-room.png, 3.3MB)은 어디서도 보이지 않으면서 공부방마다 내려받아 뺐다 */
+  background: #746c66;
   isolation: isolate;
   min-width: 0;
   min-height: calc(100vh - 72px);
