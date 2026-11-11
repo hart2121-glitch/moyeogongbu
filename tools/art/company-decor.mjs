@@ -200,8 +200,26 @@ items["table-flower"] = onTable("gen-flower", 53);
 // ---- 기본 아이템 (2026-11-02 사용자 결정: 원래 그림에서 떼지 않고 따로 만든 그림을 올린다) ----
 // 고양이 쿠션과 탁자 위 다육 화분, 고양이 인형은 내 방 물건과 같은 PixelLab 그림(art-src/home/room/objects/src)이다.
 const OBJ = "art-src/home/room/objects/src";
+/**
+ * 생성 그림 손질 (원본 48×32 좌표). 고양이 쿠션 (2026-11-11 사용자 지적: 돼지 같다): 생성 그림의 회색 타원 코와 네모 입이
+ * 돼지 코처럼 보여서, 크림색으로 지우고 분홍 코와 ω 입으로 다시 찍는다.
+ */
+const CREAM = [240, 226, 190, 255], NOSE = [214, 120, 130, 255], MOUTH = [105, 90, 100, 255];
+const FIXES = {
+  cushions: [
+    // 큰 쿠션: 옛 코와 입을 지우고, 2칸 코 아래로 두 갈래 ω 입
+    ...[[16, 17], [17, 17], [15, 18], [18, 18], [16, 19], [17, 19]].map(([x, y]) => [x, y, CREAM]),
+    [16, 17, NOSE], [17, 17, NOSE],
+    ...[[14, 18], [16, 18], [17, 18], [19, 18], [15, 19], [18, 19]].map(([x, y]) => [x, y, MOUTH]),
+    // 작은 쿠션: 옛 네모 입을 지우고, 1칸 코 아래로 ω 입
+    ...[[34, 21], [36, 21], [34, 22], [35, 22], [36, 22]].map(([x, y]) => [x, y, CREAM]),
+    [35, 21, NOSE],
+    ...[[33, 22], [35, 22], [37, 22], [34, 23], [36, 23]].map(([x, y]) => [x, y, MOUTH]),
+  ],
+};
 const trimmed = (name, mirror = false) => {
   const im = decodePng(readFileSync(`${OBJ}/${name}.png`));
+  for (const [x, y, c] of FIXES[name] ?? []) at(im, x, y).set(c);
   let x0 = im.width, x1 = -1, y0 = im.height, y1 = -1;
   for (let y = 0; y < im.height; y++) for (let x = 0; x < im.width; x++)
     if (at(im, x, y)[3]) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
