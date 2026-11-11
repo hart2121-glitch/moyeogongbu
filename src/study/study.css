@@ -444,6 +444,10 @@
   background: #c9dfa833;
   border-color: #647c45;
 }
+/* 앞줄에 앉은 사람이 그림 속 번호 동그라미를 가리면 번호 글자도 그 사람 머리 위에 띄우지 않는다. */
+.seat-marker.baked.is-covered {
+  color: transparent;
+}
 .company-stage {
   cursor: crosshair;
 }
