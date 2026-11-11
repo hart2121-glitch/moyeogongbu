@@ -341,6 +341,14 @@
   flex-direction: column;
   gap: 6px;
 }
+.monitor-rooms.is-companies {
+  /* 방이 많아도 모니터가 늘어나지 않게: 두 줄과 셋째 줄 끝자락까지 보이고 나머지는 안에서 넘긴다 */
+  max-height: 148px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #5a6b76 transparent;
+}
 .monitor-rooms button {
   width: 100%;
   display: grid;

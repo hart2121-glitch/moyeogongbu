@@ -1,4 +1,4 @@
-import { Envelope } from "@phosphor-icons/react";
+import { Coin, DoorOpen, Envelope, UserPlus } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { roomPath } from "../../shell/model/paths";
@@ -6,7 +6,10 @@ import { useAppState } from "../../shell/viewmodel/AppStateContext";
 import { mailTitle, remainingText, type Mail } from "../model/mail";
 import { useMailbox } from "../viewmodel/useMailbox";
 
-/** 우편함 모달 내용: 친구 요청 수락, 거절, 차단 / 방 초대 입장 / 보상 받기. */
+/** 우편 종류마다 앞에 붙는 그림. */
+const MAIL_ICON = { friend_request: UserPlus, room_invite: DoorOpen, reward: Coin } as const;
+
+/** 우편함 모달 내용: 친구 요청 수락, 거절, 차단 / 방 초대 입장 / 보상 받기. 한 줄에 그림, 제목, 단추. */
 export default function Mailbox() {
   const box = useMailbox();
   const navigate = useNavigate();
@@ -36,63 +39,69 @@ export default function Mailbox() {
     );
   return (
     <div className="mail-list" data-testid="mailbox">
-      {note && <p role="status">{note}</p>}
-      {box.mail.map((mail) => (
-        <article key={mail.id} className={`mail-item mail-${mail.kind}`}>
-          <h2>{mailTitle(mail)}</h2>
-          <p className="muted">{remainingText(mail.daysLeft)}</p>
-          <div className="mail-actions">
-            {mail.kind === "friend_request" && mail.senderId && (
-              <>
-                <button className="primary" disabled={busy === mail.id}
-                  onClick={() => run(mail, async () => { await box.respond(mail.senderId!, "accept"); return "친구가 되었어요."; })}>
-                  수락
-                </button>
-                <button className="primary" disabled={busy === mail.id}
-                  onClick={() => run(mail, () => box.respond(mail.senderId!, "reject"))}>
-                  거절
-                </button>
-                <button className="primary danger" disabled={busy === mail.id}
-                  onClick={() => run(mail, async () => { await box.respond(mail.senderId!, "block"); return "차단했어요. 설정에서 풀 수 있어요."; })}>
-                  차단
-                </button>
-              </>
-            )}
-            {mail.kind === "room_invite" && (
-              <>
-                <button className="primary" disabled={busy === mail.id}
-                  onClick={() => run(mail, async () => {
-                    const roomId = await box.enterRoom(mail.id);
-                    closeModal();
-                    navigate(roomPath(roomId));
-                  })}>
-                  바로 입장
-                </button>
-                <button className="primary" disabled={busy === mail.id} onClick={() => run(mail, () => box.remove(mail.id))}>
-                  지우기
-                </button>
-              </>
-            )}
-            {mail.kind === "reward" &&
-              (mail.claimed ? (
+      {note && <p role="status" className="mail-note">{note}</p>}
+      {box.mail.map((mail) => {
+        const Icon = MAIL_ICON[mail.kind] ?? Envelope;
+        return (
+          <article key={mail.id} className={`mail-item mail-${mail.kind}`}>
+            <Icon className="mail-icon" weight="duotone" aria-hidden="true" />
+            <div className="mail-text">
+              <h2>{mailTitle(mail)}</h2>
+              <p className="muted">{remainingText(mail.daysLeft)}</p>
+            </div>
+            <div className="mail-actions">
+              {mail.kind === "friend_request" && mail.senderId && (
                 <>
-                  <span className="mail-claimed">받았어요</span>
-                  <button className="primary" disabled={busy === mail.id} onClick={() => run(mail, () => box.remove(mail.id))}>
+                  <button className="primary" disabled={busy === mail.id}
+                    onClick={() => run(mail, async () => { await box.respond(mail.senderId!, "accept"); return "친구가 되었어요."; })}>
+                    수락
+                  </button>
+                  <button className="secondary-button" disabled={busy === mail.id}
+                    onClick={() => run(mail, () => box.respond(mail.senderId!, "reject"))}>
+                    거절
+                  </button>
+                  <button className="primary danger" disabled={busy === mail.id}
+                    onClick={() => run(mail, async () => { await box.respond(mail.senderId!, "block"); return "차단했어요. 설정에서 풀 수 있어요."; })}>
+                    차단
+                  </button>
+                </>
+              )}
+              {mail.kind === "room_invite" && (
+                <>
+                  <button className="primary" disabled={busy === mail.id}
+                    onClick={() => run(mail, async () => {
+                      const roomId = await box.enterRoom(mail.id);
+                      closeModal();
+                      navigate(roomPath(roomId));
+                    })}>
+                    바로 입장
+                  </button>
+                  <button className="secondary-button" disabled={busy === mail.id} onClick={() => run(mail, () => box.remove(mail.id))}>
                     지우기
                   </button>
                 </>
-              ) : (
-                <button className="primary" disabled={busy === mail.id}
-                  onClick={() => run(mail, async () => {
-                    const amount = await box.claim(mail.id);
-                    return amount > 0 ? `${amount}코인을 받았어요.` : "이미 받은 보상이에요.";
-                  })}>
-                  받기
-                </button>
-              ))}
-          </div>
-        </article>
-      ))}
+              )}
+              {mail.kind === "reward" &&
+                (mail.claimed ? (
+                  <>
+                    <span className="mail-claimed">받았어요</span>
+                    <button className="secondary-button" disabled={busy === mail.id} onClick={() => run(mail, () => box.remove(mail.id))}>
+                      지우기
+                    </button>
+                  </>
+                ) : (
+                  <button className="primary" disabled={busy === mail.id}
+                    onClick={() => run(mail, async () => {
+                      const amount = await box.claim(mail.id);
+                      return amount > 0 ? `${amount}코인을 받았어요.` : "이미 받은 보상이에요.";
+                    })}>
+                    받기
+                  </button>
+                ))}
+            </div>
+          </article>
+        );
+      })}
     </div>
   );
 }

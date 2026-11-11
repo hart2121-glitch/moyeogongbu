@@ -38,7 +38,7 @@ export default function RoomMonitor({ onLook }: { onLook: LookHandler }) {
         </div>
       )}
       {rooms.length > 0 && (
-        <ul className="monitor-rooms">
+        <ul className="monitor-rooms is-companies" data-testid="monitor-companies">
           {rooms.map((room) => (
             <li key={room.id}>
               <button aria-label={`${room.name} 방으로 출근`} onClick={() => enterCompanyRoom(room)}>
