@@ -1566,3 +1566,8 @@ button:active {
   font-weight: 700;
   color: #3a2f22;
 }
+/* 나눠 받은 화면을 새로고침 직후 처음 받는 동안: 화면 바탕만 깐다 (router.tsx) */
+.route-loading {
+  min-height: 100vh;
+  background: #efe3cf;
+}
