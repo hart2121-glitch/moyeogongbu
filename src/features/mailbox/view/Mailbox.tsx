@@ -32,7 +32,6 @@ export default function Mailbox() {
       <div className="empty-state">
         <Envelope />
         <h2>도착한 편지가 없어요</h2>
-        <p>오늘도 나만의 속도로 공부해 보세요.</p>
       </div>
     );
   return (

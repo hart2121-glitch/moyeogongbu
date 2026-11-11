@@ -837,9 +837,36 @@ button:active {
 .settlement-row dd {
   font-weight: 700;
 }
+.settlement-row.is-zero {
+  color: #a8987f;
+}
+.settlement-row.is-zero dd {
+  font-weight: 400;
+}
 .settlement-sum {
   border-top: 2px dashed #b6a084;
-  padding-top: 8px;
+  padding-top: 10px;
+  align-items: center;
+}
+.settlement-sum dd {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 24px;
+  color: #5d6b48;
+}
+.settlement-sum dd svg {
+  width: 24px;
+  height: 24px;
+  color: #b77828;
+  fill: #f1b854;
+}
+.settlement-balance {
+  color: #7e6e58;
+}
+.settlement-action {
+  display: block;
+  margin-left: auto;
 }
 
 /* Story 005: 공부 기록과 할 일. 기존 팔레트 색만 쓴다. */
@@ -1573,4 +1600,44 @@ button:active {
 .route-loading {
   min-height: 100vh;
   background: #efe3cf;
+}
+
+/* 화면을 그리지 못했을 때 (src/app/RouteError.tsx) */
+.route-error {
+  min-height: min(60vh, 520px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.route-error.is-full {
+  min-height: 100vh;
+}
+.route-error-card {
+  width: min(100%, 420px);
+  padding: 22px 24px;
+  background: #fff8e8;
+  border: 2px solid #8a7258;
+  box-shadow: 4px 4px 0 #8a725833;
+  text-align: center;
+}
+.route-error-card p {
+  margin: 0 0 16px;
+  color: #4a3b2c;
+  font-size: 16px;
+}
+.route-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.route-error-actions .primary,
+.route-error-actions .secondary-button {
+  margin: 0;
+  text-decoration: none;
+}
+.route-error-quiet {
+  color: #b8a78f;
+  font-size: 14px;
 }

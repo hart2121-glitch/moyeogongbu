@@ -3,6 +3,7 @@ import { useState, type CSSProperties, type FormEvent } from "react";
 import { COMPANY_ROOM_ART, companyLayout } from "../../../study/companyLayout";
 import { BOARD_DEFAULT_TEXT, DECOR_ITEM_ART, DECOR_SLOTS, boardTextError, type DecorSlot } from "../../../config/roomDecor";
 import CharacterAvatar from "../../character/view/CharacterAvatar";
+import { objectParticle } from "../../../lib/josa";
 import { buyBlockReason, type ShopItem } from "../../shop/model/shop";
 import CopyButton from "../../shell/view/CopyButton";
 import Dialog from "../../shell/view/Dialog";
@@ -88,7 +89,7 @@ function OwnerToolsBody({ room, members, onChanged }: Props) {
   };
   const place = (slot: DecorSlot, item: ShopItem) => {
     setConfirming(null);
-    void run(() => tools.decorate(slot, item.id), `휴게실에 ${item.name}을(를) 놓았어요.`);
+    void run(() => tools.decorate(slot, item.id), `휴게실에 ${objectParticle(item.name)} 놓았어요.`);
   };
   const buyAndPlace = (slot: DecorSlot, item: ShopItem) =>
     void run(async () => {
@@ -96,7 +97,7 @@ function OwnerToolsBody({ room, members, onChanged }: Props) {
       if (status === "insufficient") throw new Error("코인이 조금 모자라요. 공부하며 코인을 모은 뒤 다시 들러 주세요.");
       setConfirming(null);
       await tools.decorate(slot, item.id);
-    }, `${item.name}을(를) 사서 휴게실에 놓았어요.`);
+    }, `${objectParticle(item.name)} 사서 휴게실에 놓았어요.`);
   const kick = (m: MemberStatus) =>
     void run(async () => {
       await tools.kick(m.userId);

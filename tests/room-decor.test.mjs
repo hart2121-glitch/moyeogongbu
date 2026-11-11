@@ -70,7 +70,7 @@ test("공용 꾸밈: 방장이 러그와 쿠션을 사서 놓고 화이트보드
     await tools.getByRole("button", { name: "휴게실 러그, 카멜 러그, 1800코인" }).click();
     await tools.getByRole("group", { name: "카멜 러그 구매 확인" }).waitFor();
     await tools.getByRole("button", { name: "카멜 러그 사서 놓기" }).click();
-    await tools.getByText("카멜 러그을(를) 사서 휴게실에 놓았어요.").waitFor();
+    await tools.getByText("카멜 러그를 사서 휴게실에 놓았어요.").waitFor();
 
     // 확인: 러그가 깔리고, 코인이 줄고, 산 러그는 이제 "놓여 있어요"
     await owner.locator('.room-decor[data-slot="rug"][data-item="rug-camel"]').waitFor();

@@ -25,11 +25,7 @@ export default function FriendPhone({ onLook }: { onLook: LookHandler }) {
       {empty ? (
         <div className="phone-empty">
           <Cat weight="duotone" />
-          <p>
-            아직 친구가 없어요.
-            <br />
-            친구 코드로 같이 출근할 친구를 불러 보세요.
-          </p>
+          <p>아직 친구가 없어요.</p>
           <Link to={ROUTES.friends}>
             <UserPlus /> 친구 코드로 추가하기
           </Link>
