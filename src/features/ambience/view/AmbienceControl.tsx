@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type ComponentType } from "react";
+import { useCallback, useRef, useState, type ComponentType } from "react";
 import { CloudRain, Coffee, Keyboard, SpeakerHigh, SpeakerSlash, type IconProps } from "@phosphor-icons/react";
 import { AMBIENCE_SOUNDS, type AmbienceSound } from "../model/ambienceRules";
+import { useDismiss } from "../../shell/viewmodel/useDismiss";
 import { useAmbience } from "../viewmodel/useAmbience";
 import "./ambience.css";
 
@@ -20,27 +21,13 @@ export default function AmbienceControl() {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const outside = (e: PointerEvent) => {
-      if (!box.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const escape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("pointerdown", outside);
-    document.addEventListener("keydown", escape);
-    return () => {
-      document.removeEventListener("pointerdown", outside);
-      document.removeEventListener("keydown", escape);
-    };
-  }, [open]);
+  useDismiss(box, open, useCallback(() => setOpen(false), []));
 
   const playing = ambience.sound !== "off";
   const current = AMBIENCE_SOUNDS.find((s) => s.id === ambience.sound);
   const percent = Math.round(ambience.volume * 100);
   return (
-    <div className="ambience" ref={box} data-testid="ambience" data-sound={ambience.sound} data-waiting={ambience.waiting || undefined}>
+    <div className="ambience pop" ref={box} data-testid="ambience" data-sound={ambience.sound} data-waiting={ambience.waiting || undefined}>
       <button
         className={`ambience-toggle${playing ? " is-on" : ""}`}
         aria-expanded={open}
@@ -52,7 +39,7 @@ export default function AmbienceControl() {
         {playing ? current?.label : "소리"}
       </button>
       {open && (
-        <div className="ambience-panel" role="dialog" aria-label="방 소리">
+        <div className="pop-panel ambience-panel" role="dialog" aria-label="방 소리">
           <div className="ambience-sounds" role="group" aria-label="소리 고르기">
             {AMBIENCE_SOUNDS.map(({ id, label }) => {
               const Icon = ICONS[id];

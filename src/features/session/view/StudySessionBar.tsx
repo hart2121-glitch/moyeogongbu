@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from "react";
+import { useCallback, useRef, useState, type ReactNode } from "react";
 import { Bell, Coin, DoorOpen, Timer } from "@phosphor-icons/react";
 import { SESSION_CONFIG } from "../model/sessionConfig";
 import { validCustomMinutes } from "../model/sessionMachine";
 import type { StudySession } from "../viewmodel/useStudySession";
+import { useDismiss } from "../../shell/viewmodel/useDismiss";
 
 const STATE_LABEL = {
   studying: "공부 중",
@@ -47,6 +48,8 @@ interface Props {
  */
 export default function StudySessionBar({ session, onGoLounge, canGoLounge, todayCoins, words = COMPANY_WORDS, extra }: Props) {
   const [picking, setPicking] = useState(false);
+  const pickBox = useRef<HTMLDivElement>(null);
+  useDismiss(pickBox, picking, useCallback(() => setPicking(false), []));
   const [custom, setCustom] = useState(String(SESSION_CONFIG.customStudyMinutes.min));
   const { min, max } = SESSION_CONFIG.customStudyMinutes;
   const customMinutes = validCustomMinutes(Number(custom), SESSION_CONFIG);
@@ -96,9 +99,39 @@ export default function StudySessionBar({ session, onGoLounge, canGoLounge, toda
             <Timer /> 뽀모도로 끄기
           </button>
         ) : (
-          <button onClick={() => setPicking((v) => !v)} aria-expanded={picking}>
-            <Timer /> 뽀모도로
-          </button>
+          <div className="pop" ref={pickBox}>
+            <button onClick={() => setPicking((v) => !v)} aria-expanded={picking} aria-haspopup="dialog">
+              <Timer /> 뽀모도로
+            </button>
+            {picking && (
+              <div className="pop-panel pomodoro-panel" role="dialog" aria-label="뽀모도로 선택">
+                {SESSION_CONFIG.pomodoroPresets.map((p) => (
+                  <button key={p.id} onClick={() => start(p.studyMinutes, p.breakMinutes)}>
+                    {p.studyMinutes}분 공부, {p.breakMinutes}분 휴식
+                  </button>
+                ))}
+                <label className="pomodoro-custom">
+                  <span>
+                    직접 설정 ({min}~{max}분)
+                  </span>
+                  <input
+                    type="number"
+                    min={min}
+                    max={max}
+                    step={1}
+                    value={custom}
+                    onChange={(e) => setCustom(e.target.value)}
+                  />
+                </label>
+                <button
+                  disabled={customMinutes === null}
+                  onClick={() => customMinutes && start(customMinutes, SESSION_CONFIG.customBreakMinutes)}
+                >
+                  {customMinutes ?? min}분 공부, {SESSION_CONFIG.customBreakMinutes}분 휴식 시작
+                </button>
+              </div>
+            )}
+          </div>
         )}
         {extra}
         {session.notificationPermission === "default" && (
@@ -107,32 +140,6 @@ export default function StudySessionBar({ session, onGoLounge, canGoLounge, toda
           </button>
         )}
       </div>
-      {picking && !pomodoro && (
-        <div className="company-controls" role="group" aria-label="뽀모도로 선택">
-          {SESSION_CONFIG.pomodoroPresets.map((p) => (
-            <button key={p.id} onClick={() => start(p.studyMinutes, p.breakMinutes)}>
-              {p.studyMinutes}분 공부, {p.breakMinutes}분 휴식
-            </button>
-          ))}
-          <label>
-            직접 설정 (공부 {min}~{max}분){" "}
-            <input
-              type="number"
-              min={min}
-              max={max}
-              step={1}
-              value={custom}
-              onChange={(e) => setCustom(e.target.value)}
-            />
-          </label>
-          <button
-            disabled={customMinutes === null}
-            onClick={() => customMinutes && start(customMinutes, SESSION_CONFIG.customBreakMinutes)}
-          >
-            {customMinutes ?? min}분 공부, {SESSION_CONFIG.customBreakMinutes}분 휴식 시작
-          </button>
-        </div>
-      )}
       {session.prompt && (
         <div className="room-created" role="alertdialog" aria-label="안부 확인" data-testid="session-prompt">
           <p>{session.promptText}</p>

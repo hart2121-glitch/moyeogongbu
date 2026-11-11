@@ -139,7 +139,7 @@
   font-size: 14px;
   white-space: nowrap;
 }
-.company-controls button:last-child {
+.company-toolbar .company-controls button:last-child {
   background: #dba291;
 }
 .company-controls button:disabled {
@@ -696,4 +696,46 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
+}
+/* 세션 줄 단추 아래 작은 창 (뽀모도로, 방 소리): 방 그림을 밀어내지 않게 띄운다 */
+.pop {
+  position: relative;
+}
+.pop-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 15;
+  padding: 12px;
+  background: #fff8e8;
+  border: 2px solid #8a7258;
+  border-radius: 6px;
+  box-shadow: 4px 4px 0 #8a725833;
+}
+.pomodoro-panel {
+  display: grid;
+  gap: 6px;
+  width: 248px;
+}
+.company-controls .pomodoro-panel button {
+  justify-content: center;
+  background: #f1e6d2;
+  border-color: #b6a084;
+}
+.company-controls .pomodoro-panel button:hover:not(:disabled) {
+  background: #dae1ca;
+}
+.pomodoro-custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 14px;
+  color: #4a3b2c;
+}
+.pomodoro-custom input {
+  width: 64px;
+  padding: 6px 8px;
+  text-align: right;
 }

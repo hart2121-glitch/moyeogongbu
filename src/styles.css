@@ -14,6 +14,9 @@
 }
 body {
   margin: 0;
+  /* 한국어 줄바꿈은 낱말 사이에서만. 띄어쓰기 없는 긴 글(코드, 주소)은 넘칠 때만 끊는다 (anywhere는 최소 너비를 줄여 좁은 칸의 숫자까지 끊는다) */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 button,
 input {
