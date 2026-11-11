@@ -52,7 +52,9 @@ CHROMIUM_PATH=<chromium 실행 파일> APP_URL=http://127.0.0.1:4173/ npm test
 
 ## 배포
 
-Vercel 정적 배포입니다 (`vercel.json`: `npm run build`, `dist/`, 모든 주소를 `index.html`로). 환경 변수는 Preview에 개발 프로젝트, Production에 운영 프로젝트 값을 넣습니다. DB 변경은 합친 뒤 `npx supabase db push`로 각 프로젝트에 적용합니다.
+Vercel 정적 배포입니다 (`vercel.json`: `npm run build`, `dist/`, `/assets/` 밖의 모든 주소를 `index.html`로, 기본 보안 헤더). 환경 변수는 Preview에 개발 프로젝트, Production에 운영 프로젝트 값을 넣습니다. DB 변경은 합친 뒤 `npx supabase db push`로 각 프로젝트에 적용합니다. 처음 출시할 때 대시보드에서 할 일(Google 로그인, 돌아올 주소)은 `supabase/README.md`의 "출시 전 설정"에 있습니다.
+
+배포 뒤 이미 열려 있던 탭이 사라진 화면 파일을 찾으면 한 번 새로고침해 새 파일을 받습니다 (`src/app/RouteError.tsx`).
 
 ## 그림과 소리
 
