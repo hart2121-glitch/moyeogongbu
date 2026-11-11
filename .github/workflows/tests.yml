@@ -23,8 +23,9 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
       - name: Chromium 설치
+        # 우분투 패키지 저장소 장애(주소 확인 실패) 때는 러너 이미지에 있는 라이브러리로 Chromium만 받는다. 실제로 빠진 라이브러리가 있으면 테스트에서 실패한다.
         run: |
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium || npx playwright install chromium
           echo "CHROMIUM_PATH=$(node -p "require('@playwright/test').chromium.executablePath()")" >> "$GITHUB_ENV"
       - name: 개발 서버 실행
         run: |
