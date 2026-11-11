@@ -600,6 +600,12 @@
 }
 .desk-phone .desk-object-body {
   flex: 1;
+  /* 친구가 많아도 휴대폰 크기(400px)는 그대로, 목록은 화면 안에서 넘긴다 */
+  max-height: 292px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #c7b48f transparent;
   padding: 4px 12px;
   background: var(--paper);
   color: var(--ink);

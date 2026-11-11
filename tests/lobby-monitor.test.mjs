@@ -41,3 +41,38 @@ test("회사 방이 다섯 개여도 모니터 회사 목록은 두 줄 남짓�
     await browser.close();
   }
 });
+
+test("친구가 스무 명이어도 휴대폰은 400px 그대로이고 목록은 안에서 넘긴다", async () => {
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_PATH || "/usr/bin/chromium",
+    headless: true,
+    args: ["--no-sandbox"],
+  });
+  try {
+    // Arrange: 친구 스무 명.
+    const server = createFakeServer();
+    for (let i = 1; i <= 20; i++) {
+      const id = `00000000-0000-4000-8000-${String(100 + i).padStart(12, "0")}`;
+      server.names.set(id, `친구${i}`);
+      server.addFriend(FAKE_USER_ID, id);
+    }
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    await mockSupabase(page, { server });
+
+    // Act
+    await page.goto(new URL("/lobby", url).href);
+    const phone = page.locator(".desk-phone");
+    await phone.getByText("친구20").waitFor({ state: "attached" });
+
+    // Assert
+    const size = await phone.evaluate((el) => {
+      const body = el.querySelector(".desk-object-body");
+      return { phone: el.getBoundingClientRect().height, client: body.clientHeight, scroll: body.scrollHeight };
+    });
+    assert.ok(size.phone <= 401, `휴대폰 높이 ${size.phone}`);
+    assert.ok(size.scroll > size.client, "넘치는 친구는 안에서 넘긴다");
+    assert.ok(await phone.getByRole("link", { name: /친구 목록 전체 보기/ }).isVisible());
+  } finally {
+    await browser.close();
+  }
+});
