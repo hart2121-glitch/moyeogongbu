@@ -30,7 +30,7 @@ const buy = async (page, name) => {
 /** 방에 깔린 책상 아이템: "자리번호:자리:아이템:주인" 목록 (주인 없음은 기본 세트). */
 const deskItems = (page) =>
   page.evaluate(() =>
-    [...document.querySelectorAll(".desk-item:not(.desk-monitor)")]
+    [...document.querySelectorAll(".desk-item:not(.desk-screen)")]
       .map((i) => [i.dataset.seat, i.dataset.spot, i.dataset.item, i.dataset.owner ?? "", i.classList.contains("is-front")].join(":"))
       .sort(),
   );

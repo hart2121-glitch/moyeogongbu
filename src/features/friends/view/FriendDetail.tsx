@@ -2,9 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { defaultLook } from "../../character/model/layers";
 import LayerStack from "../../character/view/LayerStack";
-import { roomPath } from "../../shell/model/paths";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
-import { friendPlace, type Friend } from "../model/friends";
+import { friendPlace, friendRoomPath, type Friend } from "../model/friends";
 import { useFriendActions } from "../viewmodel/useFriends";
 import "./friends.css";
 
@@ -32,9 +31,10 @@ export default function FriendDetail({ friend }: { friend: Friend }) {
       setBusy(false);
     }
   };
+  const target = friendRoomPath(friend);
   const join = () => {
     closeModal();
-    navigate(roomPath(friend.roomId!));
+    if (target) navigate(target);
   };
   return (
     <div className="friend-detail">
@@ -65,7 +65,7 @@ export default function FriendDetail({ friend }: { friend: Friend }) {
         </div>
       ) : (
         <div className="friend-detail-actions">
-          {friend.roomId && (
+          {target && (
             <button className="primary" onClick={join}>
               같이 공부하기
             </button>

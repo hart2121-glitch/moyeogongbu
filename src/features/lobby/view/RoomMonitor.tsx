@@ -1,6 +1,6 @@
 import { CaretRight, Coffee, DoorOpen, Plus } from "@phosphor-icons/react";
-import { Link, useNavigate } from "react-router-dom";
-import { useMyRooms } from "../../room/viewmodel/useMyRooms";
+import { Link } from "react-router-dom";
+import { useCafeCount, useMyRooms } from "../../room/viewmodel/useMyRooms";
 import { useRoomNavigation } from "../../rooms/viewmodel/useRoomNavigation";
 import { ROUTES } from "../../shell/model/paths";
 import DeskObject, { type LookHandler } from "./DeskObject";
@@ -13,8 +13,8 @@ import DeskObject, { type LookHandler } from "./DeskObject";
 export default function RoomMonitor({ onLook }: { onLook: LookHandler }) {
   const query = useMyRooms();
   const rooms = query.data ?? [];
-  const { enterCompanyRoom } = useRoomNavigation();
-  const navigate = useNavigate();
+  const cafeCount = useCafeCount().data ?? 0;
+  const { enterCompanyRoom, enterCafe } = useRoomNavigation();
   return (
     <DeskObject
       kind="monitor"
@@ -54,10 +54,14 @@ export default function RoomMonitor({ onLook }: { onLook: LookHandler }) {
           ))}
         </ul>
       )}
-      <ul className="monitor-places" aria-label="다른 곳">
+      <h3 className="monitor-group is-next">카페</h3>
+      <ul className="monitor-rooms">
         <li>
-          <button onClick={() => navigate(ROUTES.cafe)}>
-            <Coffee weight="duotone" /> 스터디카페
+          <button aria-label="공용 스터디카페로 가기" onClick={() => enterCafe()} data-testid="monitor-cafe">
+            <Coffee weight="duotone" />
+            <strong>공용 스터디카페</strong>
+            <span>{cafeCount > 0 ? `${cafeCount}명 공부 중` : "아직 아무도 없어요"}</span>
+            <span className="monitor-go">가기</span>
           </button>
         </li>
       </ul>

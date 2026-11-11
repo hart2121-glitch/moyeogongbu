@@ -81,12 +81,14 @@ export function createFakeServer() {
     addNotification(userId, n) {
       server.social.notifications.push({ id: server.social.notifSeq++, user_id: userId, read: false, created_at: new Date().toISOString(), ...n });
     },
-    addRoom({ id = `10000000-0000-4000-8000-${String(++roomSeq).padStart(12, "0")}`, name, code, ownerId }) {
+    /** kind "cafe"는 공용 스터디카페 (방장과 초대 코드가 없다, *_public_cafe.sql). */
+    addRoom({ id = `10000000-0000-4000-8000-${String(++roomSeq).padStart(12, "0")}`, name, code, ownerId, kind = "company" }) {
+      const cafe = kind === "cafe";
       server.rooms.set(id, {
-        id, name, invite_code: code, owner_id: ownerId, created_at: Date.now(),
+        id, kind, name, invite_code: cafe ? null : code, owner_id: cafe ? null : ownerId, created_at: Date.now(),
         board_text: null, decor: { cushions: "cushions-cat", table: "table-cat", rug: "rug-beige", mat: "mat-cat" },
       });
-      server.members.set(id, new Map([[ownerId, Date.now()]]));
+      server.members.set(id, cafe ? new Map() : new Map([[ownerId, Date.now()]]));
       server.bans.set(id, new Set());
       server.seats.set(id, Array.from({ length: RULES.seats }, () => ({ userId: null, lastSeen: 0 })));
       server.presence.set(id, new Map());
@@ -434,13 +436,16 @@ function socialRpc(server, me, name, args, credit) {
           const study = server.studyState.get(u)?.state;
           const state = !study || study === "left" ? "offline" : study;
           const room = [...server.presence].find(([, map]) => [...map.values()].some((x) => x.userId === u))?.[0] ?? null;
-          const member = room && server.members.get(room)?.has(me);
+          const kind = room ? server.rooms.get(room)?.kind : null;
+          // 공용 카페는 누구나 들어올 수 있어 멤버가 아니어도 카페 id와 이름을 준다 (*_public_cafe.sql).
+          const visible = room && (kind === "cafe" || server.members.get(room)?.has(me));
           // 서버 list_friends처럼 친구가 저장한 꾸밈을 함께 준다 (20261111110000_friend_looks.sql).
           const look = server.looks.get(u) ?? null;
-          return { user_id: u, display_name: nameOf(u), state, in_room: !!room, room_id: member ? room : null, room_name: member ? server.rooms.get(room)?.name : null, look };
+          return { user_id: u, display_name: nameOf(u), state, in_room: !!room, room_id: visible ? room : null, room_name: visible ? server.rooms.get(room)?.name : null, room_kind: kind, look };
         });
     case "invite_to_room": {
       if (!server.members.get(args.p_room)?.has(me)) fail("not_member");
+      if (server.rooms.get(args.p_room)?.kind === "cafe") fail("cafe_no_invite");
       if (!isFriend(me, args.p_friend)) fail("not_friend");
       if (server.members.get(args.p_room).size >= RULES.maxMembers) fail("room_full");
       if (server.members.get(args.p_room).has(args.p_friend)) fail("already_member");
@@ -520,10 +525,11 @@ function roomRpc(server, me, name, args) {
   };
   const json = (r) => ({
     id: r.id,
+    kind: r.kind,
     name: r.name,
     invite_code: r.invite_code,
     owner_id: r.owner_id,
-    is_owner: r.owner_id === me,
+    is_owner: r.owner_id !== null && r.owner_id === me,
     member_count: server.members.get(r.id).size,
     online_count: new Set([...server.presence.get(r.id).values()].filter((p) => fresh(p.lastSeen)).map((p) => p.userId)).size,
     board_text: r.board_text,
@@ -532,7 +538,12 @@ function roomRpc(server, me, name, args) {
   const sweep = (id) => {
     for (const s of server.seats.get(id)) if (s.userId && !fresh(s.lastSeen)) Object.assign(s, { userId: null, lastSeen: 0 });
     for (const [k, p] of server.presence.get(id)) if (!fresh(p.lastSeen)) server.presence.get(id).delete(k);
+    // 카페: 들어온 지 유예가 지났는데 접속한 탭이 없는 사람은 멤버에서 뺀다.
+    if (server.rooms.get(id)?.kind === "cafe")
+      for (const [u, joined] of server.members.get(id))
+        if (!fresh(joined) && ![...server.presence.get(id).values()].some((p) => p.userId === u)) server.members.get(id).delete(u);
   };
+  const cafeSize = (id) => server.members.get(id).size;
   const state = (id) => ({
     server_now: new Date().toISOString(),
     seats: server.seats.get(id).map((s, i) => ({ seat_no: i + 1, user_id: s.userId && fresh(s.lastSeen) ? s.userId : null })),
@@ -557,9 +568,38 @@ function roomRpc(server, me, name, args) {
     }
   };
   switch (name) {
+    case "join_cafe": {
+      // *_public_cafe.sql join_cafe와 같은 판정: 친구 카페, 있던 카페, 자리가 남은 카페 중 사람이 가장 많은 곳, 아니면 새 카페.
+      const cafes = [...server.rooms.values()].filter((r) => r.kind === "cafe");
+      for (const r of cafes) sweep(r.id);
+      const current = cafes.find((r) => isMember(r.id))?.id ?? null;
+      let target = null;
+      if (args.p_room) {
+        if (!cafes.some((r) => r.id === args.p_room)) fail("no_cafe");
+        target = args.p_room;
+      } else if (current) target = current;
+      else
+        target =
+          cafes
+            .filter((r) => cafeSize(r.id) < RULES.maxConcurrent)
+            .sort((a, b) => cafeSize(b.id) - cafeSize(a.id) || a.created_at - b.created_at)[0]?.id ??
+          server.addRoom({ name: "공용 스터디카페", kind: "cafe" });
+      if (!isMember(target)) {
+        if (cafeSize(target) >= RULES.maxConcurrent) fail("cafe_full");
+        for (const r of cafes) if (r.id !== target && isMember(r.id)) removeMember(r.id, me);
+        server.members.get(target).set(me, now);
+      }
+      return json(server.rooms.get(target));
+    }
+    case "cafe_count":
+      return new Set(
+        [...server.rooms.values()]
+          .filter((r) => r.kind === "cafe")
+          .flatMap((r) => [...server.presence.get(r.id).values()].filter((p) => fresh(p.lastSeen)).map((p) => p.userId)),
+      ).size;
     case "list_my_rooms":
       return [...server.rooms.values()]
-        .filter((r) => isMember(r.id))
+        .filter((r) => r.kind !== "cafe" && isMember(r.id))
         .sort((a, b) => server.members.get(a.id).get(me) - server.members.get(b.id).get(me))
         .map(json);
     case "create_room": {

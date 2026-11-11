@@ -268,9 +268,6 @@ button:active {
   font-size: 14px;
   white-space: nowrap;
 }
-.school {
-  filter: sepia(0.28) hue-rotate(325deg);
-}
 .task-list {
   list-style: none;
   padding: 0;
@@ -422,8 +419,7 @@ button:active {
 .page-intro {
   margin-bottom: 30px;
 }
-.page-intro h1,
-.room-content h1 {
+.page-intro h1 {
   font-family: "Gowun Batang", serif;
   font-size: 29px;
   margin: 10px 0 12px;
@@ -433,46 +429,6 @@ button:active {
   color: #75624e;
   font-size: 14px;
   line-height: 1.9;
-}
-.cafe-rooms {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-  margin-bottom: 25px;
-}
-.cafe-room {
-  padding: 0 0 20px;
-  background: #e8d7bf;
-  border: 2px solid #a08b70;
-  border-radius: 7px;
-  overflow: hidden;
-  text-align: left;
-}
-.room-thumbnail {
-  height: 175px;
-  background: url("/assets/study-room.png") center/220%;
-  border-bottom: 2px solid #a08b70;
-}
-.room-1 {
-  background-position: 15% 65%;
-  filter: sepia(0.3);
-}
-.room-2 {
-  background-position: 85% 50%;
-}
-.cafe-room h2 {
-  font-size: 20px;
-  margin: 17px 15px 7px;
-}
-.cafe-room p {
-  font-size: 12px;
-  margin: 0 15px 18px;
-  color: #806d57;
-}
-.cafe-room > span {
-  margin: 0 15px;
-  color: #57684e;
-  font-size: 14px;
 }
 .outfit-세이지 {
   filter: hue-rotate(65deg) saturate(0.75);
@@ -652,32 +608,6 @@ button:active {
   color: #7e6e58;
   font-size: 15px;
 }
-.room-content {
-  text-align: center;
-}
-.room-art {
-  height: 300px;
-  border: 3px solid #8a7560;
-  border-radius: 8px;
-  background: url("/assets/study-room.png") center 65% / cover;
-  margin: 22px 0 18px;
-}
-.info-strip {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  padding: 14px;
-  background: #e9d9bd;
-  border: 1px solid #c0a98a;
-  border-radius: 5px;
-  margin-bottom: 14px;
-}
-.info-strip span {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -798,9 +728,6 @@ button:active {
   }
   .customizer {
     gap: 20px;
-  }
-  .cafe-rooms {
-    gap: 10px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

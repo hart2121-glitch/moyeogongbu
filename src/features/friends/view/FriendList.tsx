@@ -1,9 +1,8 @@
 import { CaretRight } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import CharacterAvatar from "../../character/view/CharacterAvatar";
-import { roomPath } from "../../shell/model/paths";
 import { useAppState } from "../../shell/viewmodel/AppStateContext";
-import { friendPlace, friendStatusLabel } from "../model/friends";
+import { friendPlace, friendRoomPath, friendStatusLabel } from "../model/friends";
 import { useFriends } from "../viewmodel/useFriends";
 import "./friends.css";
 
@@ -37,8 +36,8 @@ export default function FriendList({ expanded = false }) {
                 </span>
                 {expanded && <CaretRight className="friend-more" aria-hidden="true" />}
               </button>
-              {expanded && f.roomId && (
-                <button className="primary friend-join" onClick={() => navigate(roomPath(f.roomId!))}>
+              {expanded && friendRoomPath(f) && (
+                <button className="primary friend-join" onClick={() => navigate(friendRoomPath(f)!)}>
                   같이 공부하기
                 </button>
               )}

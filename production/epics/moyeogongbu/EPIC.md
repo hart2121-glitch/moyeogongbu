@@ -29,3 +29,4 @@
 | 007 | 상점과 캐릭터 꾸미기 | UI | Complete | N/A |
 | 009 | 도트 스프라이트로 다시 그리기 | Visual/Feel | Ready | N/A |
 | 010 | 출시 다듬기 | UI | Complete | N/A |
+| 011 | 공용 스터디카페 | Integration | Complete | N/A |

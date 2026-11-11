@@ -11,8 +11,7 @@ import RecordsPage from "../features/records/view/RecordsPage";
 import CafePage from "../features/rooms/view/CafePage";
 import CompanyRoomPage from "../features/rooms/view/CompanyRoomPage";
 import RoomListPage from "../features/rooms/view/RoomListPage";
-import ThemeRoomPage from "../features/rooms/view/ThemeRoomPage";
-import { ROUTES, THEME_ROOM_BASE } from "../features/shell/model/paths";
+import { ROUTES } from "../features/shell/model/paths";
 import AppShell from "../features/shell/view/AppShell";
 
 const toLobby = <Navigate to={ROUTES.lobby} replace />;
@@ -36,7 +35,6 @@ export const router = createBrowserRouter([
           { path: ROUTES.lobby, element: <LobbyPage /> },
           { path: ROUTES.rooms, element: <RoomListPage /> },
           { path: `${ROUTES.rooms}/:roomId`, element: <CompanyRoomPage /> },
-          { path: `${THEME_ROOM_BASE}/:theme`, element: <ThemeRoomPage /> },
           { path: ROUTES.cafe, element: <CafePage /> },
           { path: ROUTES.character, element: <CharacterPage /> },
           // 상점은 꾸미기에 합쳤다 (2026-11-01). 예전 주소는 꾸미기로 보낸다.

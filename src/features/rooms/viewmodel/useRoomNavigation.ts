@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { Room } from "../../room/model/room";
 import { useRoomActions } from "../../room/viewmodel/useMyRooms";
-import { ROUTES, roomPath, themeRoomPath } from "../../shell/model/paths";
+import { ROUTES, cafePath, roomPath } from "../../shell/model/paths";
 import { quickEnterRoom } from "../model/rooms";
 
 /**
@@ -18,6 +18,7 @@ export function useRoomNavigation() {
       const room = quickEnterRoom(await ensure().catch(() => []));
       navigate(room ? roomPath(room.id) : ROUTES.rooms);
     },
-    enterTheme: (name: string) => navigate(themeRoomPath(name)),
+    /** 공용 카페로. 카페 id를 주면 그 카페(친구가 있는 곳)로. */
+    enterCafe: (roomId?: string) => navigate(cafePath(roomId)),
   };
 }

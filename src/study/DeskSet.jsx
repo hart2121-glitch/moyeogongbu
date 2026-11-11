@@ -1,5 +1,6 @@
-import { DESK_ITEM_ART, DESK_MONITOR_ART, deskItemFlipped } from "../config/shop";
-import { companyLayout, deskBox, deskSpotBox } from "./companyLayout";
+import { DESK_ITEM_ART, deskItemFlipped } from "../config/shop";
+import { deskBox, deskSpotBox } from "./companyLayout";
+import { useRoomScene } from "./roomScene";
 
 /** 빈 책상: 소품 없이 모니터만 (2026-11-02 사용자 결정: 아무도 없는 자리에는 소품을 두지 않는다). */
 export const EMPTY_DESK = { desk_left: null, desk_right: null, desk_front: null };
@@ -17,6 +18,7 @@ const SPOTS = [
  * @param {{ seat: any, look: { desk_left: string | null, desk_right: string | null, desk_front: string | null }, front?: boolean, owner?: string }} props
  */
 export default function DeskSet({ seat, look, front = false, owner = "" }) {
+  const { layout, monitorArt } = useRoomScene();
   const layer = `desk-item${front ? " is-front" : ""}`;
   return (
     <>
@@ -34,18 +36,18 @@ export default function DeskSet({ seat, look, front = false, owner = "" }) {
             data-spot={spot}
             data-item={look[field]}
             data-owner={owner || undefined}
-            style={deskSpotBox(seat, spot, companyLayout)}
+            style={deskSpotBox(seat, spot, layout)}
           />
         ) : null;
       })}
       <img
-        className={`${layer} desk-monitor`}
-        src={DESK_MONITOR_ART}
+        className={`${layer} desk-screen`}
+        src={monitorArt}
         alt=""
         aria-hidden="true"
         draggable={false}
         data-seat={seat.id}
-        style={deskBox(seat, companyLayout.deskMonitor, companyLayout)}
+        style={deskBox(seat, layout.deskMonitor, layout)}
       />
     </>
   );

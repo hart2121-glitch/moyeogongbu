@@ -8,13 +8,15 @@ interface Props {
   summary: CoinDaySummary;
   actionLabel: string;
   onClose: () => void;
+  /** 시간 줄 이름. 공용 카페에서는 "공부 시간". */
+  timeLabel?: string;
 }
 
 /**
  * 하루 정산 카드 (Story 003). 퇴근할 때 회사 방에서, 퇴근 없이 닫았으면 다음 방문 때 로비 위에 같은 모양으로 뜬다.
  * 기존 모달 패널 스타일을 그대로 쓴다.
  */
-export default function SettlementCard({ title, summary, actionLabel, onClose }: Props) {
+export default function SettlementCard({ title, summary, actionLabel, onClose, timeLabel = "근무 시간" }: Props) {
   const kinds = ["study", "pomodoro", "todo"] as const;
   return (
     <div className="modal-backdrop">
@@ -35,7 +37,7 @@ export default function SettlementCard({ title, summary, actionLabel, onClose }:
           <p className="muted">{dayText(summary.day)}</p>
           <dl className="settlement-list">
             <div className="settlement-row">
-              <dt>근무 시간</dt>
+              <dt>{timeLabel}</dt>
               <dd data-testid="settlement-time">{workTimeText(summary.studySeconds)}</dd>
             </div>
             {kinds.map((kind) => (

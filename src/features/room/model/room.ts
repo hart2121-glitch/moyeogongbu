@@ -8,11 +8,17 @@ import { ROOM_CONFIG } from "./roomConfig";
  * 함수는 Supabase 클라이언트를 인자로 받고, `roomStore.ts`가 공유 클라이언트를 묶는다.
  */
 
-/** 내 방 목록의 방 하나. */
+/** 방 종류: 초대 코드로 들어오는 회사 방, 누구나 들어오는 공용 카페 (Story 011). */
+export type RoomKind = "company" | "cafe";
+
+/** 내 방 목록의 방 하나, 또는 들어간 공용 카페. */
 export interface Room {
   id: string;
+  kind: RoomKind;
   name: string;
+  /** 카페는 빈 글자 (초대 코드가 없다). */
   inviteCode: string;
+  /** 카페는 빈 글자 (방장이 없다). */
   ownerId: string;
   isOwner: boolean;
   memberCount: number;
@@ -78,6 +84,9 @@ const MESSAGES: Record<string, string> = {
   banned: "이 방에는 들어갈 수 없어요. 방장이 풀어 주면 다시 들어올 수 있어요.",
   members_full: "방이 가득 찼어요",
   room_full: "방이 가득 찼어요",
+  cafe_full: "그 카페는 자리가 다 찼어요.",
+  no_cafe: "그 카페는 지금 열려 있지 않아요.",
+  cafe_no_invite: "공용 카페는 초대 없이 누구나 들어올 수 있어요.",
   not_member: "이 방의 멤버가 아니에요.",
   not_owner: "방장만 할 수 있어요.",
   not_in_room: "방에 다시 연결하는 중이에요. 잠시 뒤 다시 눌러 주세요.",
@@ -106,9 +115,10 @@ async function rpc<T>(client: SupabaseClient, fn: string, args?: Record<string, 
 
 interface RoomRow {
   id: string;
+  kind?: RoomKind | null;
   name: string;
-  invite_code: string;
-  owner_id: string;
+  invite_code: string | null;
+  owner_id: string | null;
   is_owner: boolean;
   member_count: number;
   online_count: number;
@@ -118,9 +128,10 @@ interface RoomRow {
 
 const toRoom = (row: RoomRow): Room => ({
   id: row.id,
+  kind: row.kind === "cafe" ? "cafe" : "company",
   name: row.name,
-  inviteCode: row.invite_code,
-  ownerId: row.owner_id,
+  inviteCode: row.invite_code ?? "",
+  ownerId: row.owner_id ?? "",
   isOwner: !!row.is_owner,
   memberCount: Number(row.member_count) || 0,
   onlineCount: Number(row.online_count) || 0,
@@ -151,6 +162,16 @@ export const createRoom = async (client: SupabaseClient, name: string) =>
 /** 초대 코드로 들어가기. 이미 멤버면 그 방. @example await joinByCode(supabase, "ABC234"); */
 export const joinByCode = async (client: SupabaseClient, code: string) =>
   toRoom(await rpc<RoomRow>(client, "join_by_code", { p_code: code }));
+
+/**
+ * 공용 카페에 들어간다 (Story 011). roomId가 있으면 그 카페(친구가 있는 곳), 없으면 있던 카페나 자리가 남은 카페, 모두 찼으면 새 카페.
+ * @example const cafe = await joinCafe(supabase);
+ */
+export const joinCafe = async (client: SupabaseClient, roomId?: string | null) =>
+  toRoom(await rpc<RoomRow>(client, "join_cafe", roomId ? { p_room: roomId } : {}));
+
+/** 지금 공용 카페에 있는 사람 수. */
+export const cafeCount = (client: SupabaseClient) => rpc<number>(client, "cafe_count").then((n) => Number(n) || 0);
 
 /** 방 나가기 (내 방 목록에서 빠진다). */
 export const leaveRoom = (client: SupabaseClient, roomId: string) =>

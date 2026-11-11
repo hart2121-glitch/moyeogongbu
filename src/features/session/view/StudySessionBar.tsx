@@ -8,8 +8,15 @@ const STATE_LABEL = {
   studying: "공부 중",
   break: "쉬는 중",
   away: "자리 비움",
-  left: "퇴근",
 } as const;
+
+/** 방마다 다른 문구 (src/study/roomScene.js의 words). 기본은 회사 방. */
+export interface SessionWords {
+  today: string;
+  left: string;
+  lounge: string;
+}
+const COMPANY_WORDS: SessionWords = { today: "오늘 근무", left: "퇴근", lounge: "휴게실로 가기" };
 
 const clockText = (seconds: number) => {
   const h = Math.floor(seconds / 3600);
@@ -30,12 +37,13 @@ interface Props {
   canGoLounge: boolean;
   /** 오늘 받은 코인 (서버 값과 지금 공부 시간으로 계산). 아직 모르면 null. */
   todayCoins: number | null;
+  words?: SessionWords;
 }
 
 /**
  * 회사 방의 공부 세션 툴바 (Story 002). 방 그림 속 타이머와 음악 패널은 정적 그림이고, 실제 시간은 여기에만 표시한다.
  */
-export default function StudySessionBar({ session, onGoLounge, canGoLounge, todayCoins }: Props) {
+export default function StudySessionBar({ session, onGoLounge, canGoLounge, todayCoins, words = COMPANY_WORDS }: Props) {
   const [picking, setPicking] = useState(false);
   const [custom, setCustom] = useState(String(SESSION_CONFIG.customStudyMinutes.min));
   const { min, max } = SESSION_CONFIG.customStudyMinutes;
@@ -60,8 +68,8 @@ export default function StudySessionBar({ session, onGoLounge, canGoLounge, toda
   return (
     <section className="session-strip" aria-label="공부 세션" data-testid="study-session">
       <div className="company-controls">
-        <p role="timer" aria-label="오늘 근무 시간" data-testid="today-study-time">
-          오늘 근무 <strong>{clockText(session.todaySeconds)}</strong>
+        <p role="timer" aria-label={`${words.today} 시간`} data-testid="today-study-time">
+          {words.today} <strong>{clockText(session.todaySeconds)}</strong>
         </p>
         <p aria-label="오늘 받은 코인" data-testid="today-coins">
           <Coin weight="duotone" /> <strong>{todayCoins === null ? "-" : todayCoins.toLocaleString()}</strong>
@@ -71,7 +79,9 @@ export default function StudySessionBar({ session, onGoLounge, canGoLounge, toda
             ? "기록 연결 중"
             : session.link === "error"
               ? "기록에 연결하지 못했어요"
-              : STATE_LABEL[session.state]}
+              : session.state === "left"
+                ? words.left
+                : STATE_LABEL[session.state]}
         </p>
         {pomodoro && (
           <p data-testid="pomodoro-status">
@@ -126,7 +136,7 @@ export default function StudySessionBar({ session, onGoLounge, canGoLounge, toda
           <div className="company-controls">
             {session.prompt.kind === "pomodoroEnd" && (
               <button onClick={onGoLounge} disabled={!canGoLounge}>
-                <DoorOpen /> 휴게실로 가기
+                <DoorOpen /> {words.lounge}
               </button>
             )}
             <button onClick={session.respond}>

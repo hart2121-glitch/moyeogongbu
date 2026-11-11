@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { artBox, companyLayout } from "./companyLayout";
+import { artBox } from "./companyLayout";
+import { useRoomScene } from "./roomScene";
 
 const INK = "#2e2a30";
 const MINUTE_INK = "#3a3540";
@@ -18,7 +19,8 @@ function drawHand(ctx, cx, cy, degrees, length, color) {
  * @example <WallClock />
  */
 export default function WallClock() {
-  const { center, radius, hourHand, minuteHand } = companyLayout.wallClock;
+  const { layout } = useRoomScene();
+  const { center, radius, hourHand, minuteHand } = layout.wallClock;
   const size = radius * 2 + 1;
   const canvas = useRef(null);
   const [now, setNow] = useState(() => new Date());
@@ -48,7 +50,7 @@ export default function WallClock() {
       role="img"
       aria-label={`벽시계 ${label}`}
       data-time={`${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}`}
-      style={artBox({ x: center.x - radius, y: center.y - radius, width: size, height: size }, companyLayout)}
+      style={artBox({ x: center.x - radius, y: center.y - radius, width: size, height: size }, layout)}
     />
   );
 }

@@ -160,7 +160,7 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
     await page
       .getByRole("button", { name: "화장실 가기", exact: true })
       .click();
-    await waitStatus(page, "화장실 내부");
+    await waitStatus(page, "화장실에 다녀오는 중");
     assert.equal(
       await page.getByTestId("study-character").getAttribute("data-activity"),
       "restroom",
@@ -176,11 +176,11 @@ test("회사 방 생성 → 1~6번 좌석 이동·착석 → 휴식·복귀 → 
     await page
       .getByRole("button", { name: "화장실 나가기", exact: true })
       .click();
-    await waitStatus(page, "업무 공간에 도착");
+    await waitStatus(page, "자리를 골라 앉아 주세요");
     await page
       .getByRole("button", { name: "휴게실로 이동", exact: true })
       .click();
-    await waitStatus(page, "휴게실에 도착");
+    await waitStatus(page, "휴게실에서 쉬는 중");
     const loungePosition = await page
       .getByTestId("study-character")
       .evaluate((el) => ({ x: Number(el.dataset.x), y: Number(el.dataset.y) }));

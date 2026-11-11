@@ -392,40 +392,11 @@
   font-size: 13px;
   color: #c9d6d2;
 }
-/* 회사 말고 다른 목적지: 한 줄로 작게 */
-.monitor-places {
-  list-style: none;
-  margin: 10px 0 0;
-  padding: 8px 0 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
+/* 회사 다음 목적지 (공용 카페): 같은 줄 모양, 위에 구분선 */
+.monitor-group.is-next {
+  margin-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid #3a4a55;
-}
-.monitor-places li {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.monitor-places button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 0 10px;
-  background: #2f3d47;
-  color: #eef3ef;
-  font-size: 14px;
-}
-.monitor-places button:hover:not(:disabled) {
-  background: #3a4a55;
-  filter: none;
-}
-.monitor-places svg {
-  width: 20px;
-  height: 20px;
-  color: #f1c27d;
 }
 .monitor-create {
   display: inline-flex;
