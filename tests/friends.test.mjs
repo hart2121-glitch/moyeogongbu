@@ -83,7 +83,7 @@ test("친구 목록, 코드로 추가, 우편함(요청, 초대, 보상), 알림
     assert.match(panelText, /공부 중/);
     assert.match(panelText, /휴식 중/);
     assert.ok(!panelText.includes("·"));
-    await a.locator(".notices").getByText("10월 출석 이벤트가 시작되었어요!").waitFor();
+    await a.locator(".notices").getByText("모여공부가 문을 열었어요").waitFor();
     await shot(a, "lobby-friends.png");
 
     // /friends: 같은 방 멤버인 친구만 방 이름, 아니면 "스터디룸에서"
