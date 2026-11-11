@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import FriendRequestAction from "../../friends/view/FriendRequestAction";
 import CharacterSprite from "../../../study/CharacterSprite";
 import DeskSet, { EMPTY_DESK } from "../../../study/DeskSet";
-import { COMPANY_ROOM_ART, companyLayout, foregroundClip, roomArtBox } from "../../../study/companyLayout";
+import { foregroundClip, roomArtBox } from "../../../study/companyLayout";
+import { useRoomScene } from "../../../study/roomScene";
 import { useCharacterMovement } from "../../../study/useCharacterMovement";
 import type { MemberStatus } from "../model/room";
 import type { PresenceMeta } from "../model/roomRealtime";
@@ -24,7 +25,8 @@ interface Props {
  * 프레임마다 바뀌는 위치는 이 컴포넌트 안에서만 그려져 방 화면 전체를 다시 그리지 않는다.
  */
 export default function RemoteCharacter({ meta, status, reaction, subscribeMoves }: Props) {
-  const movement = useCharacterMovement(companyLayout, meta.node in companyLayout.nodes ? meta.node : "entrance", () => undefined, {
+  const { layout, art } = useRoomScene();
+  const movement = useCharacterMovement(layout, meta.node in layout.nodes ? meta.node : "entrance", () => undefined, {
     node: meta.node,
     position: { x: meta.x, y: meta.y },
     activity: meta.activity,
@@ -63,12 +65,12 @@ export default function RemoteCharacter({ meta, status, reaction, subscribeMoves
   const name = status?.displayName ?? meta.name;
   // 캐릭터를 누르면 카드가 고정되어 "친구 요청"을 누를 수 있다. 클릭은 그대로 바닥까지 전달해 기존 이동 클릭을 막지 않는다.
   const [open, setOpen] = useState(false);
-  const seat = companyLayout.seats.find(
+  const seat = layout.seats.find(
     (s) => s.id === (character.occlusionSeatId || (character.activity === "seated" ? character.seatId : null)),
   );
   const rect = (seat as { foreground?: { left: number; top: number; right: number; bottom: number } } | undefined)?.foreground;
   // 이 사람의 책상 세트는 앉았거나 가고 있는 자리에 펼친다.
-  const deskSeat = seat ?? companyLayout.seats.find((s) => s.id === (character.seatId ?? meta.seatId));
+  const deskSeat = seat ?? layout.seats.find((s) => s.id === (character.seatId ?? meta.seatId));
   return (
     <>
       <CharacterSprite character={character} nickname={name} look={status?.look ?? undefined} testId="remote-character" className={`is-remote ${open ? "is-open" : ""}`}
@@ -88,11 +90,11 @@ export default function RemoteCharacter({ meta, status, reaction, subscribeMoves
       </CharacterSprite>
       {rect && (
         <img
-          src={COMPANY_ROOM_ART}
+          src={art}
           alt=""
           aria-hidden="true"
           className="seat-foreground"
-          style={{ ...roomArtBox(companyLayout), clipPath: foregroundClip(rect, companyLayout) }}
+          style={{ ...roomArtBox(layout), clipPath: foregroundClip(rect, layout) }}
         />
       )}
       {deskSeat && <DeskSet seat={deskSeat} look={status?.look ?? EMPTY_DESK} front={!!rect} owner={meta.userId} />}

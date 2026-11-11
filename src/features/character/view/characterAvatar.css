@@ -1,0 +1,26 @@
+/* 캐릭터 얼굴: 56×72 칸을 정수 배율로 그리고 머리 48×44칸만 보인다 (CharacterAvatar.tsx).
+   바탕은 벽지 크림, 테두리는 입력 선 (DESIGN.md wallpaper-cream, field-line). */
+.character-avatar {
+  --avatar-scale: 1;
+  position: relative;
+  display: block;
+  flex: none;
+  width: calc(48px * var(--avatar-scale));
+  height: calc(44px * var(--avatar-scale));
+  overflow: hidden;
+  background: #f1e2c8;
+  border: 2px solid #b6a084;
+  border-radius: 6px;
+  box-sizing: content-box;
+}
+.character-avatar.scale-2 {
+  --avatar-scale: 2;
+}
+.character-avatar .avatar-stack {
+  position: absolute;
+  left: calc(-4px * var(--avatar-scale));
+  top: calc(-4px * var(--avatar-scale));
+  width: calc(56px * var(--avatar-scale));
+  border: 0;
+  background: none;
+}

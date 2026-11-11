@@ -1,19 +1,20 @@
-import { BookOpen, CaretRight, Coffee, DoorOpen, Plus } from "@phosphor-icons/react";
-import { Link, useNavigate } from "react-router-dom";
-import { useMyRooms } from "../../room/viewmodel/useMyRooms";
+import { CaretRight, Coffee, DoorOpen, Plus } from "@phosphor-icons/react";
+import { Link } from "react-router-dom";
+import { useCafeCount, useMyRooms } from "../../room/viewmodel/useMyRooms";
 import { useRoomNavigation } from "../../rooms/viewmodel/useRoomNavigation";
 import { ROUTES } from "../../shell/model/paths";
 import DeskObject, { type LookHandler } from "./DeskObject";
 
 /**
- * 모니터: 오늘 갈 곳을 고른다. 로비의 주요 행동. 집(로비)에서 회사 방으로 출근하거나 스터디카페로 가고, 학교는 준비 중이다.
+ * 모니터: 오늘 갈 곳을 고른다. 로비의 주요 행동. 집(로비)에서 회사 방으로 출근하거나 공용 스터디카페로 간다.
+ * 학교 테마는 첫 출시 뒤에 연다 (design/game-brief.md 범위 밖).
  * 출근이라는 말은 회사 방에만 쓴다.
  */
 export default function RoomMonitor({ onLook }: { onLook: LookHandler }) {
   const query = useMyRooms();
   const rooms = query.data ?? [];
-  const { enterCompanyRoom } = useRoomNavigation();
-  const navigate = useNavigate();
+  const cafeCount = useCafeCount().data ?? 0;
+  const { enterCompanyRoom, enterCafe } = useRoomNavigation();
   return (
     <DeskObject
       kind="monitor"
@@ -37,7 +38,7 @@ export default function RoomMonitor({ onLook }: { onLook: LookHandler }) {
         </div>
       )}
       {rooms.length > 0 && (
-        <ul className="monitor-rooms">
+        <ul className="monitor-rooms is-companies" data-testid="monitor-companies">
           {rooms.map((room) => (
             <li key={room.id}>
               <button aria-label={`${room.name} 방으로 출근`} onClick={() => enterCompanyRoom(room)}>
@@ -53,17 +54,15 @@ export default function RoomMonitor({ onLook }: { onLook: LookHandler }) {
           ))}
         </ul>
       )}
-      <ul className="monitor-places" aria-label="다른 곳">
+      <h3 className="monitor-group is-next">카페</h3>
+      <ul className="monitor-rooms">
         <li>
-          <button onClick={() => navigate(ROUTES.cafe)}>
-            <Coffee weight="duotone" /> 스터디카페
+          <button aria-label="공용 스터디카페로 가기" onClick={() => enterCafe()} data-testid="monitor-cafe">
+            <Coffee weight="duotone" />
+            <strong>공용 스터디카페</strong>
+            <span>{cafeCount > 0 ? `${cafeCount}명 공부 중` : "아직 아무도 없어요"}</span>
+            <span className="monitor-go">가기</span>
           </button>
-        </li>
-        <li>
-          <button disabled aria-describedby="monitor-school-note">
-            <BookOpen weight="duotone" /> 학교
-          </button>
-          <span id="monitor-school-note">준비 중</span>
         </li>
       </ul>
     </DeskObject>

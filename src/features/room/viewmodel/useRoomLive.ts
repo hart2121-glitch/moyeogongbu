@@ -28,7 +28,7 @@ const newTabId = () =>
  * 다른 사람의 이동은 React 상태가 아닌 구독(`subscribeMoves`)으로 그 캐릭터에게만 전달한다.
  * @example const live = useRoomLive(room.id, userId, nickname);
  */
-export function useRoomLive(roomId: string, userId: string, nickname: string) {
+export function useRoomLive(roomId: string, userId: string, nickname: string, nodes: Record<string, unknown> = companyLayout.nodes) {
   const queryClient = useQueryClient();
   const [phase, setPhase] = useState<RoomPhase>("entering");
   const [connected, setConnected] = useState(false);
@@ -129,7 +129,7 @@ export function useRoomLive(roomId: string, userId: string, nickname: string) {
             setOthers(list);
           },
           onMove: (from, raw) => {
-            const move = parseMove(raw, companyLayout.nodes, ROOM_CONFIG.seatCount);
+            const move = parseMove(raw, nodes, ROOM_CONFIG.seatCount);
             if (move) moveListeners.current.get(from)?.forEach((fn) => fn(move));
           },
           onReaction: (from, key) => {

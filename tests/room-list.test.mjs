@@ -66,7 +66,14 @@ test("로비 메뉴 → 방 목록 → 서버 방 생성·입장, 재접속 유�
       .getByRole("button", { name: "스터디룸", exact: true })
       .click();
     await page.getByRole("button", { name: "친구네 회사 입장", exact: true }).waitFor();
+    // 방 나가기는 한 번 더 묻는다. 취소하면 그대로 남고, 확인하면 나간다.
     await page.getByRole("button", { name: "친구네 회사 나가기", exact: true }).click();
+    const confirmLeave = page.getByRole("group", { name: "친구네 회사 나가기 확인" });
+    await confirmLeave.getByText("친구네 회사에서 나갈까요?").waitFor();
+    await confirmLeave.getByRole("button", { name: "취소", exact: true }).click();
+    await page.getByRole("button", { name: "친구네 회사 입장", exact: true }).waitFor();
+    await page.getByRole("button", { name: "친구네 회사 나가기", exact: true }).click();
+    await confirmLeave.getByRole("button", { name: "나가기", exact: true }).click();
     await page.getByRole("button", { name: "친구네 회사 입장", exact: true }).waitFor({ state: "detached" });
     assert.equal(server.members.get([...server.rooms.values()].find((r) => r.name === "친구네 회사").id).size, 1);
   } finally {

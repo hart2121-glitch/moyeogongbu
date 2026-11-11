@@ -1,4 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { toLook, type Look } from "../../character/model/layers";
+import type { RoomKind } from "../../room/model/room";
+import { cafePath, roomPath } from "../../shell/model/paths";
 import { socialRpc } from "./socialError";
 
 /**
@@ -6,7 +9,7 @@ import { socialRpc } from "./socialError";
  * 상태는 Story 002 공부 세션, 있는 방은 Story 004 접속 정보에서 서버가 계산한다.
  */
 
-import type { FriendIcon, FriendState } from "./friendText";
+import { visibleState, type FriendIcon, type FriendState } from "./friendText";
 
 export type { FriendIcon, FriendState } from "./friendText";
 
@@ -16,9 +19,13 @@ export interface Friend {
   state: FriendState;
   /** 지금 스터디룸 안에 있는지. */
   inRoom: boolean;
-  /** 내가 그 방 멤버일 때만 채워진다. */
+  /** 내가 그 방 멤버이거나 공용 카페일 때만 채워진다. */
   roomId: string | null;
   roomName: string | null;
+  /** 친구가 있는 방 종류. 방 id를 모르면 null. */
+  roomKind: RoomKind | null;
+  /** 친구가 저장한 꾸밈. 처음 꾸미기 전이면 null (기본 모습으로 그린다). */
+  look: Look | null;
 }
 
 export interface BlockedUser {
@@ -37,16 +44,27 @@ interface FriendRow {
   in_room: boolean;
   room_id: string | null;
   room_name: string | null;
+  room_kind?: RoomKind | null;
+  look?: unknown;
 }
 
 const toFriend = (row: FriendRow): Friend => ({
   userId: row.user_id,
   name: row.display_name ?? "이름 없음",
-  state: row.state ?? "offline",
+  state: visibleState(row.state ?? "offline", !!row.in_room),
   inRoom: !!row.in_room,
   roomId: row.room_id ?? null,
   roomName: row.room_name ?? null,
+  roomKind: row.room_id ? (row.room_kind === "cafe" ? "cafe" : "company") : null,
+  look: toLook(row.look),
 });
+
+/**
+ * 친구가 있는 방으로 가는 주소: 공용 카페면 그 카페, 회사 방이면 그 방. 갈 수 없으면 null.
+ * @example friendRoomPath(friend) // "/cafe?with=..." 또는 "/rooms/..."
+ */
+export const friendRoomPath = (friend: Pick<Friend, "roomId" | "roomKind">) =>
+  !friend.roomId ? null : friend.roomKind === "cafe" ? cafePath(friend.roomId) : roomPath(friend.roomId);
 
 /** 친구 목록과 상태. @example const friends = await fetchFriends(supabase); */
 export const fetchFriends = async (client: SupabaseClient): Promise<Friend[]> =>

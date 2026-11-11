@@ -1,0 +1,74 @@
+/* 여러 화면이 같이 쓰는 작은 단추 (CopyButton). 보조 단추(.secondary-button) 모양에 아이콘을 붙인다. */
+.copy-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 7px 14px;
+  white-space: nowrap;
+}
+.copy-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* 도트 체크 상자: 24px 정사각, 짙은 테두리와 오른쪽 아래 그늘. 체크하면 세이지 단추가 된다 (DESIGN.md Inputs, 할 일 메모와 같은 모양). */
+.pixel-check {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  border: 2px solid #3c4036;
+  border-radius: 4px;
+  background: #fff8e8;
+  box-shadow: inset -2px -2px #d9cbb6;
+  cursor: pointer;
+}
+.pixel-check:checked {
+  background: #91a17b;
+  box-shadow:
+    inset 2px 2px #bfccb0,
+    inset -2px -2px #667c5d;
+}
+.pixel-check:checked::after {
+  content: "";
+  width: 11px;
+  height: 6px;
+  border-left: 3px solid #26372c;
+  border-bottom: 3px solid #26372c;
+  transform: rotate(-45deg) translateY(-2px);
+}
+.pixel-check:focus-visible {
+  outline: 3px solid #9b70bc;
+  outline-offset: 3px;
+}
+
+/* 화면에는 보이지 않고 보조 기술만 읽는 글 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 입력칸 아래 글자 수 (예: 3/12) */
+.field-count {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #75624e;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 넓은 창 (Dialog wide): 그림 선택지가 많은 방장 도구 */
+.modal.modal-wide {
+  width: min(820px, 92vw);
+}

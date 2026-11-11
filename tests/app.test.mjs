@@ -89,6 +89,11 @@ test("로비, 메뉴 전환, 할 일, 꾸미기, 구매", async () => {
         .getByRole("navigation")
         .getByRole("button", { name: label, exact: true })
         .click();
+      if (label === "공용 스터디카페") {
+        // 공용 카페는 실시간 공부방이라 제목 패널 대신 방 제목이 보인다 (Story 011).
+        await page.getByRole("heading", { name: label, exact: true }).waitFor();
+        continue;
+      }
       // 주소 라우팅은 전환을 비동기로 그리므로 새 제목이 나타날 때까지 기다린다.
       const heading = page.locator(".content-panel .panel-heading");
       await heading.filter({ hasText: label }).waitFor();

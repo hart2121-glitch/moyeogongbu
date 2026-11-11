@@ -14,6 +14,9 @@
 }
 body {
   margin: 0;
+  /* 한국어 줄바꿈은 낱말 사이에서만. 띄어쓰기 없는 긴 글(코드, 주소)은 넘칠 때만 끊는다 (anywhere는 최소 너비를 줄여 좁은 칸의 숫자까지 끊는다) */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 button,
 input {
@@ -209,7 +212,8 @@ button:active {
 .scene {
   position: relative;
   flex: 1;
-  background: #746c66 url("/assets/study-room.png") center center/cover;
+  /* 화면마다 자기 바탕을 깐다 (로비 벽, 종이 화면 책상, 공부방 바닥). 예전 배경 그림(study-room.png, 3.3MB)은 어디서도 보이지 않으면서 공부방마다 내려받아 뺐다 */
+  background: #746c66;
   isolation: isolate;
   min-width: 0;
   min-height: calc(100vh - 72px);
@@ -267,9 +271,6 @@ button:active {
   align-items: center;
   font-size: 14px;
   white-space: nowrap;
-}
-.school {
-  filter: sepia(0.28) hue-rotate(325deg);
 }
 .task-list {
   list-style: none;
@@ -394,58 +395,6 @@ button:active {
   border-radius: 4px;
   display: inline-block;
 }
-.friend-list {
-  display: flex;
-  flex-direction: column;
-}
-.friend {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  width: 100%;
-  padding: 5px 0;
-  border-bottom: 1px solid #e7d3bf;
-  text-align: left;
-  min-width: 0;
-  font-size: 14px;
-}
-.friend:last-child {
-  border: 0;
-}
-.friend-avatar {
-  width: 43px;
-  height: 43px;
-  object-fit: cover;
-  border-radius: 50%;
-  image-rendering: pixelated;
-}
-.avatar-1 {
-  filter: hue-rotate(330deg);
-}
-.avatar-2 {
-  filter: hue-rotate(75deg);
-}
-.presence {
-  height: 10px;
-  width: 10px;
-  background: #6a8d64;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-left: 2px;
-}
-.presence.away {
-  background: #dca34d;
-}
-.friend-status {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 13px;
-}
-.friend > svg {
-  color: #5c5c4b;
-}
 .page-area {
   padding: 25px 4%;
   max-width: 1150px;
@@ -474,8 +423,7 @@ button:active {
 .page-intro {
   margin-bottom: 30px;
 }
-.page-intro h1,
-.room-content h1 {
+.page-intro h1 {
   font-family: "Gowun Batang", serif;
   font-size: 29px;
   margin: 10px 0 12px;
@@ -485,46 +433,6 @@ button:active {
   color: #75624e;
   font-size: 14px;
   line-height: 1.9;
-}
-.cafe-rooms {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-  margin-bottom: 25px;
-}
-.cafe-room {
-  padding: 0 0 20px;
-  background: #e8d7bf;
-  border: 2px solid #a08b70;
-  border-radius: 7px;
-  overflow: hidden;
-  text-align: left;
-}
-.room-thumbnail {
-  height: 175px;
-  background: url("/assets/study-room.png") center/220%;
-  border-bottom: 2px solid #a08b70;
-}
-.room-1 {
-  background-position: 15% 65%;
-  filter: sepia(0.3);
-}
-.room-2 {
-  background-position: 85% 50%;
-}
-.cafe-room h2 {
-  font-size: 20px;
-  margin: 17px 15px 7px;
-}
-.cafe-room p {
-  font-size: 12px;
-  margin: 0 15px 18px;
-  color: #806d57;
-}
-.cafe-room > span {
-  margin: 0 15px;
-  color: #57684e;
-  font-size: 14px;
 }
 .outfit-세이지 {
   filter: hue-rotate(65deg) saturate(0.75);
@@ -680,21 +588,6 @@ button:active {
   color: #8a755e;
   line-height: 1.8;
 }
-.content-panel .friend {
-  font-size: 19px;
-  padding: 17px 0;
-  gap: 18px;
-}
-.content-panel .friend-avatar {
-  width: 65px;
-  height: 65px;
-}
-.content-panel .friend-status {
-  font-size: 16px;
-}
-.content-panel .friend-list {
-  margin-bottom: 30px;
-}
 .guide h1 {
   font-size: 28px;
   margin-bottom: 30px;
@@ -718,32 +611,6 @@ button:active {
 .guide p {
   color: #7e6e58;
   font-size: 15px;
-}
-.room-content {
-  text-align: center;
-}
-.room-art {
-  height: 300px;
-  border: 3px solid #8a7560;
-  border-radius: 8px;
-  background: url("/assets/study-room.png") center 65% / cover;
-  margin: 22px 0 18px;
-}
-.info-strip {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  padding: 14px;
-  background: #e9d9bd;
-  border: 1px solid #c0a98a;
-  border-radius: 5px;
-  margin-bottom: 14px;
-}
-.info-strip span {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
 }
 .modal-backdrop {
   position: fixed;
@@ -814,16 +681,6 @@ button:active {
   font-size: 13px;
   color: #8c745b;
 }
-.friend-detail {
-  text-align: center;
-}
-.friend-detail img {
-  width: 100px;
-  height: 100px;
-  image-rendering: pixelated;
-  border-radius: 50%;
-  margin-bottom: 15px;
-}
 @media (min-width: 1450px) {
   .task-list label {
     min-height: 47px;
@@ -833,9 +690,6 @@ button:active {
   }
   .notices button {
     font-size: 14px;
-  }
-  .friend {
-    min-height: 52px;
   }
   .panel-heading {
     height: 44px;
@@ -873,21 +727,11 @@ button:active {
     min-width: 50px;
     font-size: 11px;
   }
-  .friend {
-    gap: 7px;
-    font-size: 13px;
-  }
-  .friend-status {
-    font-size: 12px;
-  }
   .shop-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   .customizer {
     gap: 20px;
-  }
-  .cafe-rooms {
-    gap: 10px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -994,9 +838,36 @@ button:active {
 .settlement-row dd {
   font-weight: 700;
 }
+.settlement-row.is-zero {
+  color: #a8987f;
+}
+.settlement-row.is-zero dd {
+  font-weight: 400;
+}
 .settlement-sum {
   border-top: 2px dashed #b6a084;
-  padding-top: 8px;
+  padding-top: 10px;
+  align-items: center;
+}
+.settlement-sum dd {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 24px;
+  color: #5d6b48;
+}
+.settlement-sum dd svg {
+  width: 24px;
+  height: 24px;
+  color: #b77828;
+  fill: #f1b854;
+}
+.settlement-balance {
+  color: #7e6e58;
+}
+.settlement-action {
+  display: block;
+  margin-left: auto;
 }
 
 /* Story 005: 공부 기록과 할 일. 기존 팔레트 색만 쓴다. */
@@ -1200,25 +1071,7 @@ button:active {
   color: #34312c;
 }
 
-/* Story 006: 친구, 우편함, 알림 */
-.presence.offline {
-  background: #a49a8a;
-}
-.friend-tools {
-  display: grid;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-.friend-add {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 8px;
-}
-.friend-add label {
-  display: grid;
-  gap: 2px;
-}
+/* Story 006: 우편함, 알림 (친구 목록과 친구 화면은 friends/view/friends.css) */
 .mail-list,
 .notification-list {
   display: grid;
@@ -1227,19 +1080,65 @@ button:active {
   margin: 0;
   padding: 0;
 }
+.mail-list {
+  gap: 0;
+}
 .mail-item {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 4px 12px;
   border-bottom: 1px dashed #c7b48f;
-  padding-bottom: 8px;
+  padding: 12px 0;
+}
+.mail-item:last-child {
+  border-bottom: 0;
+}
+.mail-icon {
+  width: 30px;
+  height: 30px;
+  color: #86735e;
+}
+.mail-reward .mail-icon {
+  color: #b77828;
+}
+.mail-text {
+  min-width: 0;
 }
 .mail-item h2 {
   font-size: 16px;
+  line-height: 1.4;
   margin: 0 0 2px;
+}
+.mail-item .muted {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
 }
 .mail-actions {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: 6px;
+}
+.mail-actions .primary,
+.mail-actions .secondary-button {
+  margin: 0;
+  padding: 7px 12px;
+  white-space: nowrap;
+}
+.mail-claimed {
+  color: #7e6e58;
+  font-size: 14px;
+}
+.mail-note {
+  margin: 0 0 4px;
+  padding: 8px 12px;
+  background: #e8efdc;
+  border: 1px solid #b9c6a3;
+  border-radius: 4px;
+  color: #49533f;
+  font-size: 14px;
 }
 .notification-item {
   display: flex;
@@ -1248,21 +1147,11 @@ button:active {
   border-bottom: 1px dashed #c7b48f;
   padding-bottom: 6px;
 }
+.notification-item:last-child {
+  border-bottom: 0;
+}
 .notification-item.unread span {
   font-weight: 700;
-}
-.block-list {
-  margin-top: 12px;
-}
-.block-list h3 {
-  font-size: 15px;
-  margin: 0 0 4px;
-}
-.block-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
 }
 .room-invite {
   display: flex;
@@ -1756,4 +1645,49 @@ button:active {
 .try-on-name {
   font-weight: 700;
   color: #3a2f22;
+}
+/* 나눠 받은 화면을 새로고침 직후 처음 받는 동안: 화면 바탕만 깐다 (router.tsx) */
+.route-loading {
+  min-height: 100vh;
+  background: #efe3cf;
+}
+
+/* 화면을 그리지 못했을 때 (src/app/RouteError.tsx) */
+.route-error {
+  min-height: min(60vh, 520px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.route-error.is-full {
+  min-height: 100vh;
+}
+.route-error-card {
+  width: min(100%, 420px);
+  padding: 22px 24px;
+  background: #fff8e8;
+  border: 2px solid #8a7258;
+  box-shadow: 4px 4px 0 #8a725833;
+  text-align: center;
+}
+.route-error-card p {
+  margin: 0 0 16px;
+  color: #4a3b2c;
+  font-size: 16px;
+}
+.route-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.route-error-actions .primary,
+.route-error-actions .secondary-button {
+  margin: 0;
+  text-decoration: none;
+}
+.route-error-quiet {
+  color: #b8a78f;
+  font-size: 14px;
 }

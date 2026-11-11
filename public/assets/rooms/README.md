@@ -41,3 +41,8 @@
 ## 학교 스터디룸
 
 공식 원본이 없어 임시 표시를 유지합니다. 회사·로비 이미지를 대체 이미지로 사용하지 않습니다.
+
+## 공용 스터디카페 (Story 011, 2026-11-11)
+
+`cafe-room.png`(672×432)와 탁자 위 노트북 `cafe-laptop.png`(41×29)는 `tools/art/cafe-room.mjs`가 만든다. 회사 원본을 바탕으로 하지 않은 새 방이며,
+좌석, 통로, 충돌, 표지판 좌표는 `src/study/cafeLayout.js`에 있다. 원본과 물건 목록은 `art-src/rooms/cafe/objects/README.md`.

@@ -12,7 +12,6 @@ export default function NotificationList() {
       <div className="empty-state">
         <Bell />
         <h2>새로운 알림이 없어요</h2>
-        <p>오늘도 나만의 속도로 공부해 보세요.</p>
       </div>
     );
   return (

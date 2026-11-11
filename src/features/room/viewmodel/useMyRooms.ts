@@ -16,6 +16,15 @@ export function useMyRooms() {
 }
 
 /**
+ * 지금 공용 카페에 있는 사람 수 (Story 011). 로비 모니터가 30초마다 새로 읽는다.
+ * @example const count = useCafeCount().data ?? 0;
+ */
+export function useCafeCount() {
+  const userId = useSession()?.user.id;
+  return useQuery({ queryKey: ["cafe-count", userId], queryFn: roomStore.cafeCount, enabled: !!userId, refetchInterval: 30_000 });
+}
+
+/**
  * 방 만들기, 코드로 들어가기, 나가기. 끝나면 내 방 목록을 새로 읽는다. 실패하면 RoomError를 던진다.
  * @example const room = await useRoomActions().create("밍구의 회사");
  */

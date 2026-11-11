@@ -8,7 +8,8 @@ import { join } from "node:path";
 import { chromium } from "@playwright/test";
 import { createFakeServer, FAKE_USER_ID, mockSupabase, SEED_ROOM } from "./supabaseMock.mjs";
 
-const url = process.env.APP_URL || "http://127.0.0.1:4173/";
+// CI는 APP_URL을 끝 빗금 없이 준다. 경로를 이어 붙이므로 빗금을 하나로 맞춘다.
+const url = (process.env.APP_URL || "http://127.0.0.1:4173/").replace(/\/?$/, "/");
 const evidence = process.env.EVIDENCE_DIR;
 const viewport = { width: 1440, height: 900 };
 const COMEMBER = "00000000-0000-4000-8000-000000000031";
@@ -30,7 +31,7 @@ const buy = async (page, name) => {
 /** 방에 깔린 책상 아이템: "자리번호:자리:아이템:주인" 목록 (주인 없음은 기본 세트). */
 const deskItems = (page) =>
   page.evaluate(() =>
-    [...document.querySelectorAll(".desk-item:not(.desk-monitor)")]
+    [...document.querySelectorAll(".desk-item:not(.desk-screen)")]
       .map((i) => [i.dataset.seat, i.dataset.spot, i.dataset.item, i.dataset.owner ?? "", i.classList.contains("is-front")].join(":"))
       .sort(),
   );

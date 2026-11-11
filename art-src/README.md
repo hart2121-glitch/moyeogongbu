@@ -17,6 +17,9 @@
   휴게실 공용 꾸밈 자리(쿠션, 탁자 위, 매트)는 `rooms/src/lounge-empty.png`로 비우고, 원본 소품은 기본 아이템 `rooms/lounge/cushions-cat.png`,
   `table-cat.png`, `mat-cat.png`로 떼어 둔다. 파는 아이템은 `node tools/art/company-decor.mjs`가 `rooms/lounge/`에 그린다
   (탁자 위 PixelLab 시안은 `rooms/lounge/src/`, 미리보기 `rooms/lounge/preview-decor.png`).
+- `rooms/cafe-room.png`: 공용 스터디카페 672×432 (화면 1배, Story 011). `node tools/art/cafe-room.mjs`가 벽, 바닥, 탁자와 의자, 카운터, 표지판, 시계판을
+  칸마다 그리고 `rooms/cafe/objects/src/`의 물건(번호와 설명은 그 폴더 README.md)을 `src/study/cafeLayout.js`의 자리에 놓는다.
+  탁자 위 노트북 `rooms/cafe/cafe-laptop.png`(41×29)도 그린다. `--debug`는 걸을 수 있는 바닥을 겹친 `rooms/cafe/preview-debug.png`를 쓴다.
 - `home/room/objects/src/`: 내 방 물건 원본 (PixelLab create_map_object, 2026-11-02). 완성 그림에서 떼지 않고 물건마다 따로 만들었다. 번호와 설명은 그 폴더의 README.md.
 - `home/room/decor/`: 내 방 꾸밈 층과 아이템. `node tools/art/home-decor.mjs`가 `home/room/src/empty.png`(빈 방)에 위 물건을 정한 자리로 올려 층을 만들고,
   그림자(곱하기 층), 러그, 커튼 천과 봉을 그리며, 테마(브라운, 화이트, 블랙, 앤티크) 판매 아이템을 같은 폴더와 `public/assets/home/room/decor/`에 쓴다.

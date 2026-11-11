@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { frameIndex, resolvePose, WALK_FRAME_MS } from "./characterSprites";
-import { companyLayout } from "./companyLayout";
+import { useRoomScene } from "./roomScene";
 import { composeLayers, defaultLook } from "../features/character/model/layers";
 import SheetFrame from "../features/character/view/SheetFrame";
 
@@ -14,6 +14,7 @@ const FACING_LABEL = { down: "정면", up: "후면", left: "왼쪽", right: "오
  * @param {{ character: any, nickname: string, look?: any, testId?: string, className?: string, children?: import("react").ReactNode, onClick?: (e: any) => void }} props
  */
 export default function CharacterSprite({ character, nickname, look = undefined, testId = "study-character", className = "", children = null, onClick = undefined }) {
+  const { layout } = useRoomScene();
   const [frame, setFrame] = useState(0);
   const [failed, setFailed] = useState(false);
   const { action, frames } = resolvePose(character.activity);
@@ -36,7 +37,7 @@ export default function CharacterSprite({ character, nickname, look = undefined,
       style={{
         left: `${character.position.x * 100}%`,
         top: `${character.position.y * 100}%`,
-        width: `${companyLayout.character.width * 100}%`,
+        width: `${layout.character.width * 100}%`,
       }}
       data-testid={testId}
       data-activity={character.activity}

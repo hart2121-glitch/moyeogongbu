@@ -1,50 +1,59 @@
+import type { ComponentType } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import LoginPage from "../features/account/view/LoginPage";
 import RequireAccount from "../features/account/view/RequireAccount";
-import WelcomePage from "../features/account/view/WelcomePage";
-import CharacterPage from "../features/character/view/CharacterPage";
-import FriendsPage from "../features/friends/view/FriendsPage";
-import GuidePage from "../features/guide/view/GuidePage";
-import PrivacyPage from "../features/legal/view/PrivacyPage";
 import LobbyPage from "../features/lobby/view/LobbyPage";
-import RecordsPage from "../features/records/view/RecordsPage";
-import CafePage from "../features/rooms/view/CafePage";
-import CompanyRoomPage from "../features/rooms/view/CompanyRoomPage";
-import RoomListPage from "../features/rooms/view/RoomListPage";
-import ThemeRoomPage from "../features/rooms/view/ThemeRoomPage";
-import { ROUTES, THEME_ROOM_BASE } from "../features/shell/model/paths";
+import { ROUTES } from "../features/shell/model/paths";
 import AppShell from "../features/shell/view/AppShell";
+import RouteError from "./RouteError";
 
 const toLobby = <Navigate to={ROUTES.lobby} replace />;
+
+/** 화면 파일을 처음 열 때 받는다 (첫 화면인 로그인과 내 방만 처음부터 싣는다). */
+const page = (load: () => Promise<{ default: ComponentType }>) => async () => ({ Component: (await load()).default });
+
+/** 나눠 받은 화면을 처음 여는 동안 (새로고침 직후) 비워 둔다. 틀 색만 깔아 깜빡임을 줄인다. */
+const loading = <div className="route-loading" aria-busy="true" />;
+
+/** 앱 틀 밖에서 실패하면 화면 전체에, 안에서 실패하면 틀은 두고 내용 자리에 띄운다. */
+const fullError = <RouteError full />;
 
 /**
  * 주소와 화면의 대응표. `/`와 알 수 없는 주소는 로비로 보낸다.
  * 새로고침해도 같은 주소의 화면이 열린다(개발 서버와 배포 모두 index.html로 되돌려 준다).
  * `/login`과 `/privacy`만 로그인 없이 열리고, 나머지는 `RequireAccount`가 막는다.
+ * 로그인과 내 방 말고는 화면마다 따로 받아 첫 화면을 가볍게 한다.
+ * 화면이 실패하면 RouteError가 받는다 (배포 뒤 예전 화면 파일이면 한 번 새로고침).
  */
 export const router = createBrowserRouter([
-  { path: ROUTES.login, element: <LoginPage /> },
-  { path: ROUTES.privacy, element: <PrivacyPage /> },
+  { path: ROUTES.login, element: <LoginPage />, errorElement: fullError },
+  { path: ROUTES.privacy, lazy: page(() => import("../features/legal/view/PrivacyPage")), hydrateFallbackElement: loading, errorElement: fullError },
   {
     element: <RequireAccount />,
+    hydrateFallbackElement: loading,
+    errorElement: fullError,
     children: [
-      { path: ROUTES.welcome, element: <WelcomePage /> },
+      { path: ROUTES.welcome, lazy: page(() => import("../features/account/view/WelcomePage")) },
       {
         element: <AppShell />,
         children: [
-          { path: "/", element: toLobby },
-          { path: ROUTES.lobby, element: <LobbyPage /> },
-          { path: ROUTES.rooms, element: <RoomListPage /> },
-          { path: `${ROUTES.rooms}/:roomId`, element: <CompanyRoomPage /> },
-          { path: `${THEME_ROOM_BASE}/:theme`, element: <ThemeRoomPage /> },
-          { path: ROUTES.cafe, element: <CafePage /> },
-          { path: ROUTES.character, element: <CharacterPage /> },
-          // 상점은 꾸미기에 합쳤다 (2026-11-01). 예전 주소는 꾸미기로 보낸다.
-          { path: ROUTES.shop, element: <Navigate to={ROUTES.character} replace /> },
-          { path: ROUTES.records, element: <RecordsPage /> },
-          { path: ROUTES.friends, element: <FriendsPage /> },
-          { path: ROUTES.guide, element: <GuidePage /> },
-          { path: "*", element: toLobby },
+          {
+            errorElement: <RouteError />,
+            children: [
+              { path: "/", element: toLobby },
+              { path: ROUTES.lobby, element: <LobbyPage /> },
+              { path: ROUTES.rooms, lazy: page(() => import("../features/rooms/view/RoomListPage")) },
+              { path: `${ROUTES.rooms}/:roomId`, lazy: page(() => import("../features/rooms/view/CompanyRoomPage")) },
+              { path: ROUTES.cafe, lazy: page(() => import("../features/rooms/view/CafePage")) },
+              { path: ROUTES.character, lazy: page(() => import("../features/character/view/CharacterPage")) },
+              // 상점은 꾸미기에 합쳤다 (2026-11-01). 예전 주소는 꾸미기로 보낸다.
+              { path: ROUTES.shop, element: <Navigate to={ROUTES.character} replace /> },
+              { path: ROUTES.records, lazy: page(() => import("../features/records/view/RecordsPage")) },
+              { path: ROUTES.friends, lazy: page(() => import("../features/friends/view/FriendsPage")) },
+              { path: ROUTES.guide, lazy: page(() => import("../features/guide/view/GuidePage")) },
+              { path: "*", element: toLobby },
+            ],
+          },
         ],
       },
     ],

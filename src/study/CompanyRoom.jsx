@@ -7,7 +7,8 @@ import {
   Toilet,
   ArrowLeft,
 } from "@phosphor-icons/react";
-import { COMPANY_ROOM_ART, ROOM_ART_SIZE, ROOM_BOTTOM_GAP, artBox, companyLayout, foregroundClip, roomArtBox, roomScale } from "./companyLayout";
+import { ROOM_ART_SIZE, ROOM_BOTTOM_GAP, artBox, foregroundClip, roomArtBox, roomScale } from "./companyLayout";
+import { COMPANY_SCENE, RoomSceneContext } from "./roomScene";
 import { useCharacterMovement } from "./useCharacterMovement";
 import CharacterSprite from "./CharacterSprite";
 import DeskSet, { EMPTY_DESK } from "./DeskSet";
@@ -62,13 +63,14 @@ function useRoomScale(mainRef, sideRef) {
 }
 
 /**
- * 회사 스터디룸. `onActivityChange`는 캐릭터 동작이 바뀔 때마다 불리고(공부 세션 입력),
- * `renderSession`은 툴바 아래에 세션 표시를 그린다. 휴게실 이동은 사용자가 누를 때만 일어난다.
+ * 실시간 공부방 (회사 스터디룸, 공용 카페). `scene`이 배치와 그림, 문구를 정한다 (`roomScene.js`).
+ * `onActivityChange`는 캐릭터 동작이 바뀔 때마다 불리고(공부 세션 입력),
+ * `renderSession`은 툴바 아래에 세션 표시를 그린다. 휴게실(카페는 카운터) 이동은 사용자가 누를 때만 일어난다.
  * Story 004: 좌석은 `seatService`(서버 판정)가 정하고, 목적지를 정할 때마다 `onMove`, 멈출 때마다 `onSettle`이 불린다.
- * `overlay`는 무대 안(다른 사람 캐릭터), `side`(할 일, 반응, 지금 하는 일)는 무대 오른쪽 열, `toolbarExtra`(방장 도구)는 무대 아래,
+ * `overlay`는 무대 안(다른 사람 캐릭터), `side`(할 일, 초대, 방장 도구, 반응, 지금 하는 일)는 무대 오른쪽 열,
  * `localReaction`은 내 머리 위에 그린다. 무대는 남는 화면에 맞춰 키운다 (`roomScale`).
- * `side`는 무대 오른쪽 열(실제 할 일 등)에 그린다. 무대는 `companyLayout.view` 범위만 보이도록 바깥 창이 자른다.
- * @param {{ room: any, nickname: string, seatService: any, onExit: () => void, onActivityChange?: (activity: string) => void, onMove?: (move: { to: any, activity: string, seatId: number | null }) => void, onSettle?: (character: any) => void, overlay?: import("react").ReactNode, toolbarExtra?: import("react").ReactNode, localReaction?: import("react").ReactNode, look?: any, renderSession?: (actions: { goLounge: () => void, canGoLounge: boolean }) => import("react").ReactNode, side?: import("react").ReactNode }} props
+ * 무대는 `layout.view` 범위만 보이도록 바깥 창이 자른다. `subtitle`은 제목 아래 한 줄이다.
+ * @param {{ room: any, nickname: string, seatService: any, onExit: () => void, onActivityChange?: (activity: string) => void, onMove?: (move: { to: any, activity: string, seatId: number | null }) => void, onSettle?: (character: any) => void, overlay?: import("react").ReactNode, localReaction?: import("react").ReactNode, look?: any, renderSession?: (actions: { goLounge: () => void, canGoLounge: boolean }) => import("react").ReactNode, side?: import("react").ReactNode, scene?: import("./roomScene").RoomScene, subtitle?: import("react").ReactNode }} props
  */
 export default function CompanyRoom({
   room,
@@ -79,14 +81,16 @@ export default function CompanyRoom({
   onMove,
   onSettle,
   overlay,
-  toolbarExtra,
   localReaction,
   renderSession,
   side,
   look = undefined,
+  scene = COMPANY_SCENE,
+  subtitle = undefined,
 }) {
+  const layout = scene.layout;
   const { character, moveTo, validateMove, movementError } =
-    useCharacterMovement(companyLayout, "entrance", onExit);
+    useCharacterMovement(layout, "entrance", onExit);
   const occupancy = useSeatOccupancy(seatService);
   const [pending, setPending] = useState(false);
   const pendingRef = useRef(false);
@@ -101,12 +105,12 @@ export default function CompanyRoom({
     character.activity,
   );
   const locked = moving || pending;
-  const seats = companyLayout.seats.map((seat) => ({
+  const seats = layout.seats.map((seat) => ({
     ...seat,
     occupantId: occupancy.seats[seat.id]?.ownerId,
     lease: occupancy.seats[seat.id],
   }));
-  const foregroundSeat = companyLayout.seats.find(
+  const foregroundSeat = layout.seats.find(
     (seat) =>
       seat.id ===
       (character.occlusionSeatId ||
@@ -168,10 +172,10 @@ export default function CompanyRoom({
     });
   const visit = (area) => releaseAndGo(area.node, { activity: area.activity });
   const rest = () =>
-    visit(companyLayout.areas.find((area) => area.id === "sofa"));
-  const leaveRestroom = () => releaseAndGo("toiletOuter", { activity: "idle" });
+    visit(layout.areas.find((area) => area.id === "sofa"));
+  const leaveRestroom = () => releaseAndGo(layout.restroomExit ?? "toiletOuter", { activity: "idle" });
   const resume = () => {
-    const seat = companyLayout.seats.find((s) => s.id === selectedSeat);
+    const seat = layout.seats.find((s) => s.id === selectedSeat);
     if (seat) selectSeat(seat);
   };
   const leave = () => releaseAndGo("entrance", { activity: "exit" });
@@ -190,7 +194,7 @@ export default function CompanyRoom({
     withPending(async () => {
       // 목적지 검사 실패로 기존 착석을 잃지 않도록 먼저 바닥을 확인합니다.
       const { isWalkable } = await import("./navigation");
-      if (!isWalkable(companyLayout, point)) {
+      if (!isWalkable(layout, point)) {
         setError("벽이나 가구 대신 이동 가능한 바닥을 선택해 주세요.");
         return;
       }
@@ -208,7 +212,7 @@ export default function CompanyRoom({
       .then((ok) => {
         if (!ok && !cancelled) {
           setError("좌석 예약이 만료되었어요. 다른 자리를 선택해 주세요.");
-          const seat = companyLayout.seats.find(
+          const seat = layout.seats.find(
             (s) => s.id === character.seatId,
           );
           go(seat.approach, { activity: "idle" });
@@ -226,12 +230,12 @@ export default function CompanyRoom({
     const lease = occupancy.seats[character.seatId];
     if (lease && lease.ownerId !== occupancy.ownerId) {
       setError("좌석 사용 권한이 변경되어 통로로 이동합니다.");
-      const seat = companyLayout.seats.find((s) => s.id === character.seatId);
+      const seat = layout.seats.find((s) => s.id === character.seatId);
       go(seat.approach, { activity: "idle" });
     } else if (!lease) {
       // 연결이 2분 넘게 끊겨 서버가 자리를 풀었다.
       setError("연결이 오래 끊겨 자리가 풀렸어요. 다시 자리를 선택해 주세요.");
-      const seat = companyLayout.seats.find((s) => s.id === character.seatId);
+      const seat = layout.seats.find((s) => s.id === character.seatId);
       go(seat.approach, { activity: "idle" });
     }
   }, [occupancy.seats]);
@@ -240,15 +244,16 @@ export default function CompanyRoom({
     if (!["walking", "exiting", "standing", "sitting"].includes(character.activity))
       onSettle?.(character);
   }, [character.activity]);
-  const lounge = companyLayout.areas.find((area) => area.id === "lounge");
-  // 방장이 고른 휴게실 꾸밈과 화이트보드 문구 (꾸미기 슬롯 계획 2절). 같은 방 사람 모두 같은 방 정보를 받는다.
+  const lounge = layout.areas.find((area) => area.id === "lounge");
+  const restroom = layout.areas.find((area) => area.id === "restroom");
+  // 방장이 고른 휴게실 꾸밈과 화이트보드 문구 (꾸미기 슬롯 계획 2절). 같은 방 사람 모두 같은 방 정보를 받는다. 카페에는 없다.
   const decor = { ...DEFAULT_DECOR, ...room.decor };
   const signText = (sign) => (sign.id === "board" && room.boardText ? room.boardText : sign.text);
   const canGoLounge =
     !locked && !backgroundFailed && character.activity !== "lounge";
   const status =
     character.activity === "exiting"
-      ? "출입구로 이동 중, 도착하면 로비로 돌아갑니다"
+      ? "출입구로 이동 중, 도착하면 내 방으로 돌아가요"
       : ["walking", "standing", "sitting"].includes(character.activity)
         ? "통로를 따라 이동 중"
         : character.activity === "seated"
@@ -256,22 +261,26 @@ export default function CompanyRoom({
           : character.activity === "resting"
             ? "소파에서 휴식 중"
             : character.activity === "restroom"
-              ? "화장실 내부예요. 나가기 또는 공부 재개하기를 선택해 주세요."
+              ? "화장실에 다녀오는 중"
               : character.activity === "lounge"
-                ? "휴게실에 도착했어요. 소파에서 쉬거나 좌석으로 돌아갈 수 있어요."
+                ? `${scene.loungeName}에서 쉬는 중`
                 : character.node === "entrance"
                   ? "출입구에 도착했어요. 원하는 좌석을 클릭해 주세요."
                   : character.node === "floor"
                     ? "선택한 바닥에 도착했어요. 원하는 자리나 다른 바닥을 선택해 주세요."
-                    : "업무 공간에 도착했어요. 원하는 좌석을 클릭해 주세요.";
+                    : "자리를 골라 앉아 주세요.";
   return (
-    <div className="company-room">
+    <RoomSceneContext.Provider value={scene}>
+    <div className={`company-room scene-${scene.id}`}>
       <div className="company-toolbar">
         <div>
-          <h1>회사 테마 스터디룸</h1>
+          <h1>{scene.title}</h1>
           <p>
-            {room.name}, {companyLayout.seats.length}석, 초대 코드{" "}
-            {room.inviteCode}
+            {subtitle ?? (
+              <>
+                {room.name}, {layout.seats.length}석, 초대 코드 {room.inviteCode}
+              </>
+            )}
           </p>
         </div>
         <div className="company-controls">
@@ -279,17 +288,15 @@ export default function CompanyRoom({
             onClick={() => visit(lounge)}
             disabled={!canGoLounge}
           >
-            <DoorOpen /> 휴게실로 이동
+            <DoorOpen /> {lounge.label}
           </button>
           <button
-            onClick={() =>
-              visit(companyLayout.areas.find((area) => area.id === "restroom"))
-            }
+            onClick={() => visit(restroom)}
             disabled={
               locked || backgroundFailed || character.activity === "restroom"
             }
           >
-            <Toilet /> 화장실 가기
+            <Toilet /> {restroom.label}
           </button>
           {character.activity === "restroom" && (
             <button
@@ -319,7 +326,7 @@ export default function CompanyRoom({
             <Armchair /> 공부 재개하기
           </button>
           <button onClick={leave} disabled={locked}>
-            <SignOut /> 퇴근하기
+            <SignOut /> {scene.exitLabel}
           </button>
         </div>
       </div>
@@ -337,30 +344,30 @@ export default function CompanyRoom({
       <div
         className="company-viewport"
         data-scale={scale}
-        style={{ ...viewportStyle(companyLayout), width: ROOM_ART_SIZE.width * scale, "--room-scale": scale }}
+        style={{ ...viewportStyle(layout), width: ROOM_ART_SIZE.width * scale, "--room-scale": scale }}
       >
       <div
         className="company-stage"
         data-testid="company-stage"
         onClick={clickFloor}
         style={{
-          aspectRatio: `${companyLayout.image?.width || 1536} / ${companyLayout.image?.height || 1024}`,
-          ...stageCropStyle(companyLayout),
+          aspectRatio: `${layout.image?.width || 1536} / ${layout.image?.height || 1024}`,
+          ...stageCropStyle(layout),
         }}
       >
         <img
           className="company-room-art"
-          src={COMPANY_ROOM_ART}
-          alt="회사 스터디룸: 휴게실, 화장실, 책상 여섯 자리가 있는 사무실"
-          style={roomArtBox(companyLayout)}
+          src={scene.art}
+          alt={scene.alt}
+          style={roomArtBox(layout)}
           draggable={false}
           onError={() => setBackgroundFailed(true)}
         />
         {!backgroundFailed && (
           <>
-            {DECOR_DRAW_ORDER.map((slot) => {
+            {scene.decor && DECOR_DRAW_ORDER.map((slot) => {
               const src = DECOR_ITEM_ART[decor[slot]];
-              const box = companyLayout.decorSlots.find((s) => s.id === slot).box;
+              const box = layout.decorSlots.find((s) => s.id === slot).box;
               return src ? (
                 <img
                   key={slot}
@@ -371,7 +378,7 @@ export default function CompanyRoom({
                   draggable={false}
                   data-slot={slot}
                   data-item={decor[slot]}
-                  style={artBox(box, companyLayout)}
+                  style={artBox(box, layout)}
                 />
               ) : null;
             })}
@@ -380,8 +387,8 @@ export default function CompanyRoom({
               .map((seat) => (
                 <DeskSet key={seat.id} seat={seat} look={EMPTY_DESK} />
               ))}
-            <WallClock />
-            {companyLayout.signs.map((sign) => (
+            {layout.wallClock && <WallClock />}
+            {layout.signs.map((sign) => (
               <span
                 key={sign.id}
                 className={`room-sign room-sign-${sign.id}`}
@@ -401,7 +408,7 @@ export default function CompanyRoom({
               {seats.map((seat) => (
                 <button
                   key={seat.id}
-                  className={`seat-marker ${companyLayout.seatMarkersBaked ? "baked" : ""} ${selectedSeat === seat.id ? "is-selected" : ""} ${seat.occupantId ? "is-seated" : ""}`}
+                  className={`seat-marker ${layout.seatMarkersBaked ? "baked" : ""} ${selectedSeat === seat.id ? "is-selected" : ""} ${seat.occupantId ? "is-seated" : ""}`}
                   style={{
                     left: `${seat.label.x * 100}%`,
                     top: `${seat.label.y * 100}%`,
@@ -440,7 +447,7 @@ export default function CompanyRoom({
               aria-label="공간 이동"
               onClick={(e) => e.stopPropagation()}
             >
-              {companyLayout.areas.map((area) => (
+              {layout.areas.map((area) => (
                 <button
                   key={area.id}
                   className="area-marker"
@@ -472,11 +479,11 @@ export default function CompanyRoom({
             {overlay}
             {rect && (
               <img
-                src={COMPANY_ROOM_ART}
+                src={scene.art}
                 alt=""
                 aria-hidden="true"
                 className="seat-foreground"
-                style={{ ...roomArtBox(companyLayout), clipPath: foregroundClip(rect, companyLayout) }}
+                style={{ ...roomArtBox(layout), clipPath: foregroundClip(rect, layout) }}
               />
             )}
             {mySeat && (
@@ -488,11 +495,10 @@ export default function CompanyRoom({
       </div>
       {side && <aside className="company-side" ref={sideRef}>{side}</aside>}
       </div>
-      {toolbarExtra}
       {backgroundFailed && (
         <div className="room-error" role="alert">
-          회사 원본 이미지를 불러오지 못했어요. 좌석 이동을 중단했습니다.
-          <button onClick={onExit}> 로비로 돌아가기</button>
+          방 그림을 불러오지 못했어요. 새로고침해 주세요.
+          <button onClick={onExit}> 내 방으로 돌아가기</button>
         </div>
       )}
       {occupancy.error && (
@@ -505,16 +511,7 @@ export default function CompanyRoom({
           {error || movementError}
         </p>
       )}
-      <details className="company-help">
-        <summary>이동 도움말</summary>
-        <p>
-          바닥을 클릭하면 이동합니다. 1~3번은 위쪽, 4~6번은 아래쪽 좌석입니다.
-        </p>
-        <p>
-          좌석은 서버가 정해요. 같은 자리를 동시에 눌러도 한 명만 앉고, 연결이
-          2분 넘게 끊기면 자리가 풀려요.
-        </p>
-      </details>
     </div>
+    </RoomSceneContext.Provider>
   );
 }

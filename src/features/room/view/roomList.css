@@ -1,0 +1,60 @@
+/* 내 방 목록 한 줄: 문 아이콘, 이름과 인원, 초대 코드와 복사, 입장과 나가기 (study.css의 .local-room-list 틀 위에 얹는다). */
+.local-room-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 18px;
+}
+.room-row-icon {
+  width: 34px;
+  height: 34px;
+  color: #86735e;
+}
+.room-row-main h3 {
+  margin: 0 0 4px;
+}
+.room-row-main p {
+  margin: 0;
+}
+.room-row-code {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #75624e;
+}
+.room-row-code code {
+  font-size: 16px;
+  letter-spacing: 2px;
+  color: #24231f;
+}
+.room-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.room-row-actions .primary,
+.room-row-actions .secondary-button {
+  margin: 0;
+  white-space: nowrap;
+}
+.room-leave-confirm p {
+  max-width: 260px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1240px) {
+  .local-room-list li {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .room-row-code {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .room-row-actions {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+}

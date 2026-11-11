@@ -27,6 +27,56 @@
         "value": "#e2b47c",
         "createdAt": "2026-10-30T18:30:50.667Z",
         "reason": "Claude: hover tint on the lobby wooden nameplate's edit button equals the light band of home/nameplate.png (#e2b47c, authored in tools/art/home-props.mjs)"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#75624e",
+        "createdAt": "2026-11-10T17:18:24.340Z"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#7e4031",
+        "createdAt": "2026-11-10T17:18:24.461Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "21px",
+        "createdAt": "2026-11-10T17:18:54.135Z"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#3c4036",
+        "createdAt": "2026-11-10T17:25:09.245Z"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#91a17b",
+        "createdAt": "2026-11-10T17:25:09.348Z"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#26372c",
+        "createdAt": "2026-11-10T17:25:09.473Z"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#dae1ca",
+        "createdAt": "2026-11-10T17:28:00.006Z"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#8b9b72",
+        "createdAt": "2026-11-10T17:28:00.131Z"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#b57764",
+        "createdAt": "2026-11-10T17:28:00.239Z"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#f1d7c8",
+        "createdAt": "2026-11-10T17:28:00.361Z"
       }
     ]
   }

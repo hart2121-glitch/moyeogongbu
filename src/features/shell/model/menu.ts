@@ -1,4 +1,4 @@
-import { ROUTES, THEME_ROOM_BASE } from "./paths";
+import { ROUTES } from "./paths";
 
 export type MenuIcon =
   | "house"
@@ -30,15 +30,13 @@ export const MENU_ITEMS: readonly MenuItem[] = [
 /**
  * 현재 주소에서 메뉴 항목의 강조 상태를 구한다.
  * `active`는 강조 표시, `current`는 aria-current 표시다.
- * 스터디룸 항목은 방 목록과 테마 방에서 current이고, 들어간 회사 스터디룸(/rooms/아이디)에서는 강조만 된다.
+ * 스터디룸 항목은 방 목록에서 current이고, 들어간 회사 스터디룸(/rooms/아이디)에서는 강조만 된다.
  * 로비(내 방)에서는 내 방 항목만 강조된다.
  * @example menuState("/lobby", "/rooms") // { active: false, current: false }
  * @example menuState("/rooms/abc", "/rooms") // { active: true, current: false }
  */
 export function menuState(pathname: string, path: string) {
-  const isRoomsPage =
-    pathname === ROUTES.rooms || pathname.startsWith(`${THEME_ROOM_BASE}/`);
-  const current = path === ROUTES.rooms ? isRoomsPage : pathname === path;
+  const current = pathname === path;
   const active = current || (path === ROUTES.rooms && pathname.startsWith(`${ROUTES.rooms}/`));
   return { active, current };
 }

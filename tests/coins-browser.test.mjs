@@ -81,7 +81,7 @@ test("앉으면 툴바에 근무 시간과 코인, 퇴근하면 오늘의 정산
     assert.match(await card.innerText(), /근무 시간/);
     assert.ok(state.calls.some((c) => c.endsWith("/rpc/settle_study")));
     await shot(page, "today-settlement-card.png");
-    await card.getByRole("button", { name: "로비로 가기", exact: true }).click();
+    await card.getByRole("button", { name: "내 방으로 가기", exact: true }).click();
     await page.getByRole("heading", { name: "밍구", exact: true }).waitFor({ timeout: 20000 });
     assert.equal(await page.getByRole("dialog").count(), 0);
   } finally {

@@ -3,6 +3,7 @@ import { REACTIONS, ROOM_CONFIG } from "../model/roomConfig";
 import { useCurrentTask } from "../viewmodel/useCurrentTask";
 import { todayKey } from "../../todos/model/studyDay";
 import { useDayTodos } from "../../todos/viewmodel/useDayTodos";
+import "../../shell/view/controls.css";
 
 interface Props {
   connected: boolean;
@@ -83,7 +84,7 @@ export default function RoomLiveBar({ connected, sendReaction, onTaskSaved }: Pr
           placeholder="예: 영어 단어 외우기"
         />
         <label className="room-task-share">
-          <input type="checkbox" checked={shared} onChange={(e) => setShared(e.target.checked)} /> 공개
+          <input className="pixel-check" type="checkbox" checked={shared} onChange={(e) => setShared(e.target.checked)} /> 공개
         </label>
         <button type="submit">저장</button>
       </form>

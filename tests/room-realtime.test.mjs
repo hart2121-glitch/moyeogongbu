@@ -112,7 +112,7 @@ test("두 사람이 같은 방: 이동 재생, 이름표와 마우스 올림, �
     assert.equal(server.broadcasts.filter((m) => m.event === "reaction").length, 1);
 
     // 방장 도구: 이름 변경, 초대 코드 재발급, 강퇴, 풀어 주기.
-    await a.getByText("방장 도구", { exact: true }).click();
+    await a.getByRole("button", { name: "방장 도구", exact: true }).click();
     await a.getByLabel("방 이름", { exact: true }).fill("새 이름 회사");
     await a.getByRole("button", { name: "이름 바꾸기", exact: true }).click();
     await a.locator(".company-toolbar").filter({ hasText: "새 이름 회사" }).waitFor();
@@ -122,6 +122,12 @@ test("두 사람이 같은 방: 이동 재생, 이름표와 마우스 올림, �
     assert.notEqual(server.rooms.get(SEED_ROOM.id).invite_code, oldCode);
     await shot(a, "owner-tools.png");
     await a.getByRole("button", { name: "두리 강퇴", exact: true }).click();
+    // 강퇴는 한 번 더 묻는다: 취소하면 그대로, 다시 눌러 강퇴를 고르면 내보낸다
+    const kickConfirm = a.getByRole("group", { name: "두리 강퇴 확인", exact: true });
+    await kickConfirm.getByRole("button", { name: "취소", exact: true }).click();
+    assert.equal(server.bans.get(SEED_ROOM.id).size, 0);
+    await a.getByRole("button", { name: "두리 강퇴", exact: true }).click();
+    await kickConfirm.getByRole("button", { name: "강퇴", exact: true }).click();
     await b.getByTestId("room-blocked").filter({ hasText: "멤버가 아니에요" }).waitFor({ timeout: 10000 });
     await b.getByRole("button", { name: "방 목록으로", exact: true }).click();
     await b.getByLabel("초대 코드", { exact: true }).fill(server.rooms.get(SEED_ROOM.id).invite_code);

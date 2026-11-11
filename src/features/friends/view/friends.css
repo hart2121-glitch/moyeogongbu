@@ -1,0 +1,261 @@
+/* 친구 목록, 친구 화면, 친구 프로필 (Story 006, 2026-11-11 다시 짬).
+   종이 층: 크림 카드, 입력 선 테두리, 세이지 주요 단추 (DESIGN.md). */
+
+/* 목록 한 줄: 얼굴, 이름과 상태, (넓은 목록) 프로필 화살표와 같이 공부하기 */
+.friend-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.friend-list .friend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  border-bottom: 1px dashed #b6a084;
+}
+.friend-list .friend:last-child {
+  border-bottom: 0;
+}
+.friend-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.friend-text {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.friend-text strong {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #24231f;
+}
+.friend-status {
+  overflow: hidden;
+  font-size: 13px;
+  color: #75624e;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.presence {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  vertical-align: 1px;
+  border-radius: 50%;
+  background: #b6a084;
+}
+.presence.studying {
+  background: #6c7b61;
+}
+.presence.break {
+  background: #f1b854;
+}
+.presence.away {
+  background: #d88777;
+}
+
+/* 친구 화면의 넓은 목록 */
+.friend-list.is-expanded .friend {
+  gap: 14px;
+  padding: 6px 0;
+}
+.friend-list.is-expanded .friend-main {
+  gap: 16px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  transition: background-color 0.15s;
+}
+.friend-list.is-expanded .friend-main:hover {
+  background: #f1e2c8;
+}
+.friend-list.is-expanded .friend-text strong {
+  font-size: 18px;
+}
+.friend-list.is-expanded .friend-status {
+  font-size: 16px;
+}
+.friend-more {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: #86735e;
+}
+.friend-join {
+  flex: none;
+  margin-right: 6px;
+}
+
+/* 친구 화면 위쪽: 내 친구 코드와 친구 추가 */
+.friend-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 22px;
+  margin-bottom: 30px;
+}
+.friend-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  background: #f1e2c8;
+  border: 2px solid #b6a084;
+  border-radius: 6px;
+}
+.friend-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+.friend-code-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.friend-code {
+  font-size: 29px;
+  letter-spacing: 4px;
+  font-variant-numeric: tabular-nums;
+  color: #24231f;
+}
+.friend-card label {
+  font-size: 14px;
+}
+.friend-add-row {
+  display: flex;
+  gap: 10px;
+}
+.friend-add-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 2px solid #b6a084;
+  border-radius: 4px;
+  background: #fff8e8;
+  color: #24231f;
+  font: inherit;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.friend-add-row input::placeholder {
+  letter-spacing: 0;
+  text-transform: none;
+}
+.friend-add-row .primary {
+  margin: 0;
+  white-space: nowrap;
+}
+.friend-note {
+  margin: 0;
+  font-size: 14px;
+  color: #49533f;
+}
+.friend-note.is-error {
+  color: #7e4031;
+}
+.friend-section > h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 10px;
+  font-size: 21px;
+}
+.friend-section > h2 small {
+  font-size: 14px;
+  font-weight: 400;
+  color: #75624e;
+}
+
+/* 친구 프로필 모달 */
+.friend-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+/* 56×72 칸을 정확히 2배(112×144)로 그린다 (정수 배율). */
+.friend-detail-figure {
+  padding: 10px 18px 4px;
+  background: #f1e2c8;
+  border: 2px solid #b6a084;
+  border-radius: 6px;
+}
+.friend-detail-figure .layer-stack {
+  width: 112px;
+  border: 0;
+  background: none;
+  box-sizing: content-box;
+}
+/* 이 화면의 단추는 줄 안에 놓이므로 기본 위 여백(15px)을 뺀다. */
+.friend-cards .primary,
+.friend-cards .secondary-button,
+.friend-list .primary,
+.friend-detail .primary,
+.friend-detail .secondary-button {
+  margin: 0;
+}
+
+.friend-detail h2 {
+  margin: 6px 0 0;
+  font-size: 21px;
+}
+.friend-detail-place {
+  margin: 0 0 6px;
+  color: #75624e;
+}
+.friend-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+.friend-confirm {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #f1e2c8;
+  border: 2px solid #b6a084;
+  border-radius: 6px;
+}
+.friend-confirm p {
+  margin: 0;
+}
+.friend-confirm div {
+  display: flex;
+  gap: 10px;
+}
+.friend-detail [role="alert"] {
+  margin: 0;
+  color: #7e4031;
+}
+
+@media (max-width: 1180px) {
+  .friend-cards {
+    grid-template-columns: 1fr;
+  }
+}

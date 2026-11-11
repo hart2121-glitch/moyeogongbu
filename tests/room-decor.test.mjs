@@ -8,7 +8,8 @@ import { join } from "node:path";
 import { chromium } from "@playwright/test";
 import { createFakeServer, FAKE_USER_ID, mockSupabase, SEED_ROOM } from "./supabaseMock.mjs";
 
-const url = process.env.APP_URL || "http://127.0.0.1:4173/";
+// CI는 APP_URL을 끝 빗금 없이 준다. 경로를 이어 붙이므로 빗금을 하나로 맞춘다.
+const url = (process.env.APP_URL || "http://127.0.0.1:4173/").replace(/\/?$/, "/");
 const evidence = process.env.EVIDENCE_DIR;
 const viewport = { width: 1440, height: 900 };
 const COMEMBER = "00000000-0000-4000-8000-000000000041";
@@ -49,11 +50,11 @@ test("공용 꾸밈: 방장이 러그와 쿠션을 사서 놓고 화이트보드
     // 확인: 처음에는 원래 그림과 같은 기본 꾸밈(고양이 쿠션, 고양이 인형과 간식, 고양이 매트)과 기본 문구
     assert.deepEqual(await decor(owner), DEFAULT);
     assert.equal(await board(owner), "오늘도\n수고했어요!");
-    assert.equal(await member.getByTestId("owner-tools").count(), 0);
+    assert.equal(await member.getByRole("button", { name: "방장 도구" }).count(), 0);
 
-    // 실행: 방장 도구에서 카멜 러그를 골라 가격을 확인하고 사서 놓는다
+    // 실행: 방장 도구 창을 열고, 카멜 러그를 골라 가격을 확인하고 사서 놓는다
+    await owner.getByRole("button", { name: "방장 도구", exact: true }).click();
     const tools = owner.getByTestId("owner-tools");
-    await tools.locator("summary").click();
     await tools.getByTestId("owner-decor-balance").getByText("지금 가진 코인 3000").waitFor();
     // 확인: 자리마다 네 가지(러그는 테마 넷과 기본, 판매를 멈춘 파스텔 셋은 없다)이고, 기본 러그를 뺀 열여섯 아이템 그림이 모두 불러와진다
     await owner.waitForFunction(() => [...document.querySelectorAll(".owner-decor-thumb img")].every((i) => i.complete));
@@ -70,7 +71,7 @@ test("공용 꾸밈: 방장이 러그와 쿠션을 사서 놓고 화이트보드
     await tools.getByRole("button", { name: "휴게실 러그, 카멜 러그, 1800코인" }).click();
     await tools.getByRole("group", { name: "카멜 러그 구매 확인" }).waitFor();
     await tools.getByRole("button", { name: "카멜 러그 사서 놓기" }).click();
-    await tools.getByText("카멜 러그을(를) 사서 휴게실에 놓았어요.").waitFor();
+    await tools.getByText("카멜 러그를 사서 휴게실에 놓았어요.").waitFor();
 
     // 확인: 러그가 깔리고, 코인이 줄고, 산 러그는 이제 "놓여 있어요"
     await owner.locator('.room-decor[data-slot="rug"][data-item="rug-camel"]').waitFor();
