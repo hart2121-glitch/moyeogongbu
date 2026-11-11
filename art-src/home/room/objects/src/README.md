@@ -22,3 +22,5 @@
 | notebook.png | 68ed5291-cb57-4ae5-b651-c667c1108cc3 | 남색 공책 |
 | paper.png | 5a9b03dd-3810-4583-bd47-1bc7f442213d | 얇게 깔린 종이 (책상 위 기본) |
 | cushions.png | 79a25d49-cf39-405b-91ee-0a86922c0f19 | 고양이 얼굴 쿠션 둘 (휴게실 소파 기본) |
+
+`cushions.png`는 원본 그대로 두고, `tools/art/company-decor.mjs`가 읽을 때 코와 입을 손으로 다시 찍는다 (2026-11-11 사용자 지적: 회색 타원 코가 돼지 같다. 분홍 코와 ω 입으로 바꿈).

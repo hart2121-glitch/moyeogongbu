@@ -16,6 +16,7 @@ import WallClock from "./WallClock";
 import { defaultLook } from "../features/character/model/layers";
 import { DECOR_DRAW_ORDER, DECOR_ITEM_ART, DEFAULT_DECOR } from "../config/roomDecor";
 import { useSeatOccupancy } from "./useSeatOccupancy";
+import { coveredSeatIds } from "./seatMarkers";
 
 /** 바깥 창의 비율: 보이는 범위(view)의 가로세로. view가 없으면 원본 전체. */
 const viewportStyle = ({ image, view = image }) => ({
@@ -110,6 +111,7 @@ export default function CompanyRoom({
     occupantId: occupancy.seats[seat.id]?.ownerId,
     lease: occupancy.seats[seat.id],
   }));
+  const coveredSeats = layout.seatMarkersBaked ? coveredSeatIds(seats, layout) : new Set();
   const foregroundSeat = layout.seats.find(
     (seat) =>
       seat.id ===
@@ -408,7 +410,7 @@ export default function CompanyRoom({
               {seats.map((seat) => (
                 <button
                   key={seat.id}
-                  className={`seat-marker ${layout.seatMarkersBaked ? "baked" : ""} ${selectedSeat === seat.id ? "is-selected" : ""} ${seat.occupantId ? "is-seated" : ""}`}
+                  className={`seat-marker ${layout.seatMarkersBaked ? "baked" : ""} ${selectedSeat === seat.id ? "is-selected" : ""} ${seat.occupantId ? "is-seated" : ""} ${coveredSeats.has(seat.id) ? "is-covered" : ""}`}
                   style={{
                     left: `${seat.label.x * 100}%`,
                     top: `${seat.label.y * 100}%`,

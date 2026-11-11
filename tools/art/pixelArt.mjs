@@ -2,8 +2,8 @@
 // 규칙: 정해진 크기, 반투명 픽셀은 실루엣 가장자리에만, 발 기준점 고정. 색 수 제한은 없다.
 import { inflateSync, deflateSync } from "node:zlib";
 
-/** 캐릭터 레이어 시트: 56×72 프레임 23칸을 가로로 이은 한 장. */
-export const FRAME = { width: 56, height: 72, count: 23 };
+/** 캐릭터 레이어 시트: 56×72 프레임 27칸을 가로로 이은 한 장 (칸 순서는 src/study/characterSprites.js). */
+export const FRAME = { width: 56, height: 72, count: 27 };
 export const SHEET = { width: FRAME.width * FRAME.count, height: FRAME.height };
 /** 방 원본 크기. */
 export const ROOM = { width: 672, height: 432 };

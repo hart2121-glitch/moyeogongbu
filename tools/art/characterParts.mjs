@@ -1,6 +1,6 @@
 // 캐릭터 부품 파이프라인 (Story 009 1차 목표).
 // 기본 몸 위에 부품 하나만 얹어 생성한 그림에서 부품을 떼어 내고,
-// 걷기 프레임(PixelLab skeleton-v3, 112×112)을 56×72 칸으로 맞춰 23프레임 시트로 만든다.
+// 걷기 프레임(PixelLab skeleton-v3, 112×112)을 56×72 칸으로 맞춰 27칸 시트로 만든다.
 // 머리카락은 방향당 1장을 프레임별 머리 위치에 붙이고, 목 아래는 뒷머리(몸 뒤)로 나눈다.
 import { FRAME } from "./pixelArt.mjs";
 import { emptyLike, hsv, pixelIndex } from "./rigImage.mjs";
@@ -366,7 +366,7 @@ export function placeHeadPart(part, dy, which) {
   return out;
 }
 
-/** 프레임 목록을 23칸 시트 한 장으로 잇는다. */
+/** 프레임 목록을 27칸 시트 한 장으로 잇는다. */
 export function toSheet(frames) {
   const sheet = blank(FRAME.width * frames.length, FRAME.height);
   frames.forEach((f, n) => {
