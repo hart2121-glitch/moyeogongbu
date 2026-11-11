@@ -19,6 +19,14 @@ const STATE_ICON: Record<FriendState, FriendIcon> = {
   offline: "gamepad",
 };
 
+/**
+ * 화면에 보일 상태. 서버는 공부 세션 상태와 방 접속을 따로 재므로, 방에는 있는데 세션이 없거나 끝난 친구가 "오프라인"으로 온다.
+ * 방 안에서 앉지 않은 사람은 방 툴바에서도 "쉬는 중"이므로 휴식으로 보여 준다 ("오프라인"인데 "같이 공부하기"가 뜨지 않게).
+ * @example visibleState("offline", true) // "break"
+ */
+export const visibleState = (state: FriendState, inRoom: boolean): FriendState =>
+  state === "offline" && inRoom ? "break" : state;
+
 /** @example friendStatusLabel("break") // "휴식 중" */
 export const friendStatusLabel = (state: FriendState) => STATE_LABEL[state] ?? STATE_LABEL.offline;
 

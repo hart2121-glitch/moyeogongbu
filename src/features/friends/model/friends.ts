@@ -9,7 +9,7 @@ import { socialRpc } from "./socialError";
  * 상태는 Story 002 공부 세션, 있는 방은 Story 004 접속 정보에서 서버가 계산한다.
  */
 
-import type { FriendIcon, FriendState } from "./friendText";
+import { visibleState, type FriendIcon, type FriendState } from "./friendText";
 
 export type { FriendIcon, FriendState } from "./friendText";
 
@@ -51,7 +51,7 @@ interface FriendRow {
 const toFriend = (row: FriendRow): Friend => ({
   userId: row.user_id,
   name: row.display_name ?? "이름 없음",
-  state: row.state ?? "offline",
+  state: visibleState(row.state ?? "offline", !!row.in_room),
   inRoom: !!row.in_room,
   roomId: row.room_id ?? null,
   roomName: row.room_name ?? null,
