@@ -101,6 +101,7 @@ for (const name of readdirSync(SRC).filter((n) => n.endsWith(".png"))) items[nam
 items["desk-mug"] = oneHandle(items["desk-mug"]);
 items["desk-clock"] = dropShadow(items["desk-clock"], 33, [[174, 82, 59], [177, 86, 62]]);
 items["desk-bunny"] = dropShadow(items["desk-bunny"], 39, [[128, 97, 102], [126, 94, 100]]);
+items["desk-globe"] = dropShadow(items["desk-globe"], 39, [[159, 114, 97]]);
 items["desk-candle"] = noLid(items["desk-candle"]);
 for (const id of Object.keys(items)) if (items[id].height === 44) items[id] = standOnDesk(items[id]);
 items["sticker-star"] = draw(32, 16, [
