@@ -127,7 +127,10 @@ export function faceSheet(faceId: string, gender: Gender): LayerSource | null {
  * 책상 소품(desk_top)은 32×44로 왼쪽이나 오른쪽 자리에, 스티커(desk_front)는 32×16으로 앞면 자리에 놓인다.
  */
 export const DESK_ITEM_ART: Readonly<Record<string, string>> = Object.fromEntries(
-  ["desk-lamp", "desk-plant", "desk-books", "desk-mug", "desk-cactus", "desk-cat", "desk-moon", "desk-globe", "sticker-star", "sticker-cat"].map(
+  [
+    "desk-lamp", "desk-plant", "desk-books", "desk-mug", "desk-pencils", "desk-cactus", "desk-candle", "desk-cat",
+    "desk-clock", "desk-bunny", "desk-hourglass", "desk-moon", "desk-fishbowl", "desk-globe", "sticker-star", "sticker-cat",
+  ].map(
     (id) => [id, `/assets/rooms/desk/${id}.png`],
   ),
 );
