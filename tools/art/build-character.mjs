@@ -1,5 +1,5 @@
 // 사용법: node tools/art/build-character.mjs
-// art-src/characters/src/의 기본 몸과 부품 원재료로 27칸 시트를 만든다 (Story 009).
+// art-src/characters/src/의 기본 몸과 부품 원재료로 33칸 시트를 만든다 (Story 009).
 // 출력: art-src/characters/body-basic.png, face-<id>.png, hair-<모양>-<색>-front.png, hair-<모양>-<색>-back.png, outfit-<id>.png, 색 바꾸기 변형
 // 게임은 뒷머리 → 몸 → 옷 → 얼굴 → 앞머리 순서로 같은 칸을 겹친다.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { decodePng, encodePng, FRAME } from "./pixelArt.mjs";
 import { coverBaldPeeks, cropCell, plainEyes, eraseFace, extractFace, extractPart, feetAlignment, fitWalkFrame, mirror, NECK, placeHeadPart, shift, SIT_DROP, symmetricEyes, toSheet } from "./characterParts.mjs";
 import { emptyLike, hsv } from "./rigImage.mjs";
-import { restFrame, SIT_STEPS, sitFrame } from "./rigidRig.mjs";
+import { LEG_TOP, restFrame, SIT_STEPS, sitFrame } from "./rigidRig.mjs";
 
 const SRC = "art-src/characters/src", OUT = "art-src/characters";
 /**
@@ -52,7 +52,7 @@ function loadBase() {
   return base;
 }
 
-/** 서기 4, 걷기 16(남, 북, 서, 동 순), 앉기(뒷모습, 정면), 휴식, 의자에 앉는 사이 2, 소파에 앉는 사이 2 순서의 27칸. */
+/** 서기 4, 걷기 16(남, 북, 서, 동 순), 앉기(뒷모습, 정면), 휴식, 의자에 앉는 사이 2, 소파에 앉는 사이 2 순서의 27칸. 쉬는 동작 6칸은 저장할 때 withIdleCells가 붙인다. */
 function frameOrder(per) {
   return [...DIRS.map((d) => per[d].stand), ...DIRS.flatMap((d) => per[d].walk), per.north.sitUp, per.south.sitDown, per.south.rest, ...per.south.sitSteps, ...per.south.restSteps];
 }
@@ -415,7 +415,37 @@ const built = {};
  * 서기와 걷기 뒷모습 칸은 다리에서 3줄(62, 64, 66)을 빼 몸을 내리고, 앉은 뒷모습 칸은 통째로 3줄 내린다.
  * 모든 레이어에 똑같이 해서 서로 어긋나지 않는다. 파일로 쓸 때만 하므로 색 바꾸기 변형이 두 번 내려가지 않는다.
  */
-const NORTH_CELLS = [1, 8, 9, 10, 11], NORTH_SIT = 20, NORTH_DROP_ROWS = [62, 64, 66];
+const NORTH_CELLS = [1, 8, 9, 10, 11, 28], NORTH_SIT = 20, NORTH_DROP_ROWS = [62, 64, 66];
+
+/**
+ * 쉬는 동작 칸 (2026-11-12): 서 있을 때 숨쉬기(27~30, 서기 0~3에서), 책상에 앉아 숨쉬기(31)와 끄덕임(32, 의자 앉기 21에서).
+ * 다 만든 시트의 칸에서 줄만 옮겨 만든다. 모든 레이어에 같은 줄 옮기기를 하므로 레이어끼리 어긋나지 않고,
+ * 옷 손질(반팔, 바지 허리)과 색 바꾸기도 원래 칸에서 그대로 따라온다. 파일로 쓸 때만 한다 (lowerNorth 앞).
+ * - 숨쉬기(서기): 다리 위 윗몸을 1줄 올리고, 생긴 틈은 다리 첫 줄(LEG_TOP)을 한 번 더 그려 메운다.
+ * - 숨쉬기(앉기): 칸 전체를 1줄 올린다 (하체는 책상이 가린다).
+ * - 끄덕임(앉기): 머리(앉은 목 줄까지)만 1줄 내린다.
+ */
+const IDLE_CELLS = { breathe: [27, 28, 29, 30], deskBreathe: 31, deskNod: 32, desk: 21 };
+function withIdleCells(sheet) {
+  const W = FRAME.width, H = FRAME.height;
+  const out = { width: W * FRAME.count, height: H, pixels: new Uint8Array(W * FRAME.count * H * 4) };
+  const row = (im, cell, y) => im.pixels.subarray((y * im.width + cell * W) * 4, (y * im.width + (cell + 1) * W) * 4);
+  for (let c = 0; c < Math.min(sheet.width / W, FRAME.count); c++) for (let y = 0; y < H; y++) row(out, c, y).set(row(sheet, c, y));
+  /** to 칸의 y줄에 from 칸의 source(y)줄을 놓는다 (범위 밖이면 빈 줄). */
+  const make = (to, from, source) => {
+    for (let y = 0; y < H; y++) {
+      const s = source(y);
+      row(out, to, y).fill(0);
+      if (s >= 0 && s < H) row(out, to, y).set(row(sheet, from, s));
+    }
+  };
+  IDLE_CELLS.breathe.forEach((to, from) => make(to, from, (y) => (y < LEG_TOP ? y + 1 : y)));
+  make(IDLE_CELLS.deskBreathe, IDLE_CELLS.desk, (y) => y + 1);
+  const seatedNeck = NECK + SIT_DROP;
+  make(IDLE_CELLS.deskNod, IDLE_CELLS.desk, (y) => (y === 0 ? -1 : y <= seatedNeck ? y - 1 : y));
+  return out;
+}
+
 function lowerNorth(sheet) {
   const out = { ...sheet, pixels: sheet.pixels.slice() };
   const row = (src, cell, y) => src.pixels.subarray((y * src.width + cell * FRAME.width) * 4, (y * src.width + (cell + 1) * FRAME.width) * 4);
@@ -562,7 +592,7 @@ function finishOutfit(id, sheet, body) {
   if (existsSync(join(dir, "SHORT-SLEEVES"))) out = cleanShortSleeves(out, body);
   return out;
 }
-const save = (name, image) => { built[name] = image; writeFileSync(join(OUT, `${name}.png`), encodePng(lowerNorth(image))); report.push(`${name}.png`); };
+const save = (name, image) => { built[name] = image; writeFileSync(join(OUT, `${name}.png`), encodePng(lowerNorth(withIdleCells(image)))); report.push(`${name}.png`); };
 save("body-basic", buildBody(base));
 for (const id of list(join(SRC, "face"))) {
   save(`face-${id}`, buildFace(id, base));

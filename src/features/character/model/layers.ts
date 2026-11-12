@@ -3,7 +3,7 @@ import { SHEET_FRAME } from "../../../study/characterSprites";
 
 /**
  * 캐릭터 레이어 합성 규칙 (Story 007, Story 009).
- * 모든 레이어는 같은 27칸 시트(칸 56×72)이고, 같은 칸 번호로 잘라 (0,0)에 겹친다.
+ * 모든 레이어는 같은 33칸 시트(칸 56×72)이고, 같은 칸 번호로 잘라 (0,0)에 겹친다.
  */
 export const CANVAS = { width: SHEET_FRAME.width, height: SHEET_FRAME.height } as const;
 

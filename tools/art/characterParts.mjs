@@ -366,7 +366,7 @@ export function placeHeadPart(part, dy, which) {
   return out;
 }
 
-/** 프레임 목록을 27칸 시트 한 장으로 잇는다. */
+/** 프레임 목록을 시트 한 장으로 잇는다 (27칸, 쉬는 동작 칸은 build-character.mjs가 붙인다). */
 export function toSheet(frames) {
   const sheet = blank(FRAME.width * frames.length, FRAME.height);
   frames.forEach((f, n) => {

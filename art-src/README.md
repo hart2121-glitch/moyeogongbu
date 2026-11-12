@@ -4,7 +4,7 @@
 `node tools/art/validate.mjs`(또는 `node --test tests/pixel-art.test.mjs`)가 `characters/`와 `rooms/`의 정식 시트를 검사한다.
 이름이 `preview`나 `draft`로 시작하는 파일은 검사하지 않는다.
 
-- `characters/`: 게임에 쓰는 레이어 시트 (23칸, 1288×72). `node tools/art/build-character.mjs`가
+- `characters/`: 게임에 쓰는 레이어 시트 (33칸, 1848×72). `node tools/art/build-character.mjs`가
   `characters/src/`의 원재료로 만들고, 같은 파일을 `public/assets/characters/layers/`에 복사해 쓴다.
   원재료와 칸 순서는 `characters/src/README.md`.
 - `characters/draft-*.png`, `characters/sheet-n1.png`: 사용자가 고른 N1 시안까지의 정면 시안.

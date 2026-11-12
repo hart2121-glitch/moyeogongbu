@@ -4,12 +4,17 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import {
   BODY_SHEET,
+  BREATHE_FRAMES,
   characterSprites,
+  DESK_LOOP,
   frameIndex,
+  IDLE_FRAME_MS,
+  poseFrameMs,
   resolvePose,
   SETTLE_FRAMES,
   SHEET_FRAME,
   spriteFootCenterX,
+  WALK_FRAME_MS,
   spriteFootPadding,
 } from "../src/study/characterSprites.js";
 import { decodePng } from "../tools/art/pixelArt.mjs";
@@ -31,11 +36,33 @@ test("의자 앉기는 정면과 뒷모습 칸, 소파 휴식은 휴식 칸", ()
   assert.equal(frameIndex("rest", "down"), 22);
 });
 
-test("앉는 사이 칸은 휴식 칸 뒤에 의자 둘, 소파 둘이고 시트 끝까지 채운다", () => {
+test("앉는 사이 칸은 휴식 칸 뒤에 의자 둘, 소파 둘", () => {
   assert.deepEqual(SETTLE_FRAMES, { sit: [23, 24], rest: [25, 26] });
-  assert.equal(Math.max(...SETTLE_FRAMES.sit, ...SETTLE_FRAMES.rest), SHEET_FRAME.count - 1);
   assert.equal(resolvePose("idle").action in SETTLE_FRAMES, false);
   assert.equal(resolvePose("walking").action in SETTLE_FRAMES, false);
+});
+
+test("서 있으면 방향마다 서기 칸과 숨쉬기 칸(27~30)을 오간다", () => {
+  assert.equal(BREATHE_FRAMES, 2);
+  assert.deepEqual(["down", "up", "left", "right"].map((d) => frameIndex("idle", d, 1)), [27, 28, 29, 30]);
+  assert.equal(frameIndex("idle", "left", 2), frameIndex("idle", "left", 0));
+  assert.deepEqual(resolvePose("idle"), { action: "idle", frames: BREATHE_FRAMES });
+});
+
+test("책상 앞에 앉으면 두 번 숨쉬고(31) 한 번 끄덕이며(32) 시트 끝까지 쓴다", () => {
+  assert.deepEqual(DESK_LOOP, [21, 31, 21, 31, 21, 32]);
+  assert.deepEqual(DESK_LOOP.map((_, f) => frameIndex("sit", "down", f)), DESK_LOOP);
+  assert.equal(frameIndex("sit", "down", DESK_LOOP.length), 21);
+  assert.equal(frameIndex("sit", "up", 3), 20);
+  assert.equal(resolvePose("seated").frames, DESK_LOOP.length);
+  assert.equal(Math.max(...DESK_LOOP, 27 + 3), SHEET_FRAME.count - 1);
+});
+
+test("걷기만 빠르게 넘기고 제자리 동작은 느리게 넘긴다", () => {
+  assert.equal(poseFrameMs("walk"), WALK_FRAME_MS);
+  assert.equal(poseFrameMs("idle"), IDLE_FRAME_MS);
+  assert.equal(poseFrameMs("sit"), IDLE_FRAME_MS);
+  assert.ok(IDLE_FRAME_MS > WALK_FRAME_MS * 3);
 });
 
 test("활동을 시트 동작으로 바꾼다 (출구로 나가는 중은 걷기)", () => {
@@ -61,7 +88,7 @@ test("발 기준점은 모든 방향에서 칸 맨 아래 줄 가운데", () => 
   }
 });
 
-test("공개 폴더의 몸 시트가 27칸 크기다", () => {
+test("공개 폴더의 몸 시트가 33칸 크기다", () => {
   const file = `public${BODY_SHEET}`;
   assert.ok(existsSync(file));
   const image = decodePng(readFileSync(file));

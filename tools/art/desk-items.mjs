@@ -71,9 +71,38 @@ function oneHandle(image) {
   return image;
 }
 
+/** 생성 그림이 물건 아래에 깐 그림자를 지운다 (아이템 그림에는 물건만 둔다): fromRow 아래에서 그림자 색과 같은 칸. */
+function dropShadow(image, fromRow, shadowColors) {
+  for (let y = fromRow; y < image.height; y++)
+    for (let x = 0; x < image.width; x++) {
+      const i = (y * image.width + x) * 4;
+      if (shadowColors.some(([r, g, b]) => image.pixels[i] === r && image.pixels[i + 1] === g && image.pixels[i + 2] === b)) image.pixels.fill(0, i, i + 4);
+    }
+  return image;
+}
+
+/**
+ * 향초: 생성 그림의 뚜껑이 병 위에 떠 보여 지운다. 뚜껑은 병 위(0~10줄)와 병 왼쪽 위(11~14줄 x 0~13)에 걸쳐 있어,
+ * 위쪽 줄은 비우고 병 왼쪽 위는 병 가운데(x 16.5)를 축으로 오른쪽을 뒤집어 그린다 (불꽃이 있는 x 14 이후는 그대로).
+ */
+function noLid(image) {
+  const at = (x, y) => (y * image.width + x) * 4;
+  image.pixels.fill(0, 0, at(0, 11));
+  for (let y = 11; y <= 14; y++)
+    for (let x = 0; x <= 13; x++) {
+      if (33 - x >= image.width) image.pixels.fill(0, at(x, y), at(x, y) + 4);
+      else image.pixels.set(image.pixels.subarray(at(33 - x, y), at(33 - x, y) + 4), at(x, y));
+    }
+  return image;
+}
+
 const items = {};
 for (const name of readdirSync(SRC).filter((n) => n.endsWith(".png"))) items[name.replace(/\.png$/, "")] = solid(decodePng(readFileSync(join(SRC, name))));
 items["desk-mug"] = oneHandle(items["desk-mug"]);
+items["desk-clock"] = dropShadow(items["desk-clock"], 33, [[174, 82, 59], [177, 86, 62]]);
+items["desk-bunny"] = dropShadow(items["desk-bunny"], 39, [[128, 97, 102], [126, 94, 100]]);
+items["desk-globe"] = dropShadow(items["desk-globe"], 39, [[159, 114, 97]]);
+items["desk-candle"] = noLid(items["desk-candle"]);
 for (const id of Object.keys(items)) if (items[id].height === 44) items[id] = standOnDesk(items[id]);
 items["sticker-star"] = draw(32, 16, [
   label([196, 222, 246]),

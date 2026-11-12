@@ -2,7 +2,7 @@ import { CaretLeft, CaretRight, Check, Coin, Desk, Eye, House, PersonSimpleWalk,
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { DESK_ITEM_ART, GENDER_PRESETS, ITEM_ASSETS, type Gender } from "../../../config/shop";
-import { characterSprites, WALK_FRAME_MS, WALK_FRAMES } from "../../../study/characterSprites";
+import { characterSprites, prefersReducedMotion, WALK_FRAME_MS, WALK_FRAMES } from "../../../study/characterSprites";
 import { useProfile } from "../../account/viewmodel/useAccount";
 import { buyBlockReason, isDeskSlot, type ItemSlot, type ShopItem } from "../../shop/model/shop";
 import { useShop } from "../../shop/viewmodel/useShop";
@@ -86,9 +86,6 @@ const ownership = (item: ShopItem) =>
 
 const BASE_SPRITE = characterSprites.idle.down[0];
 
-/** 움직임 줄이기 설정이면 걷기를 반복하지 않고 한 발 내디딘 칸에 멈춘다. */
-const reducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-
 /**
  * `/character`: 캐릭터 꾸미기와 상점 (2026-11-01 사용자 결정: 상점 페이지를 따로 두지 않는다).
  * 상태: 불러오는 중, 불러오기 실패, 처음 꾸미기(기본 아이템에서 고르기), 꾸미기.
@@ -131,7 +128,8 @@ export default function CharacterPage() {
   // 걷기 미리보기: 방 안 캐릭터와 같은 간격으로 프레임을 넘긴다.
   useEffect(() => {
     if (!walking) return setFrame(0);
-    if (reducedMotion()) return setFrame(1);
+    // 움직임 줄이기 설정이면 걷기를 반복하지 않고 한 발 내디딘 칸에 멈춘다.
+    if (prefersReducedMotion()) return setFrame(1);
     const timer = setTimeout(() => setFrame((f) => (f + 1) % WALK_FRAMES), WALK_FRAME_MS);
     return () => clearTimeout(timer);
   }, [walking, frame]);
@@ -182,6 +180,7 @@ export default function CharacterPage() {
                     action={walking ? "walk" : "idle"}
                     direction={facing}
                     frame={frame}
+                    breathe
                     label={`${displayName ?? "내"} 캐릭터 미리보기, ${FACING_LABEL[facing]}`}
                     className="preview-layers"
                   />

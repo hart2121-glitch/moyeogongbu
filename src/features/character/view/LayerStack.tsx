@@ -1,4 +1,5 @@
-import { frameIndex } from "../../../study/characterSprites";
+import { useEffect, useState } from "react";
+import { BREATHE_FRAMES, frameIndex, IDLE_FRAME_MS, prefersReducedMotion } from "../../../study/characterSprites";
 import { CANVAS, composeLayers, type Look } from "../model/layers";
 import SheetFrame from "./SheetFrame";
 
@@ -13,6 +14,8 @@ interface Props {
   className?: string;
   /** 꾸미기 선택지의 작은 미리보기: 보조 기술에서 숨기고 테스트 id도 달지 않는다 (큰 미리보기와 헷갈리지 않게). */
   decorative?: boolean;
+  /** 서 있을 때 숨쉬기 칸을 오간다 (로비의 내 캐릭터, 꾸미기 큰 미리보기). 움직임 줄이기 설정이면 멈춘다. */
+  breathe?: boolean;
 }
 
 /**
@@ -20,8 +23,15 @@ interface Props {
  * data-layer-* 속성에 레이어마다 고른 아이템 id(머리는 모양)가, data-hair-color에 머리 색이,
  * data-direction과 data-frame에 지금 방향과 시트 칸이 남는다.
  */
-export default function LayerStack({ look, action = "idle", direction = "down", frame = 0, label, className = "", decorative = false }: Props) {
-  const index = frameIndex(action, direction, frame);
+export default function LayerStack({ look, action = "idle", direction = "down", frame = 0, label, className = "", decorative = false, breathe = false }: Props) {
+  const [beat, setBeat] = useState(0);
+  const breathing = breathe && action === "idle" && !prefersReducedMotion();
+  useEffect(() => {
+    if (!breathing) return;
+    const timer = setTimeout(() => setBeat((b) => (b + 1) % BREATHE_FRAMES), IDLE_FRAME_MS);
+    return () => clearTimeout(timer);
+  }, [breathing, beat]);
+  const index = frameIndex(action, direction, breathing ? beat : frame);
   const layers = composeLayers(look);
   const data = Object.fromEntries(layers.map((l) => [`data-layer-${l.id.replace("_", "-")}`, l.itemId ?? ""]));
   return (
