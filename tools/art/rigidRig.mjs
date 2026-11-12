@@ -123,7 +123,7 @@ export function restFrame(stand) {
   return out;
 }
 
-/** Story 009 순서의 27칸: 서기 4, 걷기 아래/위/왼/오 각 4, 앉기(뒷모습), 앉기(정면), 휴식, 의자 사이 2, 소파 사이 2. */
+/** Story 009 순서의 27칸: 서기 4, 걷기 아래/위/왼/오 각 4, 앉기(뒷모습), 앉기(정면), 휴식, 의자 사이 2, 소파 사이 2. 쉬는 동작 칸(27~32)은 build-character.mjs만 만든다 (이 옛 도구의 시트에서는 비어 있다). */
 export function buildSheet({ down, up, left, right }) {
   const frames = [down, up, left, right,
     ...walkFrames(down), ...walkFrames(up),

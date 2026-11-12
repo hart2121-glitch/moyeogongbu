@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { frameIndex, resolvePose, SETTLE_FRAME_MS, SETTLE_FRAMES, WALK_FRAME_MS } from "./characterSprites";
+import { frameIndex, poseFrameMs, prefersReducedMotion, resolvePose, SETTLE_FRAME_MS, SETTLE_FRAMES } from "./characterSprites";
 import { useRoomScene } from "./roomScene";
 import { composeLayers, defaultLook } from "../features/character/model/layers";
 import SheetFrame from "../features/character/view/SheetFrame";
@@ -38,13 +38,17 @@ export default function CharacterSprite({ character, nickname, look = undefined,
     const timer = setTimeout(() => setSettled((s) => (s.pose === pose ? { pose, step: s.step + 1 } : s)), SETTLE_FRAME_MS);
     return () => clearTimeout(timer);
   }, [settle, settleStep, pose]);
+  // 걷기는 이동이라 늘 돌고, 숨쉬기와 책상 앞 동작은 움직임 줄이기 설정이면 멈춰 둔다.
+  const loops = frames > 1 && (action === "walk" || !prefersReducedMotion());
   useEffect(() => {
-    if (frames < 2) return;
+    if (!loops) return;
     // 다음 프레임은 현재 프레임이 커밋된 뒤 예약하여 지연 시 갱신이 뭉치지 않게 합니다.
-    const timer = setTimeout(() => setFrame((f) => (f + 1) % frames), WALK_FRAME_MS);
+    const timer = setTimeout(() => setFrame((f) => (f + 1) % frames), poseFrameMs(action));
     return () => clearTimeout(timer);
-  }, [frames, frame]);
-  const index = settle && settleStep < settle.length ? settle[settleStep] : frameIndex(action, facing, frame);
+  }, [loops, frames, frame, action]);
+  // 자세가 막 바뀐 그림에서는 이전 자세의 프레임 번호를 쓰지 않는다 (setFrame(0)은 그린 뒤에 반영된다).
+  const loopFrame = loops && settled.pose === pose ? frame : 0;
+  const index = settle && settleStep < settle.length ? settle[settleStep] : frameIndex(action, facing, loopFrame);
   const layers = composeLayers(look ?? defaultLook());
   return (
     <div

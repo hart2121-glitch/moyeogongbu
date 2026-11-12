@@ -48,6 +48,7 @@ export default function DeskScene({ facing, characterRef }: { facing: Facing; ch
             look={look}
             baseSrc={characterSprites.idle[facing][0]}
             direction={facing}
+            breathe
             label={`${displayName} 캐릭터`}
           />
         </div>

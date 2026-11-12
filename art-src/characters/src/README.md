@@ -1,6 +1,6 @@
 # 캐릭터 부품 원재료 (Story 009)
 
-`node tools/art/build-character.mjs`가 이 폴더를 읽어 `art-src/characters/`에 27칸 시트를 만든다.
+`node tools/art/build-character.mjs`가 이 폴더를 읽어 `art-src/characters/`에 33칸 시트를 만든다. 27~32칸(서서 숨쉬기 4방향, 책상 앞 숨쉬기, 끄덕임)은 원재료 없이 다른 칸의 줄을 1픽셀 옮겨 만든다.
 
 - `base/rot/{south,north,west}.png`: 기본 몸 서기 (56×72, 머리카락 없음, 회색 바디슈트). 동쪽은 서쪽 반전.
 - `base/walk/<방향>/{0..3}.png`: 기본 몸 걷기 (PixelLab skeleton-v3, walking-4-frames, 112×112). 없는 방향은 서기 그림으로 임시 대체한다.
